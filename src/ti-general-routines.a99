@@ -411,6 +411,64 @@ ti_pal  byte 1,4,6,13,12,7,10,14,1,5,8,13,2,7,11,15
 * Not available: D Cyan, D Magenta
 *// ti_color
 
+*********************************************************************************
+*
+* Upload ZX SPectrum screen
+*
+upload_zx_screen:
+       lwpi ti_wrksp
+       li   r7,vdpwd
+*      Patterns
+       li   r0,pattern_table
+       bl   @vwad
+       li   r0,zx_screen
+       li   r5,3
+upload_zx_screen_2:
+       li   r6,256
+upload_zx_screen_3:
+       movb *r0,*r7
+       ai   r0,256
+       movb *r0,*r7
+       ai   r0,256
+       movb *r0,*r7
+       ai   r0,256
+       movb *r0,*r7
+       ai   r0,256
+       movb *r0,*r7
+       ai   r0,256
+       movb *r0,*r7
+       ai   r0,256
+       movb *r0,*r7
+       ai   r0,256
+       movb *r0,*r7
+       ai   r0,256-2048+1
+       dec  r6
+       jne  upload_zx_screen_3
+       ai   r0,2048-256
+       dec  r5
+       jne  upload_zx_screen_2
+*      Colors
+       li   r0,color_table
+       bl   @vwad
+       li   r5,zx_attrs
+       li   r6,>300
+upload_zx_screen_1:
+       movb *r5+,a
+       bl   @ti_color
+       movb r0,*r7
+       movb r0,*r7
+       movb r0,*r7
+       movb r0,*r7
+       movb r0,*r7
+       movb r0,*r7
+       movb r0,*r7
+       movb r0,*r7
+       dec  r6
+       jne  upload_zx_screen_1
+       lwpi wrksp
+       rt
+*// upload_zx_screen
+
 *********************************************************************
 *
 * VDP Write To Register

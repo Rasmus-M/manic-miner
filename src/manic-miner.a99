@@ -799,21 +799,28 @@ start:                                 ; 34252
        li   bc,6143                    ; LD BC,6143        ; 
        sb   *hl,*hl                    ; LD (HL),0         ; 
        .ldir                           ; LDIR              ; }
+       seto @title_screen_bank_select
        li   hl,titlescr1               ; LD HL,40960       ; {Copy the graphic data at #R40960 to the top two-thirds
        li   de,zx_screen               ; LD DE,16384       ; of the display file
        li   bc,4096                    ; LD BC,4096        ; 
        .ldir                           ; LDIR              ; }
-       li   hl,zx_screen+2109          ; LD HL,18493       ; {Draw Willy at (9,29)
-       li   de,willyr2                 ; LD DE,33344       ; 
-       sb   @c,@c                      ; LD C,0            ; 
-       .call @drwfix                   ; CALL 36852        ; }
+;       li   hl,zx_screen+2109          ; LD HL,18493       ; {Draw Willy at (9,29)
+;       li   de,willyr2                 ; LD DE,33344       ;
+;       sb   @c,@c                      ; LD C,0            ;
+;       .call @drwfix                   ; CALL 36852        ; }
+       seto @caverns_13_19_bank_select
        li   hl,cavern19                ; LD HL,64512       ; {Copy the attribute bytes from #R64512 to the top third
        li   de,zx_attrs                ; LD DE,22528       ; of the attribute file
-       li   bc,256                     ; LD BC,256         ; 
+       li   bc,256                     ; LD BC,256         ;
        .ldir                           ; LDIR              ; }
+       seto @title_screen_bank_select
        li   hl,lowerattrs              ; LD HL,40448       ; {Copy the attribute bytes from #R40448 to the bottom
        li   bc,512                     ; LD BC,512         ; two-thirds of the attribute file
        .ldir                           ; LDIR              ; }
+       bl   @upload_zx_screen
+
+stop:  jmp  stop
+
 * Now check whether there is a joystick connected.
        li   bc,31                      ; LD BC,31          ; This is the joystick port
        limi 0                          ; DI                ; Disable interrupts (which are already disabled)

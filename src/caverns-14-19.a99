@@ -1,3 +1,6 @@
+       aorg >6000
+       bss  >40
+
 * The Bank (teleport: 2346)
 *
 * Used by the routine at #R34436.

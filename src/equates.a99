@@ -57,7 +57,14 @@ kscan_status:
        equ  >837c
 gplws:
        equ  >83e0
-
+caverns_0_6_bank_select:
+       equ  >6008
+caverns_7_12_bank_select:
+       equ  >600a
+caverns_13_19_bank_select:
+       equ  >600c
+title_screen_bank_select:
+       equ  >600e
 
 **
 * Z80 register mapping
@@ -84,7 +91,6 @@ af_    requ 12
 bc_    requ 13
 de_    requ 14
 hl_    requ 15
-r      requ 0
 
 **
 * VDP memory map
