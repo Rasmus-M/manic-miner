@@ -8,5 +8,7 @@
        copy "ti-general-routines.a99"
        copy "data.a99"
 
+*      ZX screen at >2500
+
 lower_memory_max:
        equ  $

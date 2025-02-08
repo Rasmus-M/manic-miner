@@ -106,9 +106,9 @@ name_table_2:                          ; Name table 2
 * ZX Spectrum memory map
 *
 zx_screen:
-       equ  >4000
+       equ  >2500                      ; >4000 = 16283
 zx_attrs:
-       equ  >5800                      ; 22528
+       equ  >3d00                      ; >5800 = 22528
 zx_buffer:
        equ  >5b00                      ; 23296
 zx_sys_var:

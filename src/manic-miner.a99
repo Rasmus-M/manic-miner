@@ -38,7 +38,7 @@ scrn_buffer_1:                         ; 28672
 * Copyright 1983 Bug-Byte Ltd (Manic Miner)
 * Copyright 2010, 2012-2022 Richard Dymond (this disassembly)
 
-       b    @begin                     ; JP 33792          
+;       b    @begin                     ; JP 33792
 
 * Cavern name
 * 
@@ -488,10 +488,13 @@ sbufaddrs:                             ; 33536
        data scrn_buffer_2+3808                                       ; y=126
        data scrn_buffer_2+4064                                       ; y=127
 
+sbufaddrs_msb_byte:
+       equ  bytes+(sbufaddrs//8)     ; Unsigned division
+
 * The game has just loaded
 begin:                                 ; 33792
        limi 0                          ; DI                ; Disable interrupts
-       li   sp,_40190                  ; LD SP,40190       ; Place the stack somewhere safe (near the end of the
+;      li   sp,_40190                  ; LD SP,40190       ; Place the stack somewhere safe (near the end of the
                                                            ; source code remnants at #R37708)
        b    @start                     ; JP 34252          ; Display the title screen and play the theme tune
 
@@ -1396,7 +1399,7 @@ feet:                                  ; 35171
 loopft:                                ; 35210
        movb @eughgt,a                  ; LD A,(32988)      ; Pick up the distance variable from #R32988
        movb a,@c                       ; LD C,A            ; {Point #REGbc at the corresponding entry in the screen
-       movb @bytes+131,b               ; LD B,131          ; buffer address lookup table at #R33536}
+       movb @sbufaddrs_msb_byte,b      ; LD B,131          ; buffer address lookup table at #R33536}
        movb *bc,a                      ; LD A,(BC)         ; {Point #REGhl at the corresponding location in the
        socb @bytes+15,a                ; OR 15             ; display file
        movb a,@l                       ; LD L,A            ; 
@@ -2348,7 +2351,7 @@ _36388:
        andi a,127*256                  ; AND 127           ; {Point #REGde at the entry in the screen buffer address
        sla  a,1                        ; RLCA              ; TODO: check code. lookup table at #R33536 that corresponds to Eugene's
        movb a,@e                       ; LD E,A            ; y-coordinate
-       movb @bytes+131,d               ; LD D,131          ; }
+       movb @sbufaddrs_msb_byte,d      ; LD D,131          ; }
        movb *de,a                      ; LD A,(DE)         ; {Point #REGhl at the address of Eugene's location in the
        socb @bytes+15,a                ; OR 15             ; screen buffer at #R24576
        movb a,@l                       ; LD L,A            ; 
@@ -2440,7 +2443,7 @@ _36497:
 _36527:
        movb @2(iy),@e                  ; LD E,(IY+2)       ; Pick up the Skylab's pixel y-coordinate in #REGe
        ; RLC E                         ; RLC E             ; {Point #REGde at the entry in the screen buffer address
-       movb @bytes+131,d               ; LD D,131          ; lookup table at #R33536 that corresponds to the Skylab's
+       movb @sbufaddrs_msb_byte,d      ; LD D,131          ; lookup table at #R33536 that corresponds to the Skylab's
                                                            ; pixel y-coordinate}
        movb *de,a                      ; LD A,(DE)         ; {Point #REGhl at the address of the Skylab's location in
        ab   @3(iy),a                   ; ADD A,(IY+3)      ; the screen buffer at #R24576
@@ -2513,7 +2516,7 @@ _36639:
        andi a,127*256                  ; AND 127           ; {Point #REGde at the entry in the screen buffer address
        sla  a,1                        ; RLCA              ; TODO: check code. lookup table at #R33536 that corresponds to the
        movb a,@e                       ; LD E,A            ; guardian's pixel y-coordinate
-       movb @bytes+131,d               ; LD D,131          ; }
+       movb @sbufaddrs_msb_byte,d      ; LD D,131          ; }
        movb *de,a                      ; LD A,(DE)         ; {Point #REGhl at the address of the guardian's location
        socb @3(iy),a                   ; OR (IY+3)         ; in the screen buffer at #R24576
        movb a,@l                       ; LD L,A            ; 
@@ -3038,7 +3041,7 @@ _37306:
        movb @c,a                       ; LD A,C            ; Copy the Kong Beast's pixel y-coordinate back into #REGa
        sla  a,1                        ; RLCA              ; TODO: check code. {Point #REGde at the entry in the screen buffer address
        movb a,@e                       ; LD E,A            ; lookup table at #R33536 that corresponds to the Kong
-       movb @bytes+131,d               ; LD D,131          ; Beast's pixel y-coordinate}
+       movb @sbufaddrs_msb_byte,d      ; LD D,131          ; Beast's pixel y-coordinate}
        movb *de,a                      ; LD A,(DE)         ; {Point #REGhl at the address of the Kong Beast's
        socb @bytes+15,a                ; OR 15             ; location in the screen buffer at #R24576
        movb a,@l                       ; LD L,A            ; 
@@ -3197,7 +3200,7 @@ _37488:
 * Used by the routine at #R37434.
 drawwilly:                             ; 37503
        movb @willy_y,a                 ; LD A,(32872)      ; Pick up Willy's y-coordinate from #R32872
-       movb @bytes+131,ix              ; LD IXH,131        ; {Point #REGix at the entry in the screen buffer address
+       movb @sbufaddrs_msb_byte,ix     ; LD IXH,131        ; {Point #REGix at the entry in the screen buffer address
        movb a,@ixl                     ; LD IXL,A          ; lookup table at #R33536 that corresponds to Willy's
                                                            ; y-coordinate}
        movb @dmflags,a                 ; LD A,(32874)      ; Pick up Willy's direction and movement flags from
