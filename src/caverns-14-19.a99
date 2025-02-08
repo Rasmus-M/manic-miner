@@ -1,0 +1,1494 @@
+* The Bank (teleport: 2346)
+*
+* Used by the routine at #R34436.
+* .
+* #UDGTABLE
+* { #CAVERN14(the_bank) }
+* TABLE#
+* .
+* The first 512 bytes are the attributes that define the layout of the cavern.
+cavern14:                              ; 59392
+       byte 14,0,0,0,0,0,14,14                                       ; {Attributes
+       byte 14,14,14,14,14,14,14,14                                  ;
+       byte 14,14,14,14,14,14,14,14                                  ;
+       byte 14,14,14,14,14,14,14,14                                  ;
+       byte 14,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,6,6,14                                         ;
+       byte 14,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,6,6,14                                         ;
+       byte 14,0,0,0,0,0,0,0                                         ;
+       byte 69,69,69,69,69,69,69,69                                  ;
+       byte 69,69,69,69,69,69,69,69                                  ;
+       byte 65,65,65,65,65,6,6,14                                    ;
+       byte 14,0,0,0,0,0,0,0                                         ;
+       byte 66,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,66,6,6,14                                        ;
+       byte 14,65,65,65,65,65,0,0                                    ;
+       byte 70,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,66,6,6,14                                        ;
+       byte 14,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 65,65,0,0,66,6,6,14                                      ;
+       byte 14,0,0,0,0,0,0,1                                         ;
+       byte 0,0,0,0,65,65,0,0                                        ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,66,6,6,14                                        ;
+       byte 14,0,0,65,65,0,0,0                                       ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,65,65,0,0,0,0                                        ;
+       byte 0,0,0,0,66,6,6,14                                        ;
+       byte 14,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,65,65,0,66,6,6,14                                      ;
+       byte 14,65,65,0,0,0,0,0                                       ;
+       byte 0,0,0,0,65,65,0,0                                        ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,70,6,6,14                                        ;
+       byte 14,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,65,65,0,0,0,0                                        ;
+       byte 0,0,0,0,0,6,6,14                                         ;
+       byte 14,0,0,0,0,65,65,65                                      ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,65                                         ;
+       byte 65,0,0,0,0,6,6,14                                        ;
+       byte 14,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,65,65,0,0                                        ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,6,6,14                                         ;
+       byte 14,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,6,6,14                                         ;
+       byte 14,65,65,65,65,65,65,65                                  ;
+       byte 65,65,65,65,65,65,65,65                                  ;
+       byte 65,65,65,65,65,65,65,65                                  ;
+       byte 65,65,65,65,65,65,65,14                                  ; }
+* The next 32 bytes are copied to #R32768 and specify the cavern name.
+       text '            THE BANK            '                       ; Cavern name
+* The next 72 bytes are copied to #R32800 and contain the attributes and
+* graphic data for the tiles used to build the cavern.
+* .
+* #UDGTABLE
+* { #TILES14 }
+* TABLE#
+       byte 0,0,0,0,0,0,0,0,0                                        ; Background
+       byte 65,255,255,221,119,170,85,34,0                           ; Floor
+       byte 1,255,219,165,36,82,32,8,0                               ; Crumbling floor
+       byte 14,170,85,170,85,170,85,170,85                           ; Wall
+       byte 69,254,102,254,0,0,0,0,0                                 ; Conveyor
+       byte 70,16,16,214,56,214,56,84,146                            ; Nasty 1
+       byte 66,16,16,16,16,16,16,16,16                               ; Nasty 2
+       byte 6,255,255,24,24,24,24,24,24                              ; Extra
+* The next seven bytes are copied to #GBUF32872,32878 and specify Miner Willy's
+* initial location and appearance in the cavern.
+       byte 208                                                      ; Pixel y-coordinate * 2 (see
+                                                                     ; #R32872)
+       byte 0                                                        ; Animation frame (see #R32873)
+       byte 0                                                        ; Direction and movement flags:
+                                                                     ; facing right (see #R32874)
+       byte 0                                                        ; Airborne status indicator (see
+                                                                     ; #R32875)
+       data attr_buffer_2+418                                        ; Location in the attribute
+                                                                     ; buffer at #R23552: (13,2) (see
+                                                                     ; #R32876)
+       byte 0                                                        ; Jumping animation counter (see
+                                                                     ; #R32878)
+* The next four bytes are copied to #R32879 and specify the direction, location
+* and length of the conveyor.
+       byte 0                                                        ; Direction (left)
+       data scrn_buffer_1+104                                        ; Location in the screen buffer
+                                                                     ; at #R28672: (3,8)
+       byte 16                                                       ; Length
+* The next byte is copied to #R32883 and specifies the border colour.
+       byte 2                                                        ; Border colour
+* The next byte is copied to #R32884, but is not used.
+       byte 0                                                        ; Unused
+* The next 25 bytes are copied to #R32885 and specify the location and initial
+* colour of the items in the cavern.
+       byte 3                                                        ; {Item 1 at (2,25)
+       data attr_buffer_2+89                                         ;
+       byte 96                                                       ;
+       byte 255                                                      ; }
+       byte 4                                                        ; {Item 2 at (6,12)
+       data attr_buffer_2+204                                        ;
+       byte 96                                                       ;
+       byte 255                                                      ; }
+       byte 5                                                        ; {Item 3 at (14,26)
+       data attr_buffer_2+474                                        ;
+       byte 104                                                      ;
+       byte 255                                                      ; }
+       byte 255                                                      ; {Item 4 at (6,19) (unused)
+       data attr_buffer_2+211                                        ;
+       byte 96                                                       ;
+       byte 255                                                      ; }
+       byte 3                                                        ; {Item 5 at (13,30) (unused)
+       data attr_buffer_2+446                                        ;
+       byte 104                                                      ;
+       byte 255                                                      ; }
+       byte 255                                                      ; Terminator
+* The next 37 bytes are copied to #R32911 and define the portal graphic and its
+* location.
+* .
+* #UDGTABLE
+* { #PORTAL14 }
+* TABLE#
+       byte 86                                                       ; Attribute
+       byte 255,255,128,1,128,1,128,1                                ; {Graphic data
+       byte 128,1,136,1,170,1,156,61                                 ;
+       byte 255,71,156,1,170,1,136,1                                 ;
+       byte 128,1,128,1,128,1,255,255                                ; }
+       data attr_buffer_2+97                                         ; Location in the attribute
+                                                                     ; buffer at #R23552: (3,1)
+       data scrn_buffer_2+97                                         ; Location in the screen buffer
+                                                                     ; at #R24576: (3,1)
+* The next eight bytes are copied to #R32948 and define the item graphic.
+* .
+* #UDGTABLE
+* { #ITEM14 }
+* TABLE#
+       byte 124,56,100,222,142,222,130,124                           ; Item graphic data
+* The next byte is copied to #R32956 and specifies the initial air supply in
+* the cavern.
+       byte 63                                                       ; Air
+* The next byte is copied to #R32957 and initialises the game clock.
+       byte 252                                                      ; Game clock
+* The next 28 bytes are copied to #R32958 and define the horizontal guardians.
+       byte 69                                                       ; {Horizontal guardian 1: y=13,
+       data attr_buffer_2+433                                        ; initial x=17, 17<=x<=19,
+       byte 104                                                      ; speed=normal
+       byte 0                                                        ;
+       byte 177                                                      ;
+       byte 179                                                      ; }
+       byte 0,0,0,0,0,0,0                                            ; Horizontal guardian 2 (unused)
+       byte 0,0,0,0,0,0,0                                            ; Horizontal guardian 3 (unused)
+       byte 0,0,0,0,0,0,0                                            ; Horizontal guardian 4 (unused)
+       byte 255                                                      ; Terminator
+* The next two bytes are copied to #R32987 and #R32988 but are not used.
+       byte 0,0                                                      ; Unused
+* The next 28 bytes are copied to #R32989 and define the vertical guardians.
+       byte 6                                                        ; {Vertical guardian 1: x=9,
+       byte 0                                                        ; initial y=40, 36<=y<102,
+       byte 40                                                       ; initial y-increment=2
+       byte 9                                                        ;
+       byte 2                                                        ;
+       byte 36                                                       ;
+       byte 102                                                      ; }
+       byte 7                                                        ; {Vertical guardian 2: x=15,
+       byte 1                                                        ; initial y=64, 36<=y<102,
+       byte 64                                                       ; initial y-increment=1
+       byte 15                                                       ;
+       byte 1                                                        ;
+       byte 36                                                       ;
+       byte 102                                                      ; }
+       byte 68                                                       ; {Vertical guardian 3: x=21,
+       byte 3                                                        ; initial y=80, 32<=y<104,
+       byte 80                                                       ; initial y-increment=-3
+       byte 21                                                       ;
+       byte 253                                                      ;
+       byte 32                                                       ;
+       byte 104                                                      ; }
+       byte 255,0,0,0,0,0,0                                          ; Vertical guardian 4 (unused)
+       byte 255                                                      ; Terminator
+* The next 6 bytes are unused.
+       byte 0,0,0,0,0,0                                              ; Unused
+* The next 256 bytes are copied to #R33024 and define the guardian graphics.
+* .
+* #UDGTABLE
+* { #SPRITE60160,60125(the_bank_guardian0) |
+* #SPRITE60192,60125(the_bank_guardian1) |
+* #SPRITE60224,60125(the_bank_guardian2) |
+* #SPRITE60256,60125(the_bank_guardian3) |
+* #SPRITE60288,60094(the_bank_guardian4) |
+* #SPRITE60320,60094(the_bank_guardian5) |
+* #SPRITE60352,60094(the_bank_guardian6) |
+* #SPRITE60384,60094(the_bank_guardian7) }
+* TABLE#
+       byte 97,134,159,249,159,249,97,134                            ; {Guardian graphic data
+       byte 3,192,255,255,128,1,170,169                              ;
+       byte 159,253,181,89,144,13,181,89                             ;
+       byte 159,253,170,169,128,1,255,255                            ;
+       byte 29,184,34,244,34,244,29,184                              ;
+       byte 3,192,255,255,213,85,191,255                             ;
+       byte 234,173,176,7,229,77,176,7                               ;
+       byte 234,173,191,255,213,85,255,255                           ;
+       byte 7,224,8,16,8,16,7,224                                    ;
+       byte 3,192,255,255,255,255,213,87                             ;
+       byte 224,3,202,167,231,243,202,167                            ;
+       byte 224,3,213,87,255,255,255,255                             ;
+       byte 29,184,47,68,47,68,29,184                                ;
+       byte 3,192,255,255,170,171,192,1                              ;
+       byte 149,83,207,249,154,179,207,249                           ;
+       byte 149,83,192,1,170,171,255,255                             ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,255,192,129,192                                  ;
+       byte 255,192,130,64,254,64,255,192                            ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,63,240,32,112                                    ;
+       byte 63,240,32,144,63,144,63,240                              ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 15,252,8,28,15,252,8,36                                  ;
+       byte 15,228,15,252,0,0,0,0                                    ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,3,255,2,7                                        ;
+       byte 3,255,2,9,3,249,3,255                                    ;
+       byte 0,0,0,0,0,0,0,0                                          ; }
+
+* The Sixteenth Cavern (teleport: 12346)
+*
+* Used by the routine at #R34436.
+* .
+* #UDGTABLE
+* { #CAVERN15(the_sixteenth_cavern) }
+* TABLE#
+* .
+* The first 512 bytes are the attributes that define the layout of the cavern.
+cavern15:                              ; 60416
+       byte 101,0,0,0,0,0,0,0                                        ; {Attributes
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,101                                        ;
+       byte 101,0,0,0,0,0,0,0                                        ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,101                                        ;
+       byte 101,0,0,0,0,0,0,0                                        ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,101                                        ;
+       byte 101,0,0,0,0,0,0,0                                        ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,101                                        ;
+       byte 101,0,0,0,0,0,0,0                                        ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,101                                        ;
+       byte 101,66,0,0,0,0,66,0                                      ;
+       byte 0,0,0,101,0,0,101,0                                      ;
+       byte 0,0,0,0,0,0,66,66                                        ;
+       byte 66,0,0,0,0,0,0,101                                       ;
+       byte 101,0,0,0,0,0,0,0                                        ;
+       byte 0,0,0,101,0,0,101,101                                    ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,101                                        ;
+       byte 101,0,0,0,66,0,0,0                                       ;
+       byte 0,0,0,101,0,0,101,101                                    ;
+       byte 101,0,0,0,0,0,0,0                                        ;
+       byte 0,66,66,66,66,66,66,101                                  ;
+       byte 101,0,0,0,0,0,0,0                                        ;
+       byte 0,0,0,101,0,0,101,101                                    ;
+       byte 101,101,0,0,0,0,0,0                                      ;
+       byte 0,0,0,0,0,0,0,101                                        ;
+       byte 101,2,2,70,70,70,70,70                                   ;
+       byte 70,70,70,70,70,70,70,70                                  ;
+       byte 70,70,70,70,70,70,70,70                                  ;
+       byte 70,70,70,0,0,0,0,101                                     ;
+       byte 101,0,0,0,0,0,0,0                                        ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,101                                        ;
+       byte 101,0,0,0,0,0,0,0                                        ;
+       byte 0,0,101,101,66,66,0,0                                    ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,66,0,0,0,0,101                                       ;
+       byte 101,66,66,66,66,66,66,66                                 ;
+       byte 66,66,0,0,0,0,0,0                                        ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,101                                        ;
+       byte 101,0,0,0,0,0,0,0                                        ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,66,0,0,0                                         ;
+       byte 0,0,66,0,0,0,0,101                                       ;
+       byte 101,0,0,0,0,0,0,0                                        ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,4                                          ;
+       byte 4,4,0,0,0,0,0,101                                        ;
+       byte 101,66,66,66,66,66,66,66                                 ;
+       byte 66,66,66,66,66,66,66,66                                  ;
+       byte 66,66,66,66,66,66,66,66                                  ;
+       byte 66,66,66,66,66,66,66,101                                 ; }
+* The next 32 bytes are copied to #R32768 and specify the cavern name.
+       text '      THE SIXTEENTH CAVERN      '                       ; Cavern name
+* The next 72 bytes are copied to #R32800 and contain the attributes and
+* graphic data for the tiles used to build the cavern.
+* .
+* #UDGTABLE
+* { #TILES15 }
+* TABLE#
+       byte 0,0,0,0,0,0,0,0,0                                        ; Background
+       byte 66,255,255,219,110,197,64,0,0                            ; Floor
+       byte 2,255,219,165,36,82,32,8,0                               ; Crumbling floor
+       byte 101,73,249,79,73,255,72,120,207                          ; Wall
+       byte 70,240,102,240,170,0,0,0,0                               ; Conveyor
+       byte 4,68,68,68,68,102,238,238,255                            ; Nasty 1
+       byte 5,126,60,28,24,24,8,8,8                                  ; Nasty 2 (unused)
+       byte 6,255,129,129,66,60,16,96,96                             ; Extra (unused)
+* The next seven bytes are copied to #GBUF32872,32878 and specify Miner Willy's
+* initial location and appearance in the cavern.
+       byte 208                                                      ; Pixel y-coordinate * 2 (see
+                                                                     ; #R32872)
+       byte 0                                                        ; Animation frame (see #R32873)
+       byte 0                                                        ; Direction and movement flags:
+                                                                     ; facing right (see #R32874)
+       byte 0                                                        ; Airborne status indicator (see
+                                                                     ; #R32875)
+       data attr_buffer_2+418                                        ; Location in the attribute
+                                                                     ; buffer at #R23552: (13,2) (see
+                                                                     ; #R32876)
+       byte 0                                                        ; Jumping animation counter (see
+                                                                     ; #R32878)
+* The next four bytes are copied to #R32879 and specify the direction, location
+* and length of the conveyor.
+       byte 0                                                        ; Direction (left)
+       data scrn_buffer_1+2083                                       ; Location in the screen buffer
+                                                                     ; at #R28672: (9,3)
+       byte 24                                                       ; Length
+* The next byte is copied to #R32883 and specifies the border colour.
+       byte 2                                                        ; Border colour
+* The next byte is copied to #R32884, but is not used.
+       byte 0                                                        ; Unused
+* The next 25 bytes are copied to #R32885 and specify the location and initial
+* colour of the items in the cavern.
+       byte 3                                                        ; {Item 1 at (2,30)
+       data attr_buffer_2+94                                         ;
+       byte 96                                                       ;
+       byte 255                                                      ; }
+       byte 4                                                        ; {Item 2 at (7,13)
+       data attr_buffer_2+237                                        ;
+       byte 96                                                       ;
+       byte 255                                                      ; }
+       byte 5                                                        ; {Item 3 at (0,1)
+       data attr_buffer_2+1                                          ;
+       byte 96                                                       ;
+       byte 255                                                      ; }
+       byte 6                                                        ; {Item 4 at (10,17)
+       data attr_buffer_2+337                                        ;
+       byte 104                                                      ;
+       byte 255                                                      ; }
+       byte 255                                                      ; {Item 5 at (5,26) (unused)
+       data attr_buffer_2+186                                        ;
+       byte 96                                                       ;
+       byte 255                                                      ; }
+       byte 255                                                      ; Terminator
+* The next 37 bytes are copied to #R32911 and define the portal graphic and its
+* location.
+* .
+* #UDGTABLE
+* { #PORTAL15 }
+* TABLE#
+       byte 94                                                       ; Attribute
+       byte 255,255,129,129,129,129,255,255                          ; {Graphic data
+       byte 129,129,129,129,255,255,129,129                          ;
+       byte 129,129,255,255,129,129,129,129                          ;
+       byte 255,255,129,129,129,129,255,255                          ; }
+       data attr_buffer_2+172                                        ; Location in the attribute
+                                                                     ; buffer at #R23552: (5,12)
+       data scrn_buffer_2+172                                        ; Location in the screen buffer
+                                                                     ; at #R24576: (5,12)
+* The next eight bytes are copied to #R32948 and define the item graphic.
+* .
+* #UDGTABLE
+* { #ITEM15 }
+* TABLE#
+       byte 15,9,61,39,244,156,144,240                               ; Item graphic data
+* The next byte is copied to #R32956 and specifies the initial air supply in
+* the cavern.
+       byte 63                                                       ; Air
+* The next byte is copied to #R32957 and initialises the game clock.
+       byte 248                                                      ; Game clock
+* The next 28 bytes are copied to #R32958 and define the horizontal guardians.
+       byte 68                                                       ; {Horizontal guardian 1: y=13,
+       data attr_buffer_2+425                                        ; initial x=9, 1<=x<=18,
+       byte 104                                                      ; speed=normal
+       byte 0                                                        ;
+       byte 161                                                      ;
+       byte 178                                                      ; }
+       byte 6                                                        ; {Horizontal guardian 2: y=10,
+       data attr_buffer_2+321                                        ; initial x=1, 1<=x<=7,
+       byte 104                                                      ; speed=normal
+       byte 0                                                        ;
+       byte 65                                                       ;
+       byte 71                                                       ; }
+       byte 67                                                       ; {Horizontal guardian 3: y=7,
+       data attr_buffer_2+242                                        ; initial x=18, 18<=x<=23,
+       byte 96                                                       ; speed=normal
+       byte 0                                                        ;
+       byte 242                                                      ;
+       byte 247                                                      ; }
+       byte 133                                                      ; {Horizontal guardian 4: y=5,
+       data attr_buffer_2+186                                        ; initial x=26, 25<=x<=29,
+       byte 96                                                       ; speed=slow
+       byte 0                                                        ;
+       byte 185                                                      ;
+       byte 189                                                      ; }
+       byte 255                                                      ; Terminator
+* The next two bytes are copied to #R32987 and #R32988 but are not used.
+       byte 0,0                                                      ; Unused
+* The next 28 bytes are copied to #R32989 and define the vertical guardians.
+       byte 255,0,0,0,0,0,0                                          ; Vertical guardian 1 (unused)
+       byte 0,0,0,0,0,0,0                                            ; Vertical guardian 2 (unused)
+       byte 0,0,0,0,0,0,0                                            ; Vertical guardian 3 (unused)
+       byte 0,0,0,0,0,0,0                                            ; Vertical guardian 4 (unused)
+* The next 7 bytes are unused.
+       byte 0,0,0,0,0,0,0                                            ; Unused
+* The next 256 bytes are copied to #R33024 and define the guardian graphics.
+* .
+* #UDGTABLE
+* { #SPRITE61184,61118(the_sixteenth_cavern_guardian0) |
+* #SPRITE61216,61118(the_sixteenth_cavern_guardian1) |
+* #SPRITE61248,61118(the_sixteenth_cavern_guardian2) |
+* #SPRITE61280,61118(the_sixteenth_cavern_guardian3) |
+* #SPRITE61312,61118(the_sixteenth_cavern_guardian4) |
+* #SPRITE61344,61118(the_sixteenth_cavern_guardian5) |
+* #SPRITE61376,61118(the_sixteenth_cavern_guardian6) |
+* #SPRITE61408,61118(the_sixteenth_cavern_guardian7) }
+* TABLE#
+       byte 0,0,8,0,20,0,42,0                                        ; {Guardian graphic data
+       byte 85,0,74,0,132,0,128,192                                  ;
+       byte 128,192,65,0,127,128,63,192                              ;
+       byte 31,128,15,0,10,128,18,64                                 ;
+       byte 42,0,21,0,42,0,21,0                                      ;
+       byte 32,0,32,0,32,0,32,48                                     ;
+       byte 32,48,16,64,31,224,15,240                                ;
+       byte 7,224,3,192,2,160,4,144                                  ;
+       byte 0,0,16,0,40,0,84,0                                       ;
+       byte 170,0,81,0,33,0,1,12                                     ;
+       byte 2,12,2,16,3,248,3,252                                    ;
+       byte 1,248,0,240,0,168,1,36                                   ;
+       byte 5,64,10,128,5,64,10,128                                  ;
+       byte 0,64,0,64,0,64,0,67                                      ;
+       byte 0,131,0,132,0,254,0,255                                  ;
+       byte 0,126,0,60,0,42,0,73                                     ;
+       byte 2,160,1,80,2,160,1,80                                    ;
+       byte 2,0,2,0,2,0,194,0                                        ;
+       byte 193,0,33,0,127,0,255,0                                   ;
+       byte 126,0,60,0,84,0,146,0                                    ;
+       byte 0,0,0,8,0,20,0,42                                        ;
+       byte 0,85,0,138,0,132,48,128                                  ;
+       byte 48,64,8,64,31,192,63,192                                 ;
+       byte 31,128,15,0,21,0,36,128                                  ;
+       byte 0,84,0,168,0,84,0,168                                    ;
+       byte 0,4,0,4,0,4,12,4                                         ;
+       byte 12,4,2,8,7,248,15,240                                    ;
+       byte 7,224,3,192,5,64,9,32                                    ;
+       byte 0,0,0,16,0,40,0,84                                       ;
+       byte 0,170,0,82,0,33,3,1                                      ;
+       byte 3,1,0,130,1,254,3,252                                    ;
+       byte 1,248,0,240,1,80,2,72                                    ; }
+
+* The Warehouse (teleport: 56)
+*
+* Used by the routine at #R34436.
+* .
+* #UDGTABLE
+* { #CAVERN16(the_warehouse) }
+* TABLE#
+* .
+* The first 512 bytes are the attributes that define the layout of the cavern.
+cavern16:                              ; 61440
+       byte 22,0,0,0,0,0,0,0                                         ; {Attributes
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,22,22,22                                       ;
+       byte 22,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,22                                         ;
+       byte 22,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,22                                         ;
+       byte 22,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,22                                         ;
+       byte 22,0,0,0,0,0,6,0                                         ;
+       byte 0,6,0,0,0,6,0,0                                          ;
+       byte 6,0,0,0,0,0,6,0                                          ;
+       byte 6,0,0,0,0,0,0,22                                         ;
+       byte 22,4,4,68,68,68,68,68                                    ;
+       byte 68,68,0,0,68,68,68,68                                    ;
+       byte 68,68,68,0,0,68,68,68                                    ;
+       byte 0,68,68,0,0,4,4,22                                       ;
+       byte 22,68,68,33,68,68,68,68                                  ;
+       byte 68,68,0,0,68,68,68,68                                    ;
+       byte 68,68,68,0,0,68,68,68                                    ;
+       byte 68,68,68,0,0,68,68,22                                    ;
+       byte 22,68,68,68,68,68,68,68                                  ;
+       byte 68,68,0,0,68,68,68,0                                     ;
+       byte 68,68,68,0,0,68,68,68                                    ;
+       byte 68,68,33,0,0,68,68,22                                    ;
+       byte 22,68,68,0,0,68,68,68                                    ;
+       byte 68,68,0,0,68,68,32,32                                    ;
+       byte 32,32,32,0,0,68,68,68                                    ;
+       byte 68,68,68,0,0,68,68,22                                    ;
+       byte 22,0,68,0,0,68,68,68                                     ;
+       byte 68,68,0,0,68,68,68,68                                    ;
+       byte 68,68,68,0,0,68,68,68                                    ;
+       byte 68,68,68,0,0,68,68,22                                    ;
+       byte 22,68,68,0,0,68,68,68                                    ;
+       byte 68,68,0,0,68,68,68,68                                    ;
+       byte 68,68,68,0,68,68,33,68                                   ;
+       byte 68,68,68,0,0,68,68,22                                    ;
+       byte 22,68,68,0,0,68,68,68                                    ;
+       byte 68,33,0,0,68,68,68,68                                    ;
+       byte 68,68,68,68,68,68,68,68                                  ;
+       byte 68,68,0,0,0,68,68,22                                     ;
+       byte 22,68,68,0,0,68,68,68                                    ;
+       byte 68,68,0,0,68,68,68,68                                    ;
+       byte 68,68,68,68,68,68,68,68                                  ;
+       byte 68,68,68,0,0,68,68,22                                    ;
+       byte 22,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,22                                         ;
+       byte 22,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,4,4,4,4,22                                         ;
+       byte 22,4,4,4,4,4,4,4                                         ;
+       byte 4,4,4,4,4,4,4,4                                          ;
+       byte 4,4,4,4,4,4,4,4                                          ;
+       byte 4,4,4,4,4,4,4,22                                         ; }
+* The next 32 bytes are copied to #R32768 and specify the cavern name.
+       text '         THE WAREHOUSE          '                       ; Cavern name
+* The next 72 bytes are copied to #R32800 and contain the attributes and
+* graphic data for the tiles used to build the cavern.
+* .
+* #UDGTABLE
+* { #TILES16 }
+* TABLE#
+       byte 0,0,0,0,0,0,0,0,0                                        ; Background
+       byte 4,255,255,219,110,197,64,0,0                             ; Floor
+       byte 68,255,170,85,170,85,170,85,170                          ; Crumbling floor
+       byte 22,255,153,187,255,255,153,187,255                       ; Wall
+       byte 32,240,102,240,102,0,0,0,0                               ; Conveyor
+       byte 6,68,40,148,81,53,214,88,16                              ; Nasty 1
+       byte 33,66,215,254,101,166,125,238,215                        ; Nasty 2
+       byte 0,0,0,0,0,0,0,0,0                                        ; Extra (unused)
+* The next seven bytes are copied to #GBUF32872,32878 and specify Miner Willy's
+* initial location and appearance in the cavern.
+       byte 48                                                       ; Pixel y-coordinate * 2 (see
+                                                                     ; #R32872)
+       byte 3                                                        ; Animation frame (see #R32873)
+       byte 1                                                        ; Direction and movement flags:
+                                                                     ; facing left (see #R32874)
+       byte 0                                                        ; Airborne status indicator (see
+                                                                     ; #R32875)
+       data attr_buffer_2+97                                         ; Location in the attribute
+                                                                     ; buffer at #R23552: (3,1) (see
+                                                                     ; #R32876)
+       byte 0                                                        ; Jumping animation counter (see
+                                                                     ; #R32878)
+* The next four bytes are copied to #R32879 and specify the direction, location
+* and length of the conveyor.
+       byte 1                                                        ; Direction (right)
+       data scrn_buffer_1+2062                                       ; Location in the screen buffer
+                                                                     ; at #R28672: (8,14)
+       byte 5                                                        ; Length
+* The next byte is copied to #R32883 and specifies the border colour.
+       byte 2                                                        ; Border colour
+* The next byte is copied to #R32884, but is not used.
+       byte 0                                                        ; Unused
+* The next 25 bytes are copied to #R32885 and specify the location and initial
+* colour of the items in the cavern.
+       byte 35                                                       ; {Item 1 at (5,24)
+       data attr_buffer_2+184                                        ;
+       byte 96                                                       ;
+       byte 255                                                      ; }
+       byte 36                                                       ; {Item 2 at (7,15)
+       data attr_buffer_2+239                                        ;
+       byte 96                                                       ;
+       byte 255                                                      ; }
+       byte 37                                                       ; {Item 3 at (9,1)
+       data attr_buffer_2+289                                        ;
+       byte 104                                                      ;
+       byte 255                                                      ; }
+       byte 38                                                       ; {Item 4 at (10,19)
+       data attr_buffer_2+339                                        ;
+       byte 104                                                      ;
+       byte 255                                                      ; }
+       byte 35                                                       ; {Item 5 at (11,26)
+       data attr_buffer_2+378                                        ;
+       byte 104                                                      ;
+       byte 255                                                      ; }
+       byte 255                                                      ; Terminator
+* The next 37 bytes are copied to #R32911 and define the portal graphic and its
+* location.
+* .
+* #UDGTABLE
+* { #PORTAL16 }
+* TABLE#
+       byte 76                                                       ; Attribute
+       byte 255,255,128,1,191,253,160,5                              ; {Graphic data
+       byte 165,165,165,165,165,165,165,165                          ;
+       byte 165,165,165,165,175,245,165,165                          ;
+       byte 165,165,165,165,165,165,255,255                          ; }
+       data attr_buffer_2+61                                         ; Location in the attribute
+                                                                     ; buffer at #R23552: (1,29)
+       data scrn_buffer_2+61                                         ; Location in the screen buffer
+                                                                     ; at #R24576: (1,29)
+* The next eight bytes are copied to #R32948 and define the item graphic.
+* .
+* #UDGTABLE
+* { #ITEM16 }
+* TABLE#
+       byte 48,72,136,144,104,4,10,4                                 ; Item graphic data
+* The next byte is copied to #R32956 and specifies the initial air supply in
+* the cavern.
+       byte 63                                                       ; Air
+* The next byte is copied to #R32957 and initialises the game clock.
+       byte 128                                                      ; Game clock
+* The next 28 bytes are copied to #R32958 and define the horizontal guardians.
+       byte 194                                                      ; {Horizontal guardian 1: y=13,
+       data attr_buffer_2+421                                        ; initial x=5, 5<=x<=8,
+       byte 104                                                      ; speed=slow
+       byte 0                                                        ;
+       byte 165                                                      ;
+       byte 168                                                      ; }
+       byte 5                                                        ; {Horizontal guardian 2: y=13,
+       data attr_buffer_2+428                                        ; initial x=12, 12<=x<=25,
+       byte 104                                                      ; speed=normal
+       byte 0                                                        ;
+       byte 172                                                      ;
+       byte 185                                                      ; }
+       byte 255,0,0,0,0,0,0                                          ; Horizontal guardian 3 (unused)
+       byte 0,0,0,0,0,0,0                                            ; Horizontal guardian 4 (unused)
+       byte 255                                                      ; Terminator
+* The next two bytes are copied to #R32987 and #R32988 but are not used.
+       byte 0,0                                                      ; Unused
+* The next 28 bytes are copied to #R32989 and define the vertical guardians.
+       byte 65                                                       ; {Vertical guardian 1: x=3,
+       byte 0                                                        ; initial y=64, 64<=y<102,
+       byte 64                                                       ; initial y-increment=2
+       byte 3                                                        ;
+       byte 2                                                        ;
+       byte 64                                                       ;
+       byte 102                                                      ; }
+       byte 6                                                        ; {Vertical guardian 2: x=10,
+       byte 1                                                        ; initial y=64, 3<=y<96, initial
+       byte 64                                                       ; y-increment=-3
+       byte 10                                                       ;
+       byte 253                                                      ;
+       byte 3                                                        ;
+       byte 96                                                       ; }
+       byte 71                                                       ; {Vertical guardian 3: x=19,
+       byte 2                                                        ; initial y=48, 0<=y<64, initial
+       byte 48                                                       ; y-increment=1
+       byte 19                                                       ;
+       byte 1                                                        ;
+       byte 0                                                        ;
+       byte 64                                                       ; }
+       byte 67                                                       ; {Vertical guardian 4: x=27,
+       byte 3                                                        ; initial y=0, 4<=y<96, initial
+       byte 0                                                        ; y-increment=4
+       byte 27                                                       ;
+       byte 4                                                        ;
+       byte 4                                                        ;
+       byte 96                                                       ; }
+       byte 255                                                      ; Terminator
+* The next 6 bytes are unused.
+       byte 0,0,0,0,0,0                                              ; Unused
+* The next 256 bytes are copied to #R33024 and define the guardian graphics.
+* .
+* #UDGTABLE
+* { #SPRITE62208,62173(the_warehouse_guardian0) |
+* #SPRITE62240,62173(the_warehouse_guardian1) |
+* #SPRITE62272,62173(the_warehouse_guardian2) |
+* #SPRITE62304,62173(the_warehouse_guardian3) |
+* #SPRITE62336,62142(the_warehouse_guardian4) |
+* #SPRITE62368,62142(the_warehouse_guardian5) |
+* #SPRITE62400,62142(the_warehouse_guardian6) |
+* #SPRITE62432,62142(the_warehouse_guardian7) }
+* TABLE#
+       byte 85,85,255,255,255,255,8,16                               ; {Guardian graphic data
+       byte 8,16,8,16,248,31,85,85                                   ;
+       byte 255,255,255,255,8,16,8,16                                ;
+       byte 8,16,88,21,255,255,255,255                               ;
+       byte 0,0,85,85,255,255,255,255                                ;
+       byte 8,16,248,31,8,16,63,254                                  ;
+       byte 56,30,8,16,95,245,255,255                                ;
+       byte 255,255,0,0,255,255,0,0                                  ;
+       byte 0,0,0,0,255,255,85,85                                    ;
+       byte 255,255,255,255,8,16,56,30                               ;
+       byte 63,254,8,16,248,31,95,245                                ;
+       byte 255,255,255,255,0,0,0,0                                  ;
+       byte 0,0,85,85,255,255,248,31                                 ;
+       byte 8,16,85,85,255,255,255,255                               ;
+       byte 120,29,248,31,248,31,8,16                                ;
+       byte 85,85,255,255,255,255,0,0                                ;
+       byte 126,0,153,0,255,0,219,0                                  ;
+       byte 231,0,126,0,36,0,36,0                                    ;
+       byte 36,0,66,0,66,0,66,0                                      ;
+       byte 129,0,129,0,195,0,195,0                                  ;
+       byte 0,0,31,128,38,64,63,192                                  ;
+       byte 54,192,57,192,31,128,16,128                              ;
+       byte 32,64,32,64,64,32,64,32                                  ;
+       byte 128,16,128,48,192,48,192,0                               ;
+       byte 0,0,0,0,0,0,7,224                                        ;
+       byte 9,144,15,240,13,176,14,112                               ;
+       byte 7,224,8,16,16,8,32,4                                     ;
+       byte 64,2,128,1,192,3,192,3                                   ;
+       byte 0,0,1,248,2,100,3,252                                    ;
+       byte 3,108,3,156,1,248,1,8                                    ;
+       byte 2,4,2,4,4,2,4,2                                          ;
+       byte 8,1,12,1,12,3,0,3                                        ; }
+
+* Amoebatrons' Revenge (teleport: 156)
+*
+* Used by the routine at #R34436.
+* .
+* #UDGTABLE
+* { #CAVERN17(amoebatrons'_revenge) }
+* TABLE#
+* .
+* The first 512 bytes are the attributes that define the layout of the cavern.
+cavern17:                              ; 62464
+       byte 22,0,0,0,0,0,0,0                                         ; {Attributes
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,22,0,0,22                                        ;
+       byte 22,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,22                                         ;
+       byte 22,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,22                                         ;
+       byte 22,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,22                                         ;
+       byte 22,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,22                                         ;
+       byte 22,0,0,66,66,0,0,66                                      ;
+       byte 66,66,0,0,66,66,66,66                                    ;
+       byte 66,66,66,66,0,0,66,66                                    ;
+       byte 66,0,0,66,66,66,66,22                                    ;
+       byte 22,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,22                                         ;
+       byte 22,66,66,0,0,0,0,0                                       ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,22                                         ;
+       byte 22,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,66,66,66,66                                      ;
+       byte 66,66,66,66,0,0,66,66                                    ;
+       byte 66,0,0,66,66,0,0,22                                      ;
+       byte 22,0,0,66,66,0,0,66                                      ;
+       byte 66,66,0,0,0,0,0,0                                        ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,22                                         ;
+       byte 22,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,66,66,22                                       ;
+       byte 22,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,22                                         ;
+       byte 22,0,0,66,66,0,0,66                                      ;
+       byte 66,66,0,0,66,66,66,66                                    ;
+       byte 66,66,66,66,0,0,66,66                                    ;
+       byte 66,0,0,66,66,0,0,22                                      ;
+       byte 22,66,66,0,0,0,0,0                                       ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,22                                         ;
+       byte 22,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,22                                         ;
+       byte 66,66,66,66,66,66,66,66                                  ;
+       byte 66,66,66,66,66,66,66,66                                  ;
+       byte 66,66,66,66,66,66,66,66                                  ;
+       byte 66,66,66,66,66,66,66,66                                  ; }
+* The next 32 bytes are copied to #R32768 and specify the cavern name.
+       text '      AMOEBATRONS'' REVENGE      '                      ; Cavern name
+* The next 72 bytes are copied to #R32800 and contain the attributes and
+* graphic data for the tiles used to build the cavern.
+* .
+* #UDGTABLE
+* { #TILES17 }
+* TABLE#
+       byte 0,0,0,0,0,0,0,0,0                                        ; Background
+       byte 66,255,255,219,110,197,64,0,0                            ; Floor
+       byte 2,255,219,165,36,82,32,8,0                               ; Crumbling floor (unused)
+       byte 22,255,129,129,255,255,129,129,255                       ; Wall
+       byte 4,240,102,240,102,0,153,255,0                            ; Conveyor (unused)
+       byte 68,68,40,148,81,53,214,88,16                             ; Nasty 1 (unused)
+       byte 5,126,60,28,24,24,8,8,8                                  ; Nasty 2 (unused)
+       byte 0,0,0,0,0,0,0,0,0                                        ; Extra (unused)
+* The next seven bytes are copied to #GBUF32872,32878 and specify Miner Willy's
+* initial location and appearance in the cavern.
+       byte 208                                                      ; Pixel y-coordinate * 2 (see
+                                                                     ; #R32872)
+       byte 3                                                        ; Animation frame (see #R32873)
+       byte 1                                                        ; Direction and movement flags:
+                                                                     ; facing left (see #R32874)
+       byte 0                                                        ; Airborne status indicator (see
+                                                                     ; #R32875)
+       data attr_buffer_2+445                                        ; Location in the attribute
+                                                                     ; buffer at #R23552: (13,29)
+                                                                     ; (see #R32876)
+       byte 0                                                        ; Jumping animation counter (see
+                                                                     ; #R32878)
+* The next four bytes are copied to #R32879 and specify the direction, location
+* and length of the (unused) conveyor.
+       byte 1                                                        ; Direction (right)
+       data scrn_buffer_1+2087                                       ; Location in the screen buffer
+                                                                     ; at #R28672: (9,7)
+       byte 3                                                        ; Length
+* The next byte is copied to #R32883 and specifies the border colour.
+       byte 1                                                        ; Border colour
+* The next byte is copied to #R32884, but is not used.
+       byte 0                                                        ; Unused
+* The next 25 bytes are copied to #R32885 and specify the location and initial
+* colour of the items in the cavern.
+       byte 3                                                        ; {Item 1 at (1,16)
+       data attr_buffer_2+48                                         ;
+       byte 96                                                       ;
+       byte 255                                                      ; }
+       byte 255,255,255,255,255                                      ; Item 2 (unused)
+       byte 0,255,255,255,255                                        ; Item 3 (unused)
+       byte 0,255,255,255,255                                        ; Item 4 (unused)
+       byte 0,255,255,255,255                                        ; Item 5 (unused)
+       byte 255                                                      ; Terminator
+* The next 37 bytes are copied to #R32911 and define the portal graphic and its
+* location.
+* .
+* #UDGTABLE
+* { #PORTAL17 }
+* TABLE#
+       byte 14                                                       ; Attribute
+       byte 255,255,128,1,176,13,160,5                               ; {Graphic data
+       byte 170,85,170,85,170,85,170,85                              ;
+       byte 170,85,170,85,170,85,170,85                              ;
+       byte 160,5,176,13,128,1,255,255                               ; }
+       data attr_buffer_2+29                                         ; Location in the attribute
+                                                                     ; buffer at #R23552: (0,29)
+       data scrn_buffer_2+29                                         ; Location in the screen buffer
+                                                                     ; at #R24576: (0,29)
+* The next eight bytes are copied to #R32948 and define the item graphic.
+* .
+* #UDGTABLE
+* { #ITEM17 }
+* TABLE#
+       byte 48,72,136,144,104,4,10,4                                 ; Item graphic data
+* The next byte is copied to #R32956 and specifies the initial air supply in
+* the cavern.
+       byte 63                                                       ; Air
+* The next byte is copied to #R32957 and initialises the game clock.
+       byte 128                                                      ; Game clock
+* The next 28 bytes are copied to #R32958 and define the horizontal guardians.
+       byte 196                                                      ; {Horizontal guardian 1: y=3,
+       data attr_buffer_2+108                                        ; initial x=12, 12<=x<=18,
+       byte 96                                                       ; speed=slow
+       byte 0                                                        ;
+       byte 108                                                      ;
+       byte 114                                                      ; }
+       byte 133                                                      ; {Horizontal guardian 2: y=10,
+       data attr_buffer_2+336                                        ; initial x=16, 12<=x<=17,
+       byte 104                                                      ; speed=slow
+       byte 0                                                        ;
+       byte 76                                                       ;
+       byte 81                                                       ; }
+       byte 67                                                       ; {Horizontal guardian 3: y=6,
+       data attr_buffer_2+208                                        ; initial x=16, 12<=x<=17,
+       byte 96                                                       ; speed=normal
+       byte 0                                                        ;
+       byte 204                                                      ;
+       byte 209                                                      ; }
+       byte 6                                                        ; {Horizontal guardian 4: y=13,
+       data attr_buffer_2+432                                        ; initial x=16, 12<=x<=18,
+       byte 104                                                      ; speed=normal
+       byte 7                                                        ;
+       byte 172                                                      ;
+       byte 178                                                      ; }
+       byte 255                                                      ; Terminator
+* The next two bytes are copied to #R32987 and #R32988 but are not used.
+       byte 0,0                                                      ; Unused
+* The next 28 bytes are copied to #R32989 and define the vertical guardians.
+       byte 67                                                       ; {Vertical guardian 1: x=5,
+       byte 0                                                        ; initial y=8, 5<=y<104, initial
+       byte 8                                                        ; y-increment=3
+       byte 5                                                        ;
+       byte 3                                                        ;
+       byte 5                                                        ;
+       byte 104                                                      ; }
+       byte 4                                                        ; {Vertical guardian 2: x=10,
+       byte 1                                                        ; initial y=8, 5<=y<104, initial
+       byte 8                                                        ; y-increment=2
+       byte 10                                                       ;
+       byte 2                                                        ;
+       byte 5                                                        ;
+       byte 104                                                      ; }
+       byte 5                                                        ; {Vertical guardian 3: x=20,
+       byte 2                                                        ; initial y=8, 5<=y<104, initial
+       byte 8                                                        ; y-increment=4
+       byte 20                                                       ;
+       byte 4                                                        ;
+       byte 5                                                        ;
+       byte 104                                                      ; }
+       byte 6                                                        ; {Vertical guardian 4: x=25,
+       byte 3                                                        ; initial y=8, 5<=y<104, initial
+       byte 8                                                        ; y-increment=1
+       byte 25                                                       ;
+       byte 1                                                        ;
+       byte 5                                                        ;
+       byte 104                                                      ; }
+       byte 255                                                      ; Terminator
+* The next 6 bytes are unused.
+       byte 0,0,0,0,0,0                                              ; Unused
+* The next 256 bytes are copied to #R33024 and define the guardian graphics.
+* .
+* #UDGTABLE
+* { #SPRITE63232,63197(amoebatrons'_revenge_guardian0) |
+* #SPRITE63264,63197(amoebatrons'_revenge_guardian1) |
+* #SPRITE63296,63197(amoebatrons'_revenge_guardian2) |
+* #SPRITE63328,63197(amoebatrons'_revenge_guardian3) |
+* #SPRITE63360,63166(amoebatrons'_revenge_guardian4) |
+* #SPRITE63392,63166(amoebatrons'_revenge_guardian5) |
+* #SPRITE63424,63166(amoebatrons'_revenge_guardian6) |
+* #SPRITE63456,63166(amoebatrons'_revenge_guardian7) }
+* TABLE#
+       byte 3,192,14,112,19,200,49,140                               ; {Guardian graphic data
+       byte 57,156,95,250,141,178,132,164                            ;
+       byte 73,36,41,18,36,137,66,73                                 ;
+       byte 130,82,4,144,8,136,0,64                                  ;
+       byte 3,192,14,112,19,200,49,140                               ;
+       byte 57,156,95,250,77,177,133,17                              ;
+       byte 132,146,72,164,41,36,41,18                               ;
+       byte 68,137,2,72,2,80,4,0                                     ;
+       byte 3,192,14,112,19,200,49,140                               ;
+       byte 57,156,95,250,77,177,68,145                              ;
+       byte 130,73,130,74,68,148,37,36                               ;
+       byte 41,34,8,144,4,72,0,64                                    ;
+       byte 3,192,14,112,19,200,49,140                               ;
+       byte 57,156,95,250,77,178,41,18                               ;
+       byte 36,145,66,73,130,74,132,74                               ;
+       byte 72,145,9,32,9,0,0,128                                    ;
+       byte 12,0,12,0,12,0,12,0                                      ;
+       byte 12,0,12,0,12,0,12,0                                      ;
+       byte 12,0,12,0,255,192,12,0                                   ;
+       byte 97,128,210,192,179,64,97,128                             ;
+       byte 3,0,3,0,3,0,3,0                                          ;
+       byte 3,0,3,0,3,0,3,0                                          ;
+       byte 3,0,3,0,63,240,3,0                                       ;
+       byte 24,96,36,208,60,208,24,96                                ;
+       byte 0,192,0,192,0,192,0,192                                  ;
+       byte 0,192,0,192,0,192,0,192                                  ;
+       byte 0,192,0,192,15,252,0,192                                 ;
+       byte 6,24,11,52,13,44,6,24                                    ;
+       byte 0,48,0,48,0,48,0,48                                      ;
+       byte 0,48,0,48,0,48,0,48                                      ;
+       byte 0,48,0,48,3,255,0,48                                     ;
+       byte 1,134,2,77,3,205,1,134                                   ; }
+
+* Solar Power Generator (teleport: 256)
+*
+* Used by the routine at #R34436.
+* .
+* #UDGTABLE
+* { #CAVERN18(solar_power_generator) }
+* TABLE#
+* .
+* The first 512 bytes are the attributes that define the layout of the cavern.
+cavern18:                              ; 63488
+       byte 22,22,22,36,36,36,36,36                                  ; {Attributes
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,22                                  ;
+       byte 22,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,22                                  ;
+       byte 22,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,22                                  ;
+       byte 22,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,22                                  ;
+       byte 22,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,22                                  ;
+       byte 22,36,36,32,32,36,36,36                                  ;
+       byte 36,32,32,32,32,32,32,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 32,32,32,32,32,32,32,22                                  ;
+       byte 22,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,22                                  ;
+       byte 22,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,32,32,32,36,36                                  ;
+       byte 36,36,36,36,36,36,36,22                                  ;
+       byte 22,32,32,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,32,32,32                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 32,32,32,32,32,32,32,22                                  ;
+       byte 22,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,22                                  ;
+       byte 22,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,32,32,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,22                                  ;
+       byte 22,32,32,32,32,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 32,32,32,32,32,32,32,22                                  ;
+       byte 22,36,36,36,36,36,36,38                                  ;
+       byte 38,38,38,36,36,36,32,32                                  ;
+       byte 32,32,32,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,22                                  ;
+       byte 22,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,22                                  ;
+       byte 22,22,22,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,36                                  ;
+       byte 36,36,36,36,36,36,36,22                                  ;
+       byte 22,22,22,32,32,32,32,32                                  ;
+       byte 32,32,32,32,32,32,32,32                                  ;
+       byte 32,32,32,32,32,32,32,22                                  ;
+       byte 32,32,32,32,32,32,32,22                                  ; }
+* The next 32 bytes are copied to #R32768 and specify the cavern name.
+       text '     SOLAR POWER GENERATOR      '                       ; Cavern name
+* The next 72 bytes are copied to #R32800 and contain the attributes and
+* graphic data for the tiles used to build the cavern.
+* .
+* #UDGTABLE
+* { #TILES18 }
+* TABLE#
+       byte 36,0,0,0,0,0,0,0,0                                       ; Background
+       byte 32,255,255,219,110,197,64,0,0                            ; Floor
+       byte 2,255,219,165,36,82,32,8,0                               ; Crumbling floor (unused)
+       byte 22,34,255,136,255,34,255,136,255                         ; Wall
+       byte 38,240,102,240,102,0,153,255,0                           ; Conveyor
+       byte 68,68,40,148,81,53,214,88,16                             ; Nasty 1 (unused)
+       byte 5,126,60,28,24,24,8,8,8                                  ; Nasty 2 (unused)
+       byte 0,0,0,0,0,0,0,0,0                                        ; Extra (unused)
+* The next seven bytes are copied to #GBUF32872,32878 and specify Miner Willy's
+* initial location and appearance in the cavern.
+       byte 160                                                      ; Pixel y-coordinate * 2 (see
+                                                                     ; #R32872)
+       byte 0                                                        ; Animation frame (see #R32873)
+       byte 0                                                        ; Direction and movement flags:
+                                                                     ; facing right (see #R32874)
+       byte 0                                                        ; Airborne status indicator (see
+                                                                     ; #R32875)
+       data attr_buffer_2+334                                        ; Location in the attribute
+                                                                     ; buffer at #R23552: (10,14)
+                                                                     ; (see #R32876)
+       byte 0                                                        ; Jumping animation counter (see
+                                                                     ; #R32878)
+* The next four bytes are copied to #R32879 and specify the direction, location
+* and length of the conveyor.
+       byte 0                                                        ; Direction (left)
+       data scrn_buffer_1+2183                                       ; Location in the screen buffer
+                                                                     ; at #R28672: (12,7)
+       byte 4                                                        ; Length
+* The next byte is copied to #R32883 and specifies the border colour.
+       byte 3                                                        ; Border colour
+* The next byte is copied to #R32884, but is not used.
+       byte 0                                                        ; Unused
+* The next 25 bytes are copied to #R32885 and specify the location and initial
+* colour of the items in the cavern.
+       byte 35                                                       ; {Item 1 at (1,30)
+       data attr_buffer_2+62                                         ;
+       byte 96                                                       ;
+       byte 255                                                      ; }
+       byte 36                                                       ; {Item 2 at (5,1)
+       data attr_buffer_2+161                                        ;
+       byte 96                                                       ;
+       byte 255                                                      ; }
+       byte 37                                                       ; {Item 3 at (12,30)
+       data attr_buffer_2+414                                        ;
+       byte 104                                                      ;
+       byte 255                                                      ; }
+       byte 255,255,255,255,255                                      ; Item 4 (unused)
+       byte 0,255,255,255,255                                        ; Item 5 (unused)
+       byte 255                                                      ; Terminator
+* The next 37 bytes are copied to #R32911 and define the portal graphic and its
+* location.
+* .
+* #UDGTABLE
+* { #PORTAL18 }
+* TABLE#
+       byte 78                                                       ; Attribute
+       byte 255,255,128,1,191,253,160,5                              ; {Graphic data
+       byte 175,245,168,21,171,213,170,85                            ;
+       byte 170,85,171,213,168,21,175,245                            ;
+       byte 160,5,191,253,128,1,255,255                              ; }
+       data attr_buffer_2+33                                         ; Location in the attribute
+                                                                     ; buffer at #R23552: (1,1)
+       data scrn_buffer_2+33                                         ; Location in the screen buffer
+                                                                     ; at #R24576: (1,1)
+* The next eight bytes are copied to #R32948 and define the item graphic.
+* .
+* #UDGTABLE
+* { #ITEM18 }
+* TABLE#
+       byte 48,72,136,144,104,4,10,4                                 ; Item graphic data
+* The next byte is copied to #R32956 and specifies the initial air supply in
+* the cavern.
+       byte 63                                                       ; Air
+* The next byte is copied to #R32957 and initialises the game clock.
+       byte 240                                                      ; Game clock
+* The next 28 bytes are copied to #R32958 and define the horizontal guardians.
+       byte 38                                                       ; {Horizontal guardian 1: y=3,
+       data attr_buffer_2+120                                        ; initial x=24, 23<=x<=29,
+       byte 96                                                       ; speed=normal
+       byte 0                                                        ;
+       byte 119                                                      ;
+       byte 125                                                      ; }
+       byte 33                                                       ; {Horizontal guardian 2: y=6,
+       data attr_buffer_2+220                                        ; initial x=28, 22<=x<=29,
+       byte 96                                                       ; speed=normal
+       byte 0                                                        ;
+       byte 214                                                      ;
+       byte 221                                                      ; }
+       byte 162                                                      ; {Horizontal guardian 3: y=9,
+       data attr_buffer_2+317                                        ; initial x=29, 23<=x<=29,
+       byte 104                                                      ; speed=slow
+       byte 7                                                        ;
+       byte 55                                                       ;
+       byte 61                                                       ; }
+       byte 38                                                       ; {Horizontal guardian 4: y=13,
+       data attr_buffer_2+432                                        ; initial x=16, 13<=x<=29,
+       byte 104                                                      ; speed=normal
+       byte 0                                                        ;
+       byte 173                                                      ;
+       byte 189                                                      ; }
+       byte 255                                                      ; Terminator
+* The next two bytes are copied to #R32987 and #R32988 but are not used.
+       byte 0,0                                                      ; Unused
+* The next 28 bytes are copied to #R32989 and define the vertical guardians.
+       byte 38                                                       ; {Vertical guardian 1: x=5,
+       byte 0                                                        ; initial y=64, 2<=y<102,
+       byte 64                                                       ; initial y-increment=3
+       byte 5                                                        ;
+       byte 3                                                        ;
+       byte 2                                                        ;
+       byte 102                                                      ; }
+       byte 34                                                       ; {Vertical guardian 2: x=11,
+       byte 1                                                        ; initial y=56, 48<=y<102,
+       byte 56                                                       ; initial y-increment=-2
+       byte 11                                                       ;
+       byte 254                                                      ;
+       byte 48                                                       ;
+       byte 102                                                      ; }
+       byte 33                                                       ; {Vertical guardian 3: x=16,
+       byte 2                                                        ; initial y=80, 4<=y<80, initial
+       byte 80                                                       ; y-increment=1
+       byte 16                                                       ;
+       byte 1                                                        ;
+       byte 4                                                        ;
+       byte 80                                                       ; }
+       byte 255,0,0,0,0,0,0                                          ; Vertical guardian 4 (unused)
+* The next 7 bytes are unused.
+       byte 0,0,0,0,0,0,0                                            ; Unused
+* The next 256 bytes are copied to #R33024 and define the guardian graphics.
+* .
+* #UDGTABLE
+* { #SPRITE64256,64221(solar_power_generator_guardian0) |
+* #SPRITE64288,64221(solar_power_generator_guardian1) |
+* #SPRITE64320,64221(solar_power_generator_guardian2) |
+* #SPRITE64352,64221(solar_power_generator_guardian3) |
+* #SPRITE64384,64190(solar_power_generator_guardian4) |
+* #SPRITE64416,64190(solar_power_generator_guardian5) |
+* #SPRITE64448,64190(solar_power_generator_guardian6) |
+* #SPRITE64480,64190(solar_power_generator_guardian7) }
+* TABLE#
+       byte 3,64,15,112,63,60,63,76                                  ; {Guardian graphic data
+       byte 95,102,95,118,159,127,0,127                              ;
+       byte 142,0,142,255,70,254,64,242                              ;
+       byte 32,4,48,12,12,48,2,192                                   ;
+       byte 3,192,15,240,63,172,63,204                               ;
+       byte 95,198,71,182,153,191,158,127                            ;
+       byte 142,127,141,159,69,230,65,242                            ;
+       byte 32,4,48,12,12,48,3,192                                   ;
+       byte 3,192,15,240,47,188,55,200                               ;
+       byte 91,230,93,230,158,223,158,63                             ;
+       byte 140,127,139,127,71,190,65,194                            ;
+       byte 0,4,48,4,12,48,3,192                                     ;
+       byte 3,192,11,240,61,188,61,204                               ;
+       byte 93,230,94,244,158,227,158,31                             ;
+       byte 136,127,135,127,7,126,65,178                             ;
+       byte 32,4,48,12,12,16,3,192                                   ;
+       byte 6,0,12,0,24,0,56,0                                       ;
+       byte 116,0,202,128,133,192,3,192                              ;
+       byte 6,64,206,192,216,64,255,192                              ;
+       byte 226,0,200,128,213,64,8,128                               ;
+       byte 1,128,3,0,6,0,14,0                                       ;
+       byte 29,0,50,160,33,112,0,240                                 ;
+       byte 1,144,99,176,102,16,127,240                              ;
+       byte 120,128,98,32,101,80,2,32                                ;
+       byte 0,96,0,192,1,128,3,128                                   ;
+       byte 7,64,12,168,8,92,0,60                                    ;
+       byte 0,100,48,236,49,132,63,252                               ;
+       byte 62,32,48,136,49,84,0,136                                 ;
+       byte 0,24,0,48,0,96,0,224                                     ;
+       byte 1,208,3,42,2,23,0,15                                     ;
+       byte 0,25,6,59,6,97,7,255                                     ;
+       byte 7,136,6,34,6,85,0,34                                     ; }
+
+* The Final Barrier (teleport: 1256)
+*
+* Used by the routine at #R34436.
+* .
+* #UDGTABLE
+* { #CAVERN19(the_final_barrier) }
+* TABLE#
+* .
+* The first 512 bytes are the attributes that define the layout of the cavern.
+* The first 256 bytes here are also used by the routine at #R34252 when
+* preparing the top third of the title screen.
+cavern19:                              ; 64512
+       byte 44,34,34,34,34,34,44,40                                  ; {Attributes
+       byte 40,40,40,40,47,47,47,47                                  ;
+       byte 47,40,40,40,40,40,46,50                                  ;
+       byte 50,46,40,40,40,40,40,40                                  ;
+       byte 44,34,34,34,34,34,44,40                                  ;
+       byte 40,47,40,40,47,47,47,47                                  ;
+       byte 47,40,40,40,40,40,58,56                                  ;
+       byte 56,58,40,40,40,42,42,42                                  ;
+       byte 44,34,34,22,34,44,46,46                                  ;
+       byte 46,46,46,46,47,47,47,47                                  ;
+       byte 47,46,43,46,43,46,58,56                                  ;
+       byte 56,58,47,47,47,42,42,42                                  ;
+       byte 40,44,44,22,44,46,46,46                                  ;
+       byte 46,46,46,46,46,40,40,40                                  ;
+       byte 44,44,44,44,44,44,58,58                                  ;
+       byte 58,58,47,47,47,40,42,40                                  ;
+       byte 40,47,40,22,40,46,46,46                                  ;
+       byte 46,46,46,46,46,44,44,44                                  ;
+       byte 38,38,38,38,38,38,38,38                                  ;
+       byte 38,38,38,38,38,38,38,38                                  ;
+       byte 40,44,44,22,44,46,46,46                                  ;
+       byte 46,46,46,46,46,39,38,38                                  ;
+       byte 38,38,38,0,0,38,0,0                                      ;
+       byte 0,0,0,0,0,0,0,38                                         ;
+       byte 12,38,38,38,38,33,33,33                                  ;
+       byte 14,14,33,33,33,39,38,38                                  ;
+       byte 38,38,38,0,0,38,0,0                                      ;
+       byte 0,0,0,0,0,0,0,38                                         ;
+       byte 38,38,38,38,38,38,38,38                                  ;
+       byte 38,38,38,38,38,38,38,38                                  ;
+       byte 38,38,38,0,0,38,0,0                                      ;
+       byte 0,0,0,0,0,0,0,38                                         ;
+       byte 38,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,66,66,38                                       ;
+       byte 38,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,38                                         ;
+       byte 38,5,5,5,5,5,5,5                                         ;
+       byte 5,5,5,5,5,5,5,5                                          ;
+       byte 5,5,5,5,5,5,5,0                                          ;
+       byte 0,0,2,0,0,0,0,38                                         ;
+       byte 38,0,0,0,0,0,0,0                                         ;
+       byte 0,68,0,0,68,0,0,0                                        ;
+       byte 0,68,0,0,0,68,0,0                                        ;
+       byte 0,0,0,0,66,0,0,38                                        ;
+       byte 38,66,66,0,0,0,0,0                                       ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,38                                         ;
+       byte 38,0,0,0,0,66,66,0                                       ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,38                                         ;
+       byte 38,0,0,0,0,0,0,0                                         ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,0                                          ;
+       byte 0,0,0,0,0,0,0,38                                         ;
+       byte 38,66,66,66,66,66,66,66                                  ;
+       byte 66,66,66,66,66,66,66,66                                  ;
+       byte 66,66,66,66,66,66,66,66                                  ;
+       byte 66,66,66,66,66,66,66,38                                  ; }
+* The next 32 bytes are copied to #R32768 and specify the cavern name.
+       text '        THE FINAL BARRIER       '                       ; Cavern name
+* The next 72 bytes are copied to #R32800 and contain the attributes and
+* graphic data for the tiles used to build the cavern.
+* .
+* #UDGTABLE
+* { #TILES19 }
+* TABLE#
+       byte 0,0,0,0,0,0,0,0,0                                        ; Background
+       byte 66,255,255,219,110,197,64,0,0                            ; Floor
+       byte 2,255,219,165,36,82,32,8,0                               ; Crumbling floor
+       byte 38,34,255,136,255,34,255,136,255                         ; Wall
+       byte 5,240,102,240,102,0,153,255,0                            ; Conveyor
+       byte 68,16,16,214,56,214,56,84,146                            ; Nasty 1
+       byte 10,126,60,28,24,24,8,8,8                                 ; Nasty 2 (unused)
+       byte 0,0,0,0,0,0,0,0,0                                        ; Extra (unused)
+* The next seven bytes are copied to #GBUF32872,32878 and specify Miner Willy's
+* initial location and appearance in the cavern.
+       byte 208                                                      ; Pixel y-coordinate * 2 (see
+                                                                     ; #R32872)
+       byte 0                                                        ; Animation frame (see #R32873)
+       byte 1                                                        ; Direction and movement flags:
+                                                                     ; facing left (see #R32874)
+       byte 0                                                        ; Airborne status indicator (see
+                                                                     ; #R32875)
+       data attr_buffer_2+443                                        ; Location in the attribute
+                                                                     ; buffer at #R23552: (13,27)
+                                                                     ; (see #R32876)
+       byte 0                                                        ; Jumping animation counter (see
+                                                                     ; #R32878)
+* The next four bytes are copied to #R32879 and specify the direction, location
+* and length of the conveyor.
+       byte 1                                                        ; Direction (right)
+       data scrn_buffer_1+2113                                       ; Location in the screen buffer
+                                                                     ; at #R28672: (10,1)
+       byte 22                                                       ; Length
+* The next byte is copied to #R32883 and specifies the border colour.
+       byte 2                                                        ; Border colour
+* The next byte is copied to #R32884, but is not used.
+       byte 0                                                        ; Unused
+* The next 25 bytes are copied to #R32885 and specify the location and initial
+* colour of the items in the cavern.
+       byte 3                                                        ; {Item 1 at (5,23)
+       data attr_buffer_2+183                                        ;
+       byte 96                                                       ;
+       byte 255                                                      ; }
+       byte 4                                                        ; {Item 2 at (6,30)
+       data attr_buffer_2+222                                        ;
+       byte 96                                                       ;
+       byte 255                                                      ; }
+       byte 5                                                        ; {Item 3 at (11,10)
+       data attr_buffer_2+362                                        ;
+       byte 104                                                      ;
+       byte 255                                                      ; }
+       byte 6                                                        ; {Item 4 at (11,14)
+       data attr_buffer_2+366                                        ;
+       byte 104                                                      ;
+       byte 255                                                      ; }
+       byte 3                                                        ; {Item 5 at (11,19)
+       data attr_buffer_2+371                                        ;
+       byte 104                                                      ;
+       byte 255                                                      ; }
+       byte 255                                                      ; Terminator
+* The next 37 bytes are copied to #R32911 and define the portal graphic and its
+* location.
+* .
+* #UDGTABLE
+* { #PORTAL19 }
+* TABLE#
+       byte 30                                                       ; Attribute
+       byte 0,0,7,224,24,24,35,196                                   ; {Graphic data
+       byte 68,34,72,18,72,18,72,18                                  ;
+       byte 68,34,34,68,26,88,74,82                                  ;
+       byte 122,94,66,66,126,126,0,0                                 ; }
+       data attr_buffer_2+179                                        ; Location in the attribute
+                                                                     ; buffer at #R23552: (5,19)
+       data scrn_buffer_2+179                                        ; Location in the screen buffer
+                                                                     ; at #R24576: (5,19)
+* The next eight bytes are copied to #R32948 and define the item graphic.
+* .
+* #UDGTABLE
+* { #ITEM19 }
+* TABLE#
+       byte 48,72,136,144,104,4,10,4                                 ; Item graphic data
+* The next byte is copied to #R32956 and specifies the initial air supply in
+* the cavern.
+       byte 63                                                       ; Air
+* The next byte is copied to #R32957 and initialises the game clock.
+       byte 252                                                      ; Game clock
+* The next 28 bytes are copied to #R32958 and define the horizontal guardians.
+       byte 70                                                       ; {Horizontal guardian 1: y=13,
+       data attr_buffer_2+423                                        ; initial x=7, 7<=x<=22,
+       byte 104                                                      ; speed=normal
+       byte 0                                                        ;
+       byte 167                                                      ;
+       byte 182                                                      ; }
+       byte 255,0,0,0,0,0,0                                          ; Horizontal guardian 2 (unused)
+       byte 0,0,0,0,0,0,0                                            ; Horizontal guardian 3 (unused)
+       byte 0,0,0,0,0,0,0                                            ; Horizontal guardian 4 (unused)
+       byte 255                                                      ; Terminator
+* The next two bytes are copied to #R32987 and #R32988 but are not used.
+       byte 0,0                                                      ; Unused
+* The next 28 bytes are copied to #R32989 and define the vertical guardians.
+       byte 7                                                        ; {Vertical guardian 1: x=24,
+       byte 0                                                        ; initial y=48, 40<=y<103,
+       byte 48                                                       ; initial y-increment=1
+       byte 24                                                       ;
+       byte 1                                                        ;
+       byte 40                                                       ;
+       byte 103                                                      ; }
+       byte 255,0,0,0,0,0,0                                          ; Vertical guardian 2 (unused)
+       byte 0,0,0,0,0,0,0                                            ; Vertical guardian 3 (unused)
+       byte 0,0,0,0,0,0,0                                            ; Vertical guardian 4 (unused)
+* The next 7 bytes are unused.
+       byte 0,0,0,0,0,0,0                                            ; Unused
+* The next 256 bytes are copied to #R33024 and define the guardian graphics.
+* .
+* #UDGTABLE
+* { #SPRITE65280,65245(the_final_barrier_guardian0) |
+* #SPRITE65312,65245(the_final_barrier_guardian1) |
+* #SPRITE65344,65245(the_final_barrier_guardian2) |
+* #SPRITE65376,65245(the_final_barrier_guardian3) |
+* #SPRITE65408,65214(the_final_barrier_guardian4) |
+* #SPRITE65440,65214(the_final_barrier_guardian5) |
+* #SPRITE65472,65214(the_final_barrier_guardian6) |
+* #SPRITE65504,65214(the_final_barrier_guardian7) }
+* TABLE#
+       byte 0,0,0,0,0,0,3,192                                        ; {Guardian graphic data
+       byte 12,48,16,8,32,4,64,2                                     ;
+       byte 128,1,64,2,32,4,208,11                                   ;
+       byte 44,52,75,210,18,72,2,64                                  ;
+       byte 0,0,0,0,0,0,3,192                                        ;
+       byte 12,48,16,8,32,4,64,2                                     ;
+       byte 248,31,87,234,43,212,18,72                               ;
+       byte 12,48,3,192,0,0,0,0                                      ;
+       byte 4,32,4,32,18,72,75,210                                   ;
+       byte 44,52,147,201,167,229,70,98                              ;
+       byte 134,97,71,226,35,196,16,8                                ;
+       byte 12,48,3,192,0,0,0,0                                      ;
+       byte 0,0,0,0,0,0,3,192                                        ;
+       byte 12,48,18,72,42,84,95,250                                 ;
+       byte 246,127,71,226,35,196,16,8                               ;
+       byte 12,48,3,192,0,0,0,0                                      ;
+       byte 18,0,12,0,30,0,191,64                                    ;
+       byte 115,128,115,128,191,64,94,128                            ;
+       byte 76,128,82,128,127,128,12,0                               ;
+       byte 97,128,146,192,178,64,97,128                             ;
+       byte 3,0,7,128,7,128,28,224                                   ;
+       byte 59,112,59,112,28,224,23,160                              ;
+       byte 23,160,19,32,31,224,3,0                                  ;
+       byte 24,96,36,144,52,176,24,96                                ;
+       byte 1,224,1,224,1,32,14,220                                  ;
+       byte 13,236,13,236,14,220,5,40                                ;
+       byte 5,232,5,232,7,248,0,192                                  ;
+       byte 6,24,13,36,9,52,6,24                                     ;
+       byte 0,120,0,72,0,48,3,123                                    ;
+       byte 2,253,2,253,3,123,1,50                                   ;
+       byte 1,74,1,122,1,254,0,48                                    ;
+       byte 1,134,2,205,2,73,1,134                                   ; }

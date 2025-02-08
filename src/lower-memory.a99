@@ -1,0 +1,12 @@
+       aorg >2000
+
+       limi 0
+       lwpi wrksp
+       bl   @ti_setup_environment
+       b    @begin
+
+       copy "ti-general-routines.a99"
+       copy "data.a99"
+
+lower_memory_max:
+       equ  $
