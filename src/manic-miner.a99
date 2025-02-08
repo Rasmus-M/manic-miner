@@ -804,10 +804,10 @@ start:                                 ; 34252
        li   de,zx_screen               ; LD DE,16384       ; of the display file
        li   bc,4096                    ; LD BC,4096        ; 
        .ldir                           ; LDIR              ; }
-;       li   hl,zx_screen+2109          ; LD HL,18493       ; {Draw Willy at (9,29)
-;       li   de,willyr2                 ; LD DE,33344       ;
-;       sb   @c,@c                      ; LD C,0            ;
-;       .call @drwfix                   ; CALL 36852        ; }
+       li   hl,zx_screen+2109          ; LD HL,18493       ; {Draw Willy at (9,29)
+       li   de,willyr2                 ; LD DE,33344       ;
+       sb   @c,@c                      ; LD C,0            ;
+       .call @drwfix                   ; CALL 36852        ; }
        seto @caverns_13_19_bank_select
        li   hl,cavern19                ; LD HL,64512       ; {Copy the attribute bytes from #R64512 to the top third
        li   de,zx_attrs                ; LD DE,22528       ; of the attribute file
@@ -2688,11 +2688,14 @@ _36831:
 drwfix:                                ; 36852
        movb @bytes+16,b                ; LD B,16           ; There are 16 rows of pixels to draw
 _36854:
-       movb @c,r0                      ; BIT 0,C           ; Set the zero flag if we're in overwrite mode
-       andi r0,1*256                   ;                   
        movb *de,a                      ; LD A,(DE)         ; Pick up a sprite graphic byte
+       movb @c,r0                      ; BIT 0,C           ; Set the zero flag if we're in overwrite mode
+;       andi r0,1*256                   ;
+;       movb *de,a                      ; LD A,(DE)         ; Pick up a sprite graphic byte
        jeq  _36863                     ; JR Z,36863        ; Jump if we're in overwrite mode
-       ; AND (HL)                      ; AND (HL)          ; {Return with the zero flag reset if any of the set bits
+       movb *hl,r0
+       inv  r0
+       szcb  r0,a                      ; AND (HL)          ; {Return with the zero flag reset if any of the set bits
        jeq  !                          ; RET NZ            ; in the sprite graphic byte collide with a set bit in the
        .ret                            ;                   
 !
@@ -2703,11 +2706,14 @@ _36863:
        movb a,*hl                      ; LD (HL),A         ; Copy the graphic byte to its destination cell
        ab   one,@l                     ; INC L             ; Move #REGhl along to the next cell on the right
        inc  de                         ; INC DE            ; Point #REGde at the next sprite graphic byte
-       movb @c,r0                      ; BIT 0,C           ; Set the zero flag if we're in overwrite mode
-       andi r0,1*256                   ;                   
        movb *de,a                      ; LD A,(DE)         ; Pick up a sprite graphic byte
+       movb @c,r0                      ; BIT 0,C           ; Set the zero flag if we're in overwrite mode
+;      andi r0,1*256                   ;
+;       movb *de,a                      ; LD A,(DE)         ; Pick up a sprite graphic byte
        jeq  _36875                     ; JR Z,36875        ; Jump if we're in overwrite mode
-       ; AND (HL)                      ; AND (HL)          ; {Return with the zero flag reset if any of the set bits
+       movb *hl,r0
+       inv  r0
+       szcb  r0,a                      ; AND (HL)          ; {Return with the zero flag reset if any of the set bits
        jeq  !                          ; RET NZ            ; in the sprite graphic byte collide with a set bit in the
        .ret                            ;                   
 !

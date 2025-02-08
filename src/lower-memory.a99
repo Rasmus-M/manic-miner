@@ -1,5 +1,11 @@
        aorg >2000
 
+       b    @init
+
+*      ZX screen at >2000
+
+       aorg >3b00
+init:
        limi 0
        lwpi wrksp
        bl   @ti_setup_environment
@@ -8,7 +14,6 @@
        copy "ti-general-routines.a99"
        copy "data.a99"
 
-*      ZX screen at >2500
 
 lower_memory_max:
        equ  $
