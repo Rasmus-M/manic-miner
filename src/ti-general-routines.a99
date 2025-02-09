@@ -413,6 +413,28 @@ ti_pal  byte 1,4,6,13,12,7,10,14,1,5,8,13,2,7,11,15
 
 *********************************************************************************
 *
+* Display screen buffer 1
+*
+display_screen_buffer_1:
+       .proc
+       li   hl,scrn_buffer_1
+       li   de,zx_screen
+       li   bc,4096
+!      mov  *hl+,*de+
+       dect bc
+       jne  -!
+       li   hl,attr_buffer_1
+       li   de,zx_attrs
+       li   bc,512
+!      mov  *hl+,*de+
+       dect bc
+       jne  -!
+       bl   @upload_zx_screen
+       .endproc
+*// display_screen_buffer_1
+
+*********************************************************************************
+*
 * Upload ZX SPectrum screen
 *
 upload_zx_screen:

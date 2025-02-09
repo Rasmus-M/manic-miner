@@ -8,5 +8,8 @@
 
        copy "data.a99"
 
+font:
+       bcopy "../zx spectrum/font.bin"
+
 lower_memory_max:
        equ  $

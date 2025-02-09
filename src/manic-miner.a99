@@ -929,10 +929,6 @@ newsht:                                ; 34449
        li   bc,2047                    ; LD BC,2047        ; 
        sb   *hl,*hl                    ; LD (HL),0         ; 
        .ldir                           ; LDIR              ; }
-
-       bl   @upload_zx_screen
-       bl   @ti_wait_fire
-
        li   ix,cavernname              ; LD IX,32768       ; {Print the cavern name (see #R32768) at (16,0)
        movb @bytes+32,@c               ; LD C,32           ; 
        li   de,zx_screen+4096          ; LD DE,20480       ; 
@@ -944,31 +940,34 @@ newsht:                                ; 34449
        movb @bytes+82,a                ; LD A,82           ; Initialise #REGa to #b82; this is the MSB of the display
                                                            ; file address at which to start drawing the bar that
                                                            ; represents the air supply
-_34519:
-       movb a,h                        ; LD H,A            ; {Prepare #REGhl and #REGde for drawing a row of pixels
-       movb a,d                        ; LD D,A            ; in the air bar
-       movb @bytes+36,@l               ; LD L,36           ; 
-       movb @bytes+37,@e               ; LD E,37           ; }
-       movb a,b                        ; LD B,A            ; Save the display file address MSB in #REGb briefly
-       movb @air,a                     ; LD A,(32956)      ; Pick up the value of the initial air supply from #R32956
-       sb   @bytes+36,a                ; SUB 36            ; {Now #REGc determines the length of the air bar (in cell
-       movb a,@c                       ; LD C,A            ; widths)}
-       movb b,a                        ; LD A,B            ; Restore the display file address MSB to #REGa
-       sb   b,b                        ; LD B,0            ; Now #REGbc determines the length of the air bar (in cell
-                                                           ; widths)
-       movb @b255,*hl                  ; LD (HL),255       ; {Draw a single row of pixels across #REGc cells
-       .ldir                           ; LDIR              ; }
-       ab   one,a                      ; INC A             ; Increment the display file address MSB in #REGa (moving
-                                                           ; down to the next row of pixels)
-       cb   a,@bytes+86                ; CP 86             ; Have we drawn all four rows of pixels in the air bar
-                                                           ; yet?
-       jne  _34519                     ; JR NZ,34519       ; If not, jump back to draw the next one
+;_34519:
+;       movb a,h                        ; LD H,A            ; {Prepare #REGhl and #REGde for drawing a row of pixels
+;       movb a,d                        ; LD D,A            ; in the air bar
+;       movb @bytes+36,@l               ; LD L,36           ;
+;       movb @bytes+37,@e               ; LD E,37           ; }
+;       movb a,b                        ; LD B,A            ; Save the display file address MSB in #REGb briefly
+;       movb @air,a                     ; LD A,(32956)      ; Pick up the value of the initial air supply from #R32956
+;       sb   @bytes+36,a                ; SUB 36            ; {Now #REGc determines the length of the air bar (in cell
+;       movb a,@c                       ; LD C,A            ; widths)}
+;       movb b,a                        ; LD A,B            ; Restore the display file address MSB to #REGa
+;       sb   b,b                        ; LD B,0            ; Now #REGbc determines the length of the air bar (in cell
+;                                                           ; widths)
+;       movb @b255,*hl                  ; LD (HL),255       ; {Draw a single row of pixels across #REGc cells
+;       .ldir                           ; LDIR              ; }
+;       ab   one,a                      ; INC A             ; Increment the display file address MSB in #REGa (moving
+;                                                           ; down to the next row of pixels)
+;       cb   a,@bytes+86                ; CP 86             ; Have we drawn all four rows of pixels in the air bar
+;                                                           ; yet?
+;       jne  _34519                     ; JR NZ,34519       ; If not, jump back to draw the next one
        li   ix,messhssc                ; LD IX,33839       ; {Print 'High Score 000000#SPACE(3)Score 000000' (see
        li   de,zx_screen+4192          ; LD DE,20576       ; #R33839) at (19,0)
        movb @bytes+32,@c               ; LD C,32           ; 
        .call @pmess                    ; CALL 37562        ; }
        movb @border,a                  ; LD A,(32883)      ; Pick up the border colour for the current cavern from
                                                            ; #R32883
+       bl   @display_screen_buffer_1
+       bl   @ti_wait_fire
+
        movb @b254,@c                   ; LD C,254          ; {Set the border colour
        ; OUT (C),A                     ; OUT (C),A         ; }
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
@@ -3304,20 +3303,26 @@ pmess:                                 ; 37562
 * A ASCII code of the character
 * DE Display file address
 printchar:                             ; 37579
-       movb @bytes+7,h                 ; LD H,7            ; {Point #REGhl at the bitmap for the character (in the
-       movb a,@l                       ; LD L,A            ; ROM)
-       socb @bits+7,@l                 ; SET 7,L           ; 
-       a    hl,hl                      ; ADD HL,HL         ; 
-       a    hl,hl                      ; ADD HL,HL         ; 
-       a    hl,hl                      ; ADD HL,HL         ; }
+;       movb @bytes+7,h                 ; LD H,7            ; {Point #REGhl at the bitmap for the character (in the
+;       movb a,@l                       ; LD L,A            ; ROM)
+;       socb @bits+7,@l                 ; SET 7,L           ;
+;       a    hl,hl                      ; ADD HL,HL         ;
+;       a    hl,hl                      ; ADD HL,HL         ;
+;       a    hl,hl                      ; ADD HL,HL         ; }
+       sb   @bytes+32,a
+       clr  hl
+       movb a,h
+       srl  hl,5
+       ai   hl,font
        movb @bytes+8,b                 ; LD B,8            ; There are eight pixel rows in a character bitmap
 * This entry point is used by the routine at #R36707 to draw an item in the
 * current cavern.
 _37589:
-       movb *hl,a                      ; LD A,(HL)         ; {Copy the character bitmap to the screen (or item
-       movb a,*de                      ; LD (DE),A         ; graphic to the screen buffer)
-       inc  hl                         ; INC HL            ; 
-       ab   one,d                      ; INC D             ; 
+;       movb *hl,a                      ; LD A,(HL)         ; {Copy the character bitmap to the screen (or item
+;       movb a,*de                      ; LD (DE),A         ; graphic to the screen buffer)
+;       inc  hl                         ; INC HL            ;
+       movb *hl+,*de
+       ab   one,d                      ; INC D             ;
        sb   one,b                      ; DJNZ 37589        ; }
        jne  _37589                     ;                   
        .ret                            ; RET               ; 
