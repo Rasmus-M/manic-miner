@@ -819,7 +819,8 @@ start:                                 ; 34252
        .ldir                           ; LDIR              ; }
        bl   @upload_zx_screen
 
-stop:  jmp  stop
+       bl   @ti_wait_fire
+       jmp  start_demo
 
 * Now check whether there is a joystick connected.
        li   bc,31                      ; LD BC,31          ; This is the joystick port
@@ -869,7 +870,7 @@ _34404:
        jne  _34404                     ;                   
        sb   one,@c                     ; DEC C             ; 
        jne  _34404                     ; JR NZ,34404       ; }
-       li   bc,cavern3+1022            ; LD BC,49150       ; {Read keys H-J-K-L-ENTER
+       li   bc,49150                   ; LD BC,49150       ; {Read keys H-J-K-L-ENTER
        ; IN A,(C)                      ; IN A,(C)          ; }
        andi a,1*256                    ; AND 1             ; Keep only bit 0 of the result (ENTER)
        cb   a,one                      ; CP 1              ; Is ENTER being pressed?
@@ -881,6 +882,7 @@ _34404:
        movb a,@eughgt                  ; LD (32988),A      ; Store the new message index at #R32988
        jne  _34365                     ; JR NZ,34365       ; Jump back unless we've finished scrolling the message
                                                            ; across the screen
+start_demo:
        movb @bytes+64,a                ; LD A,64           ; {Initialise the game mode indicator at #R33882 to #b64:
        movb a,@demo                    ; LD (33882),A      ; demo mode}
 * This routine continues into the one at #R34436.
@@ -899,11 +901,22 @@ startgame:                             ; 34436
 * #R36904.
 newsht:                                ; 34449
        movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       cb   a,@bytes+7
+       jhe  !
+       seto @caverns_0_6_bank_select
+       jmp  !!!
+!      cb   a,@bytes+13
+       jhe  !
+       seto @caverns_7_12_bank_select
+       jmp  !!
+!      seto @caverns_13_19_bank_select
+!
        sla  a,1                        ; SLA A             ; {Point #REGhl at the first byte of the cavern definition
-       sla  a,1                        ; SLA A             ; 
-       ab   @bytes+176,a               ; ADD A,176         ; 
-       movb a,h                        ; LD H,A            ; 
+       sla  a,1                        ; SLA A             ;
+;       ab   @bytes+176,a               ; ADD A,176         ;
+       movb a,h                        ; LD H,A            ;
        sb   @l,@l                      ; LD L,0            ; }
+       ai   hl,cavern0
        li   de,attr_buffer_1           ; LD DE,24064       ; {Copy the cavern's attribute bytes into the buffer at
        li   bc,512                     ; LD BC,512         ; #R24064
        .ldir                           ; LDIR              ; }
@@ -916,6 +929,10 @@ newsht:                                ; 34449
        li   bc,2047                    ; LD BC,2047        ; 
        sb   *hl,*hl                    ; LD (HL),0         ; 
        .ldir                           ; LDIR              ; }
+
+       bl   @upload_zx_screen
+       bl   @ti_wait_fire
+
        li   ix,cavernname              ; LD IX,32768       ; {Print the cavern name (see #R32768) at (16,0)
        movb @bytes+32,@c               ; LD C,32           ; 
        li   de,zx_screen+4096          ; LD DE,20480       ; 
@@ -1562,16 +1579,20 @@ _35438:
 drawsheet:                             ; 35445
        li   ix,attr_buffer_1           ; LD IX,24064       ; Point #REGix at the first byte of the attribute buffer
                                                            ; at #R24064
-       movb @bytes+112,a               ; LD A,112          ; {Set the operand of the '#S/LD D/,n' instruction at
-       movb a,@sbmsb+1                 ; LD (35484),A      ; #R35483 (below) to #n112}
+;       movb @bytes+112,a               ; LD A,112          ; {Set the operand of the '#S/LD D/,n' instruction at
+;       movb a,@sbmsb+1                 ; LD (35484),A      ; #R35483 (below) to #n112}
+       li   r0,bytes+(scrn_buffer_1//256)
+       mov  r0,@sbmsb+2
        .call @_35466                   ; CALL 35466        ; Draw the tiles for the top half of the cavern to the
                                                            ; screen buffer at #R28672
        li   ix,attr_buffer_1+256       ; LD IX,24320       ; Point #REGix at the 256th byte of the attribute buffer
                                                            ; at #R24064 in preparation for drawing the bottom half of
                                                            ; the cavern; this instruction is redundant, since #REGix
                                                            ; already holds #N24320
-       movb @bytes+120,a               ; LD A,120          ; {Set the operand of the '#S/LD D/,n' instruction at
-       movb a,@sbmsb+1                 ; LD (35484),A      ; #R35483 (below) to #n120}
+;       movb @bytes+120,a               ; LD A,120          ; {Set the operand of the '#S/LD D/,n' instruction at
+;       movb a,@sbmsb+1                 ; LD (35484),A      ; #R35483 (below) to #n120}
+       li   r0,bytes+(scrn_buffer_1//256)+8
+       mov  r0,@sbmsb+2
 _35466:
        sb   @c,@c                      ; LD C,0            ; #REGc will count 256 tiles
 * The following loop draws 256 tiles (for either the top half or the bottom
@@ -1582,13 +1603,16 @@ _35468:
                                                            ; this identifies the type of tile to draw
        li   hl,background              ; LD HL,32800       ; {Move #REGhl through the attribute bytes and graphic
        li   bc,72                      ; LD BC,72          ; data of the background, floor, crumbling floor, wall,
-       ; CPIR                          ; CPIR              ; conveyor and nasty tiles starting at #R32800 until we
-                                                           ; find a byte that matches the attribute byte of the tile
-                                                           ; to be drawn}
+!      cb   a,*hl+                     ; CPIR              ; conveyor and nasty tiles starting at #R32800 until we
+       jeq  !                                              ; find a byte that matches the attribute byte of the tile
+       dec  bc                                             ; to be drawn}
+       jne  -!
+!      dec  hl
+
        movb @e,@c                      ; LD C,E            ; Restore the value of the tile counter in #REGc
        movb @bytes+8,b                 ; LD B,8            ; There are eight bytes in the tile
 sbmsb:                                 ; 35483
-       sb   d,d                        ; LD D,0            ; This instruction is set to either '#S/LD D/,#n112' or
+       movb @bytes+0,d                 ; LD D,0            ; This instruction is set to either '#S/LD D/,#n112' or
                                                            ; '#S/LD D/,#n120' above; now #REGde holds the appropriate
                                                            ; address in the screen buffer at #R28672
 _35485:
@@ -1611,6 +1635,7 @@ _35485:
        jeq  !                          ; RET NZ            ; Return if not
        .ret                            ;                   
 !
+       seto @title_screen_bank_select
        li   hl,titlescr1               ; LD HL,40960       ; {Copy the graphic data from #R40960 to the top half of
        li   de,scrn_buffer_1           ; LD DE,28672       ; the screen buffer at #R28672
        li   bc,2048                    ; LD BC,2048        ; 
