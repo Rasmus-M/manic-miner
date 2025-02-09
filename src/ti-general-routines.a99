@@ -238,97 +238,6 @@ ti_set_border_color:
        .endproc
 *// ti_set_border_color
 
-*********************************************************************
-*
-* Draw graphics
-*
-* r0 (r13): VDP address
-* r1 (r14): Source address
-* r2 (r15) MSB: width in characters
-* r2 (r15) LSB: height in characters
-*
-ti_draw_graphics:
-       .proc
-       lwpi ti_wrksp
-       mov  r13,r0
-       mov  r14,r1
-       mov  r15,r2                     ; Width and height
-       andi r2,>00ff                   ; Height
-       mov  r15,r4                     ; Width and height
-       srl  r4,8                       ; Width
-       mov  @row_src_skip,r5
-       li   r6,vdpwd
-       ori  r0,>4000                   ; Set read/write bits 14 and 15 to write (01)
-ti_draw_graphics_1:
-       movb @ti_r0lb,@vdpwa            ; Send low byte of VDP RAM write address
-       movb r0,@vdpwa                  ; Send high byte of VDP RAM write address
-       mov  r4,r3                      ; Width in characters
-ti_draw_graphics_2:
-       movb *r1+,*r6
-       movb *r1+,*r6
-       movb *r1+,*r6
-       movb *r1+,*r6
-       movb *r1+,*r6
-       movb *r1+,*r6
-       movb *r1+,*r6
-       movb *r1+,*r6
-       dec  r3
-       jne  ti_draw_graphics_2
-       ai   r0,256                     ; Next character row
-       a    r5,r1                      ; Skip source bytes
-       dec  r2
-       jne  ti_draw_graphics_1
-       lwpi wrksp
-;       bl   @module_player
-       .endproc
-row_src_skip:
-       data 0
-*// ti_draw_graphics
-
-*********************************************************************
-*
-* Draw color area
-*
-* r0 (r13): VDP offset in color table
-* r1 (r14) LSB: ZX attribute to draw
-* r2 (r15) MSB: width in characters
-* r2 (r15) LSB: height in characters
-*
-ti_draw_color_area:
-       .proc
-       lwpi ti_wrksp
-       mov  r13,r0
-       mov  r14,r1
-       movb @ti_colors(r1),r1
-       mov  r15,r2                     ; Width and height
-       andi r2,>00ff                   ; Height
-       mov  r15,r4                     ; Width and height
-       srl  r4,8                       ; Width
-       li   r6,vdpwd
-       ori  r0,>4000 + color_table     ; Set read/write bits 14 and 15 to write (01) + color table base
-ti_draw_color_area_1:
-       movb @ti_r0lb,@vdpwa            ; Send low byte of VDP RAM write address
-       movb r0,@vdpwa                  ; Send high byte of VDP RAM write address
-       mov  r4,r3                      ; Width in characters
-ti_draw_color_area_2:
-       movb r1,*r6
-       movb r1,*r6
-       movb r1,*r6
-       movb r1,*r6
-       movb r1,*r6
-       movb r1,*r6
-       movb r1,*r6
-       movb r1,*r6
-       dec  r3
-       jne  ti_draw_color_area_2
-       ai   r0,256                     ; Next character row
-       dec  r2
-       jne  ti_draw_color_area_1
-       lwpi wrksp
-;       bl   @module_player
-       .endproc
-*// ti_draw_color_area
-
 *********************************************************************************
 *
 * Draw attribute
@@ -413,9 +322,9 @@ ti_pal  byte 1,4,6,13,12,7,10,14,1,5,8,13,2,7,11,15
 
 *********************************************************************************
 *
-* Display screen buffer 1
+* Copy screen buffer 1 to ZX screen
 *
-display_screen_buffer_1:
+copy_scrn_buffer_1:
        .proc
        li   hl,scrn_buffer_1
        li   de,zx_screen
@@ -429,67 +338,126 @@ display_screen_buffer_1:
 !      mov  *hl+,*de+
        dect bc
        jne  -!
-       bl   @upload_zx_screen
        .endproc
-*// display_screen_buffer_1
+*// copy_scrn_buffer_1
 
 *********************************************************************************
 *
-* Upload ZX SPectrum screen
+* Copy screen buffer 2 to ZX screen
+*
+copy_scrn_buffer_2:
+       li   hl,scrn_buffer_2
+       li   de,zx_screen
+       li   bc,4096
+!      mov  *hl+,*de+
+       dect bc
+       jne  -!
+       li   hl,attr_buffer_2
+       li   de,zx_attrs
+       li   bc,512
+!      mov  *hl+,*de+
+       dect bc
+       jne  -!
+       rt
+*// copy_scrn_buffer_1
+
+*********************************************************************************
+*
+* Upload main ZX screen buffer
 *
 upload_zx_screen:
+       .proc
+       li   r1,zx_screen
+       li   r2,zx_attrs
+       bl   @upload_screen_buffer
+       .endproc
+*// upload_zx_screen
+
+*********************************************************************************
+*
+* Upload screen buffer 1
+*
+upload_scrn_buffer_1:
+       .proc
+       li   r1,scrn_buffer_1
+       li   r2,attr_buffer_1
+       bl   @upload_screen_buffer
+       .endproc
+*// upload_scrn_buffer_1
+
+*********************************************************************************
+*
+* Upload screen buffer 2
+*
+upload_scrn_buffer_2:
+       .proc
+       li   r1,scrn_buffer_2
+       li   r2,attr_buffer_2
+       bl   @upload_screen_buffer
+       .endproc
+*// upload_scrn_buffer_2
+
+*********************************************************************************
+*
+* Upload ZX Spectrum screen
+*
+* r1 (r14 in ti_wrksp): Screen address
+* r2: (r15 in ti_wrksp) Attributes address
+
+upload_screen_buffer:
        lwpi ti_wrksp
-       li   r7,vdpwd
+       li   r8,vdpwd
+       li   r9,>0100
 *      Patterns
        li   r0,pattern_table
        bl   @vwad
-       li   r0,zx_screen
-       li   r5,3
-upload_zx_screen_2:
-       li   r6,256
-upload_zx_screen_3:
-       movb *r0,*r7
-       ai   r0,256
-       movb *r0,*r7
-       ai   r0,256
-       movb *r0,*r7
-       ai   r0,256
-       movb *r0,*r7
-       ai   r0,256
-       movb *r0,*r7
-       ai   r0,256
-       movb *r0,*r7
-       ai   r0,256
-       movb *r0,*r7
-       ai   r0,256
-       movb *r0,*r7
-       ai   r0,256-2048+1
+       mov  r14,r5                     ; Screen address
+       li   r6,3
+upload_screen_buffer_1:
+       li   r7,256
+upload_screen_buffer_2:
+       movb *r5,*r8
+       a    r9,r5
+       movb *r5,*r8
+       a    r9,r5
+       movb *r5,*r8
+       a    r9,r5
+       movb *r5,*r8
+       a    r9,r5
+       movb *r5,*r8
+       a    r9,r5
+       movb *r5,*r8
+       a    r9,r5
+       movb *r5,*r8
+       a    r9,r5
+       movb *r5,*r8
+       ai   r5,256-2048+1
+       dec  r7
+       jne  upload_screen_buffer_2
+       ai   r5,2048-256
        dec  r6
-       jne  upload_zx_screen_3
-       ai   r0,2048-256
-       dec  r5
-       jne  upload_zx_screen_2
+       jne  upload_screen_buffer_1
 *      Colors
        li   r0,color_table
        bl   @vwad
-       li   r5,zx_attrs
+       mov  r15,r5                     ; Attributes address
        li   r6,>300
-upload_zx_screen_1:
+upload_screen_buffer_3:
        movb *r5+,a
-       bl   @ti_color
-       movb r0,*r7
-       movb r0,*r7
-       movb r0,*r7
-       movb r0,*r7
-       movb r0,*r7
-       movb r0,*r7
-       movb r0,*r7
-       movb r0,*r7
+       bl   @ti_color                  ; Color in r0, modifies r1-r3, a=r4
+       movb r0,*r8
+       movb r0,*r8
+       movb r0,*r8
+       movb r0,*r8
+       movb r0,*r8
+       movb r0,*r8
+       movb r0,*r8
+       movb r0,*r8
        dec  r6
-       jne  upload_zx_screen_1
+       jne  upload_screen_buffer_3
        lwpi wrksp
        rt
-*// upload_zx_screen
+*// upload_screen_buffer
 
 *********************************************************************
 *

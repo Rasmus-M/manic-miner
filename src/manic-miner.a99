@@ -818,7 +818,6 @@ start:                                 ; 34252
        li   bc,512                     ; LD BC,512         ; two-thirds of the attribute file
        .ldir                           ; LDIR              ; }
        bl   @upload_zx_screen
-
        bl   @ti_wait_fire
        jmp  start_demo
 
@@ -860,7 +859,7 @@ _34365:
        srl  a,1                        ; RRCA              ; TODO: check code. value determines the animation frame to use for Willy
        srl  a,1                        ; RRCA              ; TODO: check code. }
        movb a,@e                       ; LD E,A            ; {Point #REGde at the graphic data for Willy's sprite
-       movb @bytes+130,d               ; LD D,130          ; (#R33280+#REGa)}
+       movb @bytes+(mandat//256),d     ; LD D,130          ; (#R33280+#REGa)}
        li   hl,zx_screen+2109          ; LD HL,18493       ; {Draw Willy at (9,29)
        sb   @c,@c                      ; LD C,0            ; 
        .call @drwfix                   ; CALL 36852        ; }
@@ -937,39 +936,36 @@ newsht:                                ; 34449
        movb @bytes+3,@c                ; LD C,3            ; 
        li   de,zx_screen+4128          ; LD DE,20512       ; 
        .call @pmess                    ; CALL 37562        ; }
-       movb @bytes+82,a                ; LD A,82           ; Initialise #REGa to #b82; this is the MSB of the display
+       movb @bytes+zx_screen_msb+18,a  ; LD A,82           ; Initialise #REGa to #b82; this is the MSB of the display
                                                            ; file address at which to start drawing the bar that
                                                            ; represents the air supply
-;_34519:
-;       movb a,h                        ; LD H,A            ; {Prepare #REGhl and #REGde for drawing a row of pixels
-;       movb a,d                        ; LD D,A            ; in the air bar
-;       movb @bytes+36,@l               ; LD L,36           ;
-;       movb @bytes+37,@e               ; LD E,37           ; }
-;       movb a,b                        ; LD B,A            ; Save the display file address MSB in #REGb briefly
-;       movb @air,a                     ; LD A,(32956)      ; Pick up the value of the initial air supply from #R32956
-;       sb   @bytes+36,a                ; SUB 36            ; {Now #REGc determines the length of the air bar (in cell
-;       movb a,@c                       ; LD C,A            ; widths)}
-;       movb b,a                        ; LD A,B            ; Restore the display file address MSB to #REGa
-;       sb   b,b                        ; LD B,0            ; Now #REGbc determines the length of the air bar (in cell
-;                                                           ; widths)
-;       movb @b255,*hl                  ; LD (HL),255       ; {Draw a single row of pixels across #REGc cells
-;       .ldir                           ; LDIR              ; }
-;       ab   one,a                      ; INC A             ; Increment the display file address MSB in #REGa (moving
-;                                                           ; down to the next row of pixels)
-;       cb   a,@bytes+86                ; CP 86             ; Have we drawn all four rows of pixels in the air bar
-;                                                           ; yet?
-;       jne  _34519                     ; JR NZ,34519       ; If not, jump back to draw the next one
+_34519:
+       movb a,h                        ; LD H,A            ; {Prepare #REGhl and #REGde for drawing a row of pixels
+       movb a,d                        ; LD D,A            ; in the air bar
+       movb @bytes+36,@l               ; LD L,36           ;
+       movb @bytes+37,@e               ; LD E,37           ; }
+       movb a,b                        ; LD B,A            ; Save the display file address MSB in #REGb briefly
+       movb @air,a                     ; LD A,(32956)      ; Pick up the value of the initial air supply from #R32956
+       sb   @bytes+36,a                ; SUB 36            ; {Now #REGc determines the length of the air bar (in cell
+       movb a,@c                       ; LD C,A            ; widths)}
+       movb b,a                        ; LD A,B            ; Restore the display file address MSB to #REGa
+       sb   b,b                        ; LD B,0            ; Now #REGbc determines the length of the air bar (in cell
+                                                           ; widths)
+       movb @b255,*hl                  ; LD (HL),255       ; {Draw a single row of pixels across #REGc cells
+       .ldir                           ; LDIR              ; }
+       ab   one,a                      ; INC A             ; Increment the display file address MSB in #REGa (moving
+                                                           ; down to the next row of pixels)
+       cb   a,@bytes+zx_screen_msb+22  ; CP 86             ; Have we drawn all four rows of pixels in the air bar
+                                                           ; yet?
+       jne  _34519                     ; JR NZ,34519       ; If not, jump back to draw the next one
        li   ix,messhssc                ; LD IX,33839       ; {Print 'High Score 000000#SPACE(3)Score 000000' (see
        li   de,zx_screen+4192          ; LD DE,20576       ; #R33839) at (19,0)
        movb @bytes+32,@c               ; LD C,32           ; 
        .call @pmess                    ; CALL 37562        ; }
        movb @border,a                  ; LD A,(32883)      ; Pick up the border colour for the current cavern from
-                                                           ; #R32883
-       bl   @display_screen_buffer_1
-       bl   @ti_wait_fire
-
-       movb @b254,@c                   ; LD C,254          ; {Set the border colour
+       ; movb @b254,@c                 ; LD C,254          ; {Set the border colour
        ; OUT (C),A                     ; OUT (C),A         ; }
+       bl   @ti_set_border_color
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
        socb a,a                        ; OR A              ; Are we in demo mode?
        jeq  loop                       ; JR Z,34574        ; If not, enter the main loop now
@@ -1003,7 +999,7 @@ _34584:
        sla  a,1                        ; RLCA              ; TODO: check code. 
        andi a,96*256                   ; AND 96            ; }
        movb a,@e                       ; LD E,A            ; {Point #REGde at the corresponding Willy sprite (at
-       movb @bytes+130,d               ; LD D,130          ; #R33280+#REGa)}
+       movb @bytes+(mandat//256),d     ; LD D,130          ; #R33280+#REGa)}
        .call @drwfix                   ; CALL 36852        ; Draw the Willy sprite on the screen
        .pop bc                         ; POP BC            ; {Restore #REGhl and #REGbc
        .pop hl                         ; POP HL            ; }
@@ -1031,7 +1027,7 @@ _34623:
        li   de,scrn_buffer_2           ; LD DE,24576       ; tiles for the empty cavern) into the screen buffer at
        li   bc,4096                    ; LD BC,4096        ; #R24576
        .ldir                           ; LDIR              ; }
-       .call @movehg                   ; CALL 36111        ; Move the horizontal guardians in the current cavern
+;       .call @movehg                   ; CALL 36111        ; Move the horizontal guardians in the current cavern
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
        socb a,a                        ; OR A              ; Are we in demo mode?
        jne  !                          ; CALL Z,35515      ; If not, move Willy
@@ -1044,9 +1040,9 @@ _34623:
 !
                                                            ; sprite in the buffer at #R23552, and draw Willy to the
                                                            ; screen buffer at #R24576
-       .call @drawhg                   ; CALL 36266        ; Draw the horizontal guardians in the current cavern
-       .call @mvconveyor               ; CALL 37125        ; Move the conveyor in the current cavern
-       .call @drawitems                ; CALL 36707        ; Draw the items in the current cavern and collect any
+;       .call @drawhg                   ; CALL 36266        ; Draw the horizontal guardians in the current cavern
+;       .call @mvconveyor               ; CALL 37125        ; Move the conveyor in the current cavern
+;       .call @drawitems                ; CALL 36707        ; Draw the items in the current cavern and collect any
                                                            ; that Willy is touching
        movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+4                 ; CP 4              ; Are we in #R49152(Eugene's Lair)?
@@ -1116,6 +1112,9 @@ _34760:
        li   de,zx_screen+4203          ; LD DE,20587       ; 
        movb @bytes+6,@c                ; LD C,6            ; 
        .call @pmess                    ; CALL 37562        ; }
+
+       bl   @upload_zx_screen
+
        .call @decair                   ; CALL 35388        ; Decrease the air remaining in the current cavern
        jne  !                          ; JP Z,35071        ; Jump if there's no air left
        b    @mandead                   ;                   

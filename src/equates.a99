@@ -32,7 +32,7 @@ ti_r0lb:
 ti_r1lb:
        equ  ti_wrksp+3
 wrksp:
-       equ  ti_wrksp+>1A               ; tmp0-tmp2 overlaps ti_wrksp r13-r15
+       equ  ti_wrksp+>1A               ; r0-r2 overlaps ti_wrksp r13-r15
 r0lb:
        equ  wrksp+1
 r1lb:
@@ -113,8 +113,12 @@ name_table_2:                          ; Name table 2
 *
 zx_screen:
        equ  >2000                      ; >4000 = 16283
+zx_screen_msb:
+       equ  >20
 zx_attrs:
        equ  >3800                      ; >5800 = 22528
+zx_attrs_msb:
+       equ  >38
 zx_buffer:
        equ  >5b00                      ; 23296
 zx_sys_var:
