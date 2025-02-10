@@ -799,12 +799,12 @@ start:                                 ; 34252
        li   de,zx_screen+1             ; LD DE,16385       ; 
        li   bc,6143                    ; LD BC,6143        ; 
        sb   *hl,*hl                    ; LD (HL),0         ; 
-       .ldir                           ; LDIR              ; }
+       .clear                          ; LDIR              ; }
        seto @title_screen_bank_select
        li   hl,titlescr1               ; LD HL,40960       ; {Copy the graphic data at #R40960 to the top two-thirds
        li   de,zx_screen               ; LD DE,16384       ; of the display file
        li   bc,4096                    ; LD BC,4096        ; 
-       .ldir                           ; LDIR              ; }
+       .ldir2                           ; LDIR              ; }
        li   hl,zx_screen+2109          ; LD HL,18493       ; {Draw Willy at (9,29)
        li   de,willyr2                 ; LD DE,33344       ;
        sb   @c,@c                      ; LD C,0            ;
@@ -813,13 +813,16 @@ start:                                 ; 34252
        li   hl,cavern19                ; LD HL,64512       ; {Copy the attribute bytes from #R64512 to the top third
        li   de,zx_attrs                ; LD DE,22528       ; of the attribute file
        li   bc,256                     ; LD BC,256         ;
-       .ldir                           ; LDIR              ; }
+       .ldir2                          ; LDIR              ; }
        seto @title_screen_bank_select
        li   hl,lowerattrs              ; LD HL,40448       ; {Copy the attribute bytes from #R40448 to the bottom
        li   bc,512                     ; LD BC,512         ; two-thirds of the attribute file
-       .ldir                           ; LDIR              ; }
+       .ldir2                          ; LDIR              ; }
 
        bl   @upload_zx_screen
+
+       movb @bytes+1,@sheet
+       bl   @start_demo
 
 * Now check whether there is a joystick connected.
 ;       li   bc,31                      ; LD BC,31          ; This is the joystick port
@@ -911,6 +914,7 @@ startgame:                             ; 34436
 * cavern or reinitialising the current cavern after Willy has lost a life) and
 * #R36904.
 newsht:                                ; 34449
+       clr  af
        movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+7
        jhe  !
@@ -924,22 +928,22 @@ newsht:                                ; 34449
 !
 ;      sla  a,1                        ; SLA A             ; {Point #REGhl at the first byte of the cavern definition
        sla  a,2                        ; SLA A             ;
-;       ab   @bytes+176,a               ; ADD A,176         ;
+;      ab   @bytes+176,a               ; ADD A,176         ;
        movb a,h                        ; LD H,A            ;
        sb   @l,@l                      ; LD L,0            ; }
        ai   hl,cavern0
        li   de,attr_buffer_1           ; LD DE,24064       ; {Copy the cavern's attribute bytes into the buffer at
        li   bc,512                     ; LD BC,512         ; #R24064
-       .ldir                           ; LDIR              ; }
+       .ldir2                          ; LDIR              ; }
        li   de,cavernname              ; LD DE,32768       ; {Copy the rest of the cavern definition into the game
        li   bc,512                     ; LD BC,512         ; status buffer at #GBUF32768
-       .ldir                           ; LDIR              ; }
+       .ldir2                          ; LDIR              ; }
        .call @drawsheet                ; CALL 35445        ; Draw the current cavern to the screen buffer at #R28672
        li   hl,zx_screen+4096          ; LD HL,20480       ; {Clear the bottom third of the display file
        li   de,zx_screen+4097          ; LD DE,20481       ; 
        li   bc,2047                    ; LD BC,2047        ; 
        sb   *hl,*hl                    ; LD (HL),0         ; 
-       .ldir                           ; LDIR              ; }
+       .clear                          ; LDIR              ; }
        li   ix,cavernname              ; LD IX,32768       ; {Print the cavern name (see #R32768) at (16,0)
        movb @bytes+32,@c               ; LD C,32           ; 
        li   de,zx_screen+4096          ; LD DE,20480       ; 
@@ -1006,17 +1010,17 @@ _34584:
        .push bc                        ; PUSH BC           ; }
        movb @noteindex,a               ; LD A,(33883)      ; Pick up the in-game music note index from #R33883; this
                                                            ; will determine the animation frame for the Willy sprites
-       sla  a,1                        ; RLCA              ; TODO: check code. {Now #REGa=#b0 (frame 0), #b32 (frame 1), #b64 (frame 2)
-       sla  a,1                        ; RLCA              ; TODO: check code. or #b96 (frame 3)
-       sla  a,1                        ; RLCA              ; TODO: check code. 
+;      sla  a,1                        ; RLCA              ; {Now #REGa=#b0 (frame 0), #b32 (frame 1), #b64 (frame 2)
+;      sla  a,1                        ; RLCA              ; or #b96 (frame 3)
+       sla  a,3                        ; RLCA              ; .
        andi a,96*256                   ; AND 96            ; }
        movb a,@e                       ; LD E,A            ; {Point #REGde at the corresponding Willy sprite (at
        movb @bytes+(mandat//256),d     ; LD D,130          ; #R33280+#REGa)}
        .call @drwfix                   ; CALL 36852        ; Draw the Willy sprite on the screen
        .pop bc                         ; POP BC            ; {Restore #REGhl and #REGbc
        .pop hl                         ; POP HL            ; }
-       inc  hl                         ; INC HL            ; {Move #REGhl along to the location at which to draw the
-       inc  hl                         ; INC HL            ; next Willy sprite}
+;      inc  hl                         ; INC HL            ; {Move #REGhl along to the location at which to draw the
+       inct hl                         ; INC HL            ; next Willy sprite}
        sb   one,b                      ; DJNZ 34584        ; Jump back to draw any remaining sprites
        jne  _34584                     ;                   
 * Now draw a boot if cheat mode has been activated.
@@ -1034,19 +1038,19 @@ _34623:
        li   hl,attr_buffer_1           ; LD HL,24064       ; {Copy the contents of the attribute buffer at #R24064
        li   de,attr_buffer_2           ; LD DE,23552       ; (the attributes for the empty cavern) into the attribute
        li   bc,512                     ; LD BC,512         ; buffer at #R23552
-       .ldir                           ; LDIR              ; }
+       .ldir2                          ; LDIR              ; }
        li   hl,scrn_buffer_1           ; LD HL,28672       ; {Copy the contents of the screen buffer at #R28672 (the
        li   de,scrn_buffer_2           ; LD DE,24576       ; tiles for the empty cavern) into the screen buffer at
        li   bc,4096                    ; LD BC,4096        ; #R24576
-       .ldir                           ; LDIR              ; }
+       .ldir2                          ; LDIR              ; }
 ;       .call @movehg                   ; CALL 36111        ; Move the horizontal guardians in the current cavern
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
-       socb a,a                        ; OR A              ; Are we in demo mode?
+;      socb a,a                        ; OR A              ; Are we in demo mode?
        jne  !                          ; CALL Z,35515      ; If not, move Willy
        .call @movewilly                ;                   
 !
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
-       socb a,a                        ; OR A              ; Are we in demo mode?
+;      socb a,a                        ; OR A              ; Are we in demo mode?
        jne  !                          ; CALL Z,37434      ; If not, check and set the attribute bytes for Willy's
        .call @willyattrs               ;                   
 !
@@ -1056,55 +1060,55 @@ _34623:
 ;       .call @mvconveyor               ; CALL 37125        ; Move the conveyor in the current cavern
 ;       .call @drawitems                ; CALL 36707        ; Draw the items in the current cavern and collect any
                                                            ; that Willy is touching
-       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-       cb   a,@bytes+4                 ; CP 4              ; Are we in #R49152(Eugene's Lair)?
-       jne  !                          ; CALL Z,36344      ; If so, move and draw Eugene
-       .call @eugene                   ;                   
-!
-       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-       cb   a,@bytes+13                ; CP 13             ; Are we in #R58368(Skylab Landing Bay)?
-       jne  !                          ; JP Z,36469        ; If so, move and draw the Skylabs
-       b    @skylabs                   ;                   
-!
-       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-       cb   a,@bytes+8                 ; CP 8              ; Are we in #R53248(Wacky Amoebatrons) or beyond?
-       jl   !                          ; CALL NC,36593     ; If so, move and draw the vertical guardians
-       .call @vguardians               ;                   
-!
-       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-       cb   a,@bytes+7                 ; CP 7              ; Are we in #R52224(Miner Willy meets the Kong Beast)?
-       jne  !                          ; CALL Z,37173      ; If so, move and draw the Kong Beast
-       .call @kongbeast                ;                   
-!
-       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-       cb   a,@bytes+11                ; CP 11             ; Are we in #R56320(Return of the Alien Kong Beast)?
-       jne  !                          ; CALL Z,37173      ; If so, move and draw the Kong Beast
-       .call @kongbeast                ;                   
-!
-       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-       cb   a,@bytes+18                ; CP 18             ; Are we in #R63488(Solar Power Generator)?
-       jne  !                          ; CALL Z,36211      ; If so, move and draw the light beam
-       .call @lightbeam                ;                   
-!
+;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+;       cb   a,@bytes+4                 ; CP 4              ; Are we in #R49152(Eugene's Lair)?
+;       jne  !                          ; CALL Z,36344      ; If so, move and draw Eugene
+;       .call @eugene                   ;
+;!
+;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+;       cb   a,@bytes+13                ; CP 13             ; Are we in #R58368(Skylab Landing Bay)?
+;       jne  !                          ; JP Z,36469        ; If so, move and draw the Skylabs
+;       b    @skylabs                   ;
+;!
+;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+;       cb   a,@bytes+8                 ; CP 8              ; Are we in #R53248(Wacky Amoebatrons) or beyond?
+;       jl   !                          ; CALL NC,36593     ; If so, move and draw the vertical guardians
+;       .call @vguardians               ;
+;!
+;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+;       cb   a,@bytes+7                 ; CP 7              ; Are we in #R52224(Miner Willy meets the Kong Beast)?
+;       jne  !                          ; CALL Z,37173      ; If so, move and draw the Kong Beast
+;       .call @kongbeast                ;
+;!
+;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+;       cb   a,@bytes+11                ; CP 11             ; Are we in #R56320(Return of the Alien Kong Beast)?
+;       jne  !                          ; CALL Z,37173      ; If so, move and draw the Kong Beast
+;       .call @kongbeast                ;
+;!
+;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+;       cb   a,@bytes+18                ; CP 18             ; Are we in #R63488(Solar Power Generator)?
+;       jne  !                          ; CALL Z,36211      ; If so, move and draw the light beam
+;       .call @lightbeam                ;
+;!
 * This entry point is used by the routine at #R36469.
 _34719:
        equ  $
-       .call @chkportal                ; CALL 36805        ; Draw the portal, or move to the next cavern if Willy has
+;       .call @chkportal                ; CALL 36805        ; Draw the portal, or move to the next cavern if Willy has
                                                            ; entered it
 * This entry point is used by the routine at #R36101.
 _34722:
        li   hl,scrn_buffer_2           ; LD HL,24576       ; {Copy the contents of the screen buffer at #R24576 to
        li   de,zx_screen               ; LD DE,16384       ; the display file
        li   bc,4096                    ; LD BC,4096        ; 
-       .ldir                           ; LDIR              ; }
+       .ldir2                          ; LDIR              ; }
        movb @flash,a                   ; LD A,(33880)      ; Pick up the screen flash counter from #R33880
        socb a,a                        ; OR A              ; Is it zero?
        jeq  _34760                     ; JR Z,34760        ; Jump if so
        sb   one,a                      ; DEC A             ; {Decrement the screen flash counter at #R33880
        movb a,@flash                   ; LD (33880),A      ; }
-       sla  a,1                        ; RLCA              ; TODO: check code. {Move bits 0-2 into bits 3-5 and clear all the other
-       sla  a,1                        ; RLCA              ; TODO: check code. bits
-       sla  a,1                        ; RLCA              ; TODO: check code. 
+;      sla  a,1                        ; RLCA              ; TODO: check code. {Move bits 0-2 into bits 3-5 and clear all the other
+;      sla  a,1                        ; RLCA              ; TODO: check code. bits
+       sla  a,3                        ; RLCA              ; TODO: check code.
        andi a,56*256                   ; AND 56            ; }
        li   hl,attr_buffer_2           ; LD HL,23552       ; {Set every attribute byte in the buffer at #R23552 to
        li   de,attr_buffer_2+1         ; LD DE,23553       ; this value
@@ -1115,7 +1119,7 @@ _34760:
        li   hl,attr_buffer_2           ; LD HL,23552       ; {Copy the contents of the attribute buffer at #R23552 to
        li   de,zx_attrs                ; LD DE,22528       ; the attribute file
        li   bc,512                     ; LD BC,512         ; 
-       .ldir                           ; LDIR              ; }
+       .ldir2                          ; LDIR              ; }
        li   ix,scorbuf                 ; LD IX,33833       ; {Print the score (see #R33833) at (19,26)
        li   de,zx_screen+4218          ; LD DE,20602       ; 
        movb @bytes+6,@c                ; LD C,6            ; 
@@ -1127,93 +1131,95 @@ _34760:
 
        bl   @upload_zx_screen
 
-       .call @decair                   ; CALL 35388        ; Decrease the air remaining in the current cavern
-       jne  !                          ; JP Z,35071        ; Jump if there's no air left
-       b    @mandead                   ;                   
-!
-* Now check whether SHIFT and SPACE are being pressed.
-       li   bc,65278                   ; LD BC,65278       ; {Read keys SHIFT-Z-X-C-V
-       ; IN A,(C)                      ; IN A,(C)          ; }
-       movb a,@e                       ; LD E,A            ; Save the result in #REGe
-       movb @bytes+127,b               ; LD B,127          ; {Read keys B-N-M-SS-SPACE
-       ; IN A,(C)                      ; IN A,(C)          ; }
-       socb @e,a                       ; OR E              ; Combine the results
-       andi a,1*256                    ; AND 1             ; Are SHIFT and SPACE being pressed?
-       jne  !                          ; JP Z,34252        ; If so, quit the game
-       b    @start                     ;                   
-!
-* Now read the keys A, S, D, F and G (which pause the game).
-       movb @bytes+253,b               ; LD B,253          ; {Read keys A-S-D-F-G
-       ; IN A,(C)                      ; IN A,(C)          ; }
-       andi a,31*256                   ; AND 31            ; {Are any of these keys being pressed?
-       cb   a,@bytes+31                ; CP 31             ; }
-       jeq  _34837                     ; JR Z,34837        ; Jump if not
-_34827:
-       movb @bytes+2,b                 ; LD B,2            ; {Read every half-row of keys except A-S-D-F-G
-       ; IN A,(C)                      ; IN A,(C)          ; }
-       andi a,31*256                   ; AND 31            ; {Are any of these keys being pressed?
-       cb   a,@bytes+31                ; CP 31             ; }
-       jeq  _34827                     ; JR Z,34827        ; Jump back if not (the game is still paused)
-* Here we check whether Willy has had a fatal accident.
-_34837:
-       movb @airborne,a                ; LD A,(32875)      ; Pick up the airborne status indicator from #R32875
-       cb   a,@b255                    ; CP 255            ; Has Willy landed after falling from too great a height,
-                                                           ; or collided with a nasty or a guardian?
-       jne  !                          ; JP Z,35071        ; Jump if so
-       b    @mandead                   ;                   
-!
-* Now read the keys H, J, K, L and ENTER (which toggle the in-game music).
-       movb @bytes+191,b               ; LD B,191          ; Prepare #REGb for reading keys H-J-K-L-ENTER
-       li   hl,musicflags              ; LD HL,33884       ; Point #REGhl at the music flags at #R33884
-       ; IN A,(C)                      ; IN A,(C)          ; Read keys H-J-K-L-ENTER
-       andi a,31*256                   ; AND 31            ; {Are any of these keys being pressed?
-       cb   a,@bytes+31                ; CP 31             ; }
-       jeq  _34868                     ; JR Z,34868        ; Jump if not
-       movb *hl,r0                     ; BIT 0,(HL)        ; Were any of these keys being pressed the last time we
-       andi r0,1*256                   ;                   
-                                                           ; checked?
-       jne  _34870                     ; JR NZ,34870       ; Jump if so
-       movb *hl,a                      ; LD A,(HL)         ; {Set bit 0 (the keypress flag) and flip bit 1 (the
-       li   r0,3*256                   ; XOR 3             ; in-game music flag) at #R33884
-       xor  r0,a                       ;                   
-       movb a,*hl                      ; LD (HL),A         ; }
-       jmp  _34870                     ; JR 34870          ; 
-_34868:
-       szcb @bits+0,*hl                ; RES 0,(HL)        ; Reset bit 0 (the keypress flag) at #R33884
-_34870:
-       movb *hl,r0                     ; BIT 1,(HL)        ; Has the in-game music been switched off?
-       andi r0,2*256                   ;                   
-       jne  nonote4                    ; JR NZ,34911       ; Jump if so
+;       .call @decair                   ; CALL 35388        ; Decrease the air remaining in the current cavern
+;       jne  !                          ; JP Z,35071        ; Jump if there's no air left
+;       b    @mandead                   ;
+;!
+;* Now check whether SHIFT and SPACE are being pressed.
+;       li   bc,65278                   ; LD BC,65278       ; {Read keys SHIFT-Z-X-C-V
+;       ; IN A,(C)                      ; IN A,(C)          ; }
+;       movb a,@e                       ; LD E,A            ; Save the result in #REGe
+;       movb @bytes+127,b               ; LD B,127          ; {Read keys B-N-M-SS-SPACE
+;       ; IN A,(C)                      ; IN A,(C)          ; }
+;       socb @e,a                       ; OR E              ; Combine the results
+;       andi a,1*256                    ; AND 1             ; Are SHIFT and SPACE being pressed?
+;       jne  !                          ; JP Z,34252        ; If so, quit the game
+;       b    @start                     ;
+;!
+;* Now read the keys A, S, D, F and G (which pause the game).
+;       movb @bytes+253,b               ; LD B,253          ; {Read keys A-S-D-F-G
+;       ; IN A,(C)                      ; IN A,(C)          ; }
+;       andi a,31*256                   ; AND 31            ; {Are any of these keys being pressed?
+;       cb   a,@bytes+31                ; CP 31             ; }
+;       jeq  _34837                     ; JR Z,34837        ; Jump if not
+;_34827:
+;       movb @bytes+2,b                 ; LD B,2            ; {Read every half-row of keys except A-S-D-F-G
+;       ; IN A,(C)                      ; IN A,(C)          ; }
+;       andi a,31*256                   ; AND 31            ; {Are any of these keys being pressed?
+;       cb   a,@bytes+31                ; CP 31             ; }
+;       jeq  _34827                     ; JR Z,34827        ; Jump back if not (the game is still paused)
+;* Here we check whether Willy has had a fatal accident.
+;_34837:
+;       movb @airborne,a                ; LD A,(32875)      ; Pick up the airborne status indicator from #R32875
+;       cb   a,@b255                    ; CP 255            ; Has Willy landed after falling from too great a height,
+;                                                           ; or collided with a nasty or a guardian?
+;       jne  !                          ; JP Z,35071        ; Jump if so
+;       b    @mandead                   ;
+;!
+;* Now read the keys H, J, K, L and ENTER (which toggle the in-game music).
+;       movb @bytes+191,b               ; LD B,191          ; Prepare #REGb for reading keys H-J-K-L-ENTER
+;       li   hl,musicflags              ; LD HL,33884       ; Point #REGhl at the music flags at #R33884
+;       ; IN A,(C)                      ; IN A,(C)          ; Read keys H-J-K-L-ENTER
+;       andi a,31*256                   ; AND 31            ; {Are any of these keys being pressed?
+;       cb   a,@bytes+31                ; CP 31             ; }
+;       jeq  _34868                     ; JR Z,34868        ; Jump if not
+;       movb *hl,r0                     ; BIT 0,(HL)        ; Were any of these keys being pressed the last time we
+;       andi r0,1*256                   ;
+;                                                           ; checked?
+;       jne  _34870                     ; JR NZ,34870       ; Jump if so
+;       movb *hl,a                      ; LD A,(HL)         ; {Set bit 0 (the keypress flag) and flip bit 1 (the
+;       li   r0,3*256                   ; XOR 3             ; in-game music flag) at #R33884
+;       xor  r0,a                       ;
+;       movb a,*hl                      ; LD (HL),A         ; }
+;       jmp  _34870                     ; JR 34870          ;
+;_34868:
+;       szcb @bits+0,*hl                ; RES 0,(HL)        ; Reset bit 0 (the keypress flag) at #R33884
+;_34870:
+;       movb *hl,r0                     ; BIT 1,(HL)        ; Has the in-game music been switched off?
+;       andi r0,2*256                   ;
+;       jne  nonote4                    ; JR NZ,34911       ; Jump if so
+
 * The next section of code plays a note of the in-game music.
 * .
 * #AUDIO(in-game-tune.wav)(#INCLUDE(InGameTune))
        movb @noteindex,a               ; LD A,(33883)      ; {Increment the in-game music note index at #R33883
-       ab   one,a                      ; INC A             ; 
+       ab   one,a                      ; INC A             ;
        movb a,@noteindex               ; LD (33883),A      ; }
-       andi a,126*256                  ; AND 126           ; {Point #REGhl at the appropriate entry in the tune data
-       srl  a,1                        ; RRCA              ; TODO: check code. table at #R34188
-       movb a,@e                       ; LD E,A            ; 
-       sb   d,d                        ; LD D,0            ; 
-       li   hl,gametune                ; LD HL,34188       ; 
-       a    de,hl                      ; ADD HL,DE         ; }
-       movb @border,a                  ; LD A,(32883)      ; Pick up the border colour for the current cavern from
-                                                           ; #R32883
-       movb *hl,@e                     ; LD E,(HL)         ; Initialise the pitch delay counter in #REGe
-       li   bc,3                       ; LD BC,3           ; Initialise the duration delay counters in #REGb (0) and
-                                                           ; #REGc (3)
-tm51:                                  ; 34898
-       ; OUT (254),A                   ; OUT (254),A       ; {Produce a note of the in-game music
-see37708:                              ; 34900
-       sb   one,@e                     ; DEC E             ; 
-       jne  noflp6                     ; JR NZ,34906       ; 
-       movb *hl,@e                     ; LD E,(HL)         ; 
-       li   r0,24*256                  ; XOR 24            ; 
-       xor  r0,a                       ;                   
-noflp6:                                ; 34906
-       sb   one,b                      ; DJNZ 34898        ; 
-       jne  tm51                       ;                   
-       sb   one,@c                     ; DEC C             ; 
-       jne  tm51                       ; JR NZ,34898       ; }
+;       andi a,126*256                  ; AND 126           ; {Point #REGhl at the appropriate entry in the tune data
+;       srl  a,1                        ; RRCA              ; TODO: check code. table at #R34188
+;       movb a,@e                       ; LD E,A            ;
+;       sb   d,d                        ; LD D,0            ;
+;       li   hl,gametune                ; LD HL,34188       ;
+;       a    de,hl                      ; ADD HL,DE         ; }
+;       movb @border,a                  ; LD A,(32883)      ; Pick up the border colour for the current cavern from
+;                                                           ; #R32883
+;       movb *hl,@e                     ; LD E,(HL)         ; Initialise the pitch delay counter in #REGe
+;       li   bc,3                       ; LD BC,3           ; Initialise the duration delay counters in #REGb (0) and
+;                                                           ; #REGc (3)
+;tm51:                                  ; 34898
+;       ; OUT (254),A                   ; OUT (254),A       ; {Produce a note of the in-game music
+;see37708:                              ; 34900
+;       sb   one,@e                     ; DEC E             ;
+;       jne  noflp6                     ; JR NZ,34906       ;
+;       movb *hl,@e                     ; LD E,(HL)         ;
+;       li   r0,24*256                  ; XOR 24            ;
+;       xor  r0,a                       ;
+;noflp6:                                ; 34906
+;       sb   one,b                      ; DJNZ 34898        ;
+;       jne  tm51                       ;
+;       sb   one,@c                     ; DEC C             ;
+;       jne  tm51                       ; JR NZ,34898       ; }
+
 * If we're in demo mode, check the keyboard and joystick and return to the
 * title screen if there's any input.
 nonote4:                               ; 34911
@@ -1225,106 +1231,105 @@ nonote4:                               ; 34911
        b    @mandead                   ;                   
 !
        movb a,@demo                    ; LD (33882),A      ; Update the game mode indicator at #R33882
-       li   bc,254                     ; LD BC,254         ; {Read every row of keys on the keyboard
-       ; IN A,(C)                      ; IN A,(C)          ; }
-       andi a,31*256                   ; AND 31            ; {Are any keys being pressed?
-       cb   a,@bytes+31                ; CP 31             ; }
-       jeq  !                          ; JP NZ,34252       ; If so, return to the title screen
-       b    @start                     ;                   
-!
-       movb @kemp,a                    ; LD A,(33881)      ; Pick up the Kempston joystick indicator from #R33881
-       socb a,a                        ; OR A              ; Is there a joystick connected?
-       jeq  nodem1                     ; JR Z,34948        ; Jump if not
-       ; IN A,(31)                     ; IN A,(31)         ; Collect input from the joystick
-       socb a,a                        ; OR A              ; Is the joystick being moved or the fire button being
-                                                           ; pressed?
-       jeq  !                          ; JP NZ,34252       ; If so, return to the title screen
-       b    @start                     ;                   
-!
-* Here we check the teleport keys.
-nodem1:                                ; 34948
-       equ  $
-       li   bc,cavern15+1022           ; LD BC,61438       ; {Read keys 6-7-8-9-0
-       ; IN A,(C)                      ; IN A,(C)          ; }
-       movb a,r0                       ; BIT 4,A           ; Is '6' (the activator key) being pressed?
-       andi r0,16*256                  ;                   
-       jeq  !                          ; JP NZ,34984       ; Jump if not
-       b    @ckcheat                   ;                   
-!
-       movb @cheat,a                   ; LD A,(33885)      ; Pick up the 6031769 key counter from #R33885
-       cb   a,@bytes+7                 ; CP 7              ; Has 6031769 been keyed in yet?
-       jeq  !                          ; JP NZ,34984       ; Jump if not
-       b    @ckcheat                   ;                   
-!
-       movb @bytes+247,b               ; LD B,247          ; {Read keys 1-2-3-4-5
-       ; IN A,(C)                      ; IN A,(C)          ; }
-       inv  a                          ; CPL               ; {Keep only bits 0-4 and flip them
-       andi a,31*256                   ; AND 31            ; }
-       cb   a,@bytes+20                ; CP 20             ; Is the result #b20 or greater?
-       jl   !                          ; JP NC,34984       ; Jump if so (this is not a cavern number)
-       b    @ckcheat                   ;                   
-!
-       movb a,@sheet                   ; LD (33799),A      ; Store the cavern number at #R33799
-       b    @newsht                    ; JP 34449          ; Teleport into the cavern
-* Now check the 6031769 keys.
-ckcheat:                               ; 34984
-       movb @cheat,a                   ; LD A,(33885)      ; Pick up the 6031769 key counter from #R33885
-       cb   a,@bytes+7                 ; CP 7              ; Has 6031769 been keyed in yet?
-       jne  !                          ; JP Z,34574        ; If so, jump back to the start of the main loop
-       b    @loop                      ;                   
-!
-       sla  a,1                        ; RLCA              ; TODO: check code. {Point #REGix at the corresponding entry in the 6031769
-       movb a,@e                       ; LD E,A            ; table at #R33888
-       sb   d,d                        ; LD D,0            ; 
-       li   ix,cheatdt                 ; LD IX,33888       ; 
-       a    de,ix                      ; ADD IX,DE         ; }
-       li   bc,cavern17+1022           ; LD BC,63486       ; {Read keys 1-2-3-4-5
-       ; IN A,(C)                      ; IN A,(C)          ; }
-       andi a,31*256                   ; AND 31            ; Keep only bits 0-4
-       cb   a,*ix                      ; CP (IX+0)         ; Does this match the first byte of the entry in the
-                                                           ; 6031769 table?
-       jeq  cknxcht                    ; JR Z,35032        ; Jump if so
-       cb   a,@bytes+31                ; CP 31             ; Are any of the keys 1-2-3-4-5 being pressed?
-       jne  !                          ; JP Z,34574        ; If not, jump back to the start of the main loop
-       b    @loop                      ;                   
-!
-       cb   a,@-2(ix)                  ; CP (IX-2)         ; Does the keyboard reading match the first byte of the
-                                                           ; previous entry in the 6031769 table?
-       jne  !                          ; JP Z,34574        ; If so, jump back to the start of the main loop
-       b    @loop                      ;                   
-!
-       sb   a,a                        ; XOR A             ; {Reset the 6031769 key counter at #R33885 to 0 (an
-       movb a,@cheat                   ; LD (33885),A      ; incorrect key is being pressed)}
-       b    @loop                      ; JP 34574          ; Jump back to the start of the main loop
-cknxcht:                               ; 35032
-       movb @bytes+239,b               ; LD B,239          ; {Read keys 6-7-8-9-0
-       ; IN A,(C)                      ; IN A,(C)          ; }
-       andi a,31*256                   ; AND 31            ; Keep only bits 0-4
-       cb   a,@1(ix)                   ; CP (IX+1)         ; Does this match the second byte of the entry in the
-                                                           ; 6031769 table?
-       jeq  inccht                     ; JR Z,35061        ; If so, jump to increment the 6031769 key counter
-       cb   a,@bytes+31                ; CP 31             ; Are any of the keys 6-7-8-9-0 being pressed?
-       jne  !                          ; JP Z,34574        ; If not, jump back to the start of the main loop
-       b    @loop                      ;                   
-!
-       cb   a,@-1(ix)                  ; CP (IX-1)         ; Does the keyboard reading match the second byte of the
-                                                           ; previous entry in the 6031769 table?
-       jne  !                          ; JP Z,34574        ; If so, jump back to the start of the main loop
-       b    @loop                      ;                   
-!
-       sb   a,a                        ; XOR A             ; {Reset the 6031769 key counter at #R33885 to 0 (an
-       movb a,@cheat                   ; LD (33885),A      ; incorrect key is being pressed)}
-       b    @loop                      ; JP 34574          ; Jump back to the start of the main loop
-inccht:                                ; 35061
-       movb @cheat,a                   ; LD A,(33885)      ; {Increment the 6031769 key counter at #R33885 (the next
-       ab   one,a                      ; INC A             ; key in the sequence is being pressed)
-       movb a,@cheat                   ; LD (33885),A      ; }
+;       li   bc,254                     ; LD BC,254         ; {Read every row of keys on the keyboard
+;       ; IN A,(C)                      ; IN A,(C)          ; }
+;       andi a,31*256                   ; AND 31            ; {Are any keys being pressed?
+;       cb   a,@bytes+31                ; CP 31             ; }
+;       jeq  !                          ; JP NZ,34252       ; If so, return to the title screen
+;       b    @start                     ;
+;!
+;       movb @kemp,a                    ; LD A,(33881)      ; Pick up the Kempston joystick indicator from #R33881
+;       socb a,a                        ; OR A              ; Is there a joystick connected?
+;       jeq  nodem1                     ; JR Z,34948        ; Jump if not
+;       ; IN A,(31)                     ; IN A,(31)         ; Collect input from the joystick
+;       socb a,a                        ; OR A              ; Is the joystick being moved or the fire button being
+;                                                           ; pressed?
+;       jeq  !                          ; JP NZ,34252       ; If so, return to the title screen
+;       b    @start                     ;
+;!
+;* Here we check the teleport keys.
+nodem1:                                 ; 34948
+;       li   bc,cavern15+1022           ; LD BC,61438       ; {Read keys 6-7-8-9-0
+;       ; IN A,(C)                      ; IN A,(C)          ; }
+;       movb a,r0                       ; BIT 4,A           ; Is '6' (the activator key) being pressed?
+;       andi r0,16*256                  ;
+;       jeq  !                          ; JP NZ,34984       ; Jump if not
+;       b    @ckcheat                   ;
+;!
+;       movb @cheat,a                   ; LD A,(33885)      ; Pick up the 6031769 key counter from #R33885
+;       cb   a,@bytes+7                 ; CP 7              ; Has 6031769 been keyed in yet?
+;       jeq  !                          ; JP NZ,34984       ; Jump if not
+;       b    @ckcheat                   ;
+;!
+;       movb @bytes+247,b               ; LD B,247          ; {Read keys 1-2-3-4-5
+;       ; IN A,(C)                      ; IN A,(C)          ; }
+;       inv  a                          ; CPL               ; {Keep only bits 0-4 and flip them
+;       andi a,31*256                   ; AND 31            ; }
+;       cb   a,@bytes+20                ; CP 20             ; Is the result #b20 or greater?
+;       jl   !                          ; JP NC,34984       ; Jump if so (this is not a cavern number)
+;       b    @ckcheat                   ;
+;!
+;       movb a,@sheet                   ; LD (33799),A      ; Store the cavern number at #R33799
+;       b    @newsht                    ; JP 34449          ; Teleport into the cavern
+;* Now check the 6031769 keys.
+;ckcheat:                               ; 34984
+;       movb @cheat,a                   ; LD A,(33885)      ; Pick up the 6031769 key counter from #R33885
+;       cb   a,@bytes+7                 ; CP 7              ; Has 6031769 been keyed in yet?
+;       jne  !                          ; JP Z,34574        ; If so, jump back to the start of the main loop
+;       b    @loop                      ;
+;!
+;       sla  a,1                        ; RLCA              ; TODO: check code. {Point #REGix at the corresponding entry in the 6031769
+;       movb a,@e                       ; LD E,A            ; table at #R33888
+;       sb   d,d                        ; LD D,0            ;
+;       li   ix,cheatdt                 ; LD IX,33888       ;
+;       a    de,ix                      ; ADD IX,DE         ; }
+;       li   bc,cavern17+1022           ; LD BC,63486       ; {Read keys 1-2-3-4-5
+;       ; IN A,(C)                      ; IN A,(C)          ; }
+;       andi a,31*256                   ; AND 31            ; Keep only bits 0-4
+;       cb   a,*ix                      ; CP (IX+0)         ; Does this match the first byte of the entry in the
+;                                                           ; 6031769 table?
+;       jeq  cknxcht                    ; JR Z,35032        ; Jump if so
+;       cb   a,@bytes+31                ; CP 31             ; Are any of the keys 1-2-3-4-5 being pressed?
+;       jne  !                          ; JP Z,34574        ; If not, jump back to the start of the main loop
+;       b    @loop                      ;
+;!
+;       cb   a,@-2(ix)                  ; CP (IX-2)         ; Does the keyboard reading match the first byte of the
+;                                                           ; previous entry in the 6031769 table?
+;       jne  !                          ; JP Z,34574        ; If so, jump back to the start of the main loop
+;       b    @loop                      ;
+;!
+;       sb   a,a                        ; XOR A             ; {Reset the 6031769 key counter at #R33885 to 0 (an
+;       movb a,@cheat                   ; LD (33885),A      ; incorrect key is being pressed)}
+;       b    @loop                      ; JP 34574          ; Jump back to the start of the main loop
+;cknxcht:                               ; 35032
+;       movb @bytes+239,b               ; LD B,239          ; {Read keys 6-7-8-9-0
+;       ; IN A,(C)                      ; IN A,(C)          ; }
+;       andi a,31*256                   ; AND 31            ; Keep only bits 0-4
+;       cb   a,@1(ix)                   ; CP (IX+1)         ; Does this match the second byte of the entry in the
+;                                                           ; 6031769 table?
+;       jeq  inccht                     ; JR Z,35061        ; If so, jump to increment the 6031769 key counter
+;       cb   a,@bytes+31                ; CP 31             ; Are any of the keys 6-7-8-9-0 being pressed?
+;       jne  !                          ; JP Z,34574        ; If not, jump back to the start of the main loop
+;       b    @loop                      ;
+;!
+;       cb   a,@-1(ix)                  ; CP (IX-1)         ; Does the keyboard reading match the second byte of the
+;                                                           ; previous entry in the 6031769 table?
+;       jne  !                          ; JP Z,34574        ; If so, jump back to the start of the main loop
+;       b    @loop                      ;
+;!
+;       sb   a,a                        ; XOR A             ; {Reset the 6031769 key counter at #R33885 to 0 (an
+;       movb a,@cheat                   ; LD (33885),A      ; incorrect key is being pressed)}
+;       b    @loop                      ; JP 34574          ; Jump back to the start of the main loop
+;inccht:                                ; 35061
+;       movb @cheat,a                   ; LD A,(33885)      ; {Increment the 6031769 key counter at #R33885 (the next
+;       ab   one,a                      ; INC A             ; key in the sequence is being pressed)
+;       movb a,@cheat                   ; LD (33885),A      ; }
        b    @loop                      ; JP 34574          ; Jump back to the start of the main loop
 * The air in the cavern has run out, or Willy has had a fatal accident, or it's
 * demo mode and it's time to show the next cavern.
 mandead:                               ; 35071
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
-       socb a,a                        ; OR A              ; Is it demo mode?
+;      socb a,a                        ; OR A              ; Is it demo mode?
        jeq  !                          ; JP NZ,36904       ; If so, move to the next cavern
        b    @nxsheet                   ;                   
 !
@@ -1340,31 +1345,36 @@ lpdead1:                               ; 35080
        li   bc,511                     ; LD BC,511         ; 
        movb a,*hl                      ; LD (HL),A         ; 
        .ldir                           ; LDIR              ; }
+
+       bl   @upload_zx_screen
+
        movb a,@e                       ; LD E,A            ; Save the attribute byte (#b64-#b71) in #REGe for later
                                                            ; retrieval
-       inv  a                          ; CPL               ; {#REGd=63-8*(#REGe #S/AND/ 7); this value determines the
-       andi a,7*256                    ; AND 7             ; pitch of the short note that will be played
-       sla  a,1                        ; RLCA              ; TODO: check code. 
-       sla  a,1                        ; RLCA              ; TODO: check code. 
-       sla  a,1                        ; RLCA              ; TODO: check code. 
-       socb @bytes+7,a                 ; OR 7              ; 
-       movb a,d                        ; LD D,A            ; }
-       movb @e,@c                      ; LD C,E            ; {#REGc=8+32*(#REGe #S/AND/ 7); this value determines the
-       ; RRC C                         ; RRC C             ; duration of the short note that will be played
-       ; RRC C                         ; RRC C             ; 
-       ; RRC C                         ; RRC C             ; }
-       socb @bytes+16,a                ; OR 16             ; Set bit 4 of #REGa (for no apparent reason)
-       sb   a,a                        ; XOR A             ; Set #REGa=0 (this will make the border black)
-tm21:                                  ; 35112
-       ; OUT (254),A                   ; OUT (254),A       ; {Produce a short note whose pitch is determined by #REGd
-       li   r0,24*256                  ; XOR 24            ; and whose duration is determined by #REGc
-       xor  r0,a                       ;                   
-       movb d,b                        ; LD B,D            ; 
-tm22:                                  ; 35117
-       sb   one,b                      ; DJNZ 35117        ; 
-       jne  tm22                       ;                   
-       sb   one,@c                     ; DEC C             ; 
-       jne  tm21                       ; JR NZ,35112       ; }
+
+;       inv  a                          ; CPL               ; {#REGd=63-8*(#REGe #S/AND/ 7); this value determines the
+;       andi a,7*256                    ; AND 7             ; pitch of the short note that will be played
+;       sla  a,1                        ; RLCA              ; TODO: check code.
+;       sla  a,1                        ; RLCA              ; TODO: check code.
+;       sla  a,1                        ; RLCA              ; TODO: check code.
+;       socb @bytes+7,a                 ; OR 7              ;
+;       movb a,d                        ; LD D,A            ; }
+;       movb @e,@c                      ; LD C,E            ; {#REGc=8+32*(#REGe #S/AND/ 7); this value determines the
+;       ; RRC C                         ; RRC C             ; duration of the short note that will be played
+;       ; RRC C                         ; RRC C             ;
+;       ; RRC C                         ; RRC C             ; }
+;       socb @bytes+16,a                ; OR 16             ; Set bit 4 of #REGa (for no apparent reason)
+;       sb   a,a                        ; XOR A             ; Set #REGa=0 (this will make the border black)
+;tm21:                                  ; 35112
+;       ; OUT (254),A                   ; OUT (254),A       ; {Produce a short note whose pitch is determined by #REGd
+;       li   r0,24*256                  ; XOR 24            ; and whose duration is determined by #REGc
+;       xor  r0,a                       ;
+;       movb d,b                        ; LD B,D            ;
+;tm22:                                  ; 35117
+;       sb   one,b                      ; DJNZ 35117        ;
+;       jne  tm22                       ;
+;       sb   one,@c                     ; DEC C             ;
+;       jne  tm21                       ; JR NZ,35112       ; }
+
        movb @e,a                       ; LD A,E            ; Restore the attribute byte (originally #b71) to #REGa
        sb   one,a                      ; DEC A             ; Decrement it (effectively decrementing the INK colour)
        cb   a,@bytes+63                ; CP 63             ; Have we used attribute value #b64 (INK 0) yet?
@@ -1373,7 +1383,7 @@ tm22:                                  ; 35117
 * Finally, check whether any lives remain.
        li   hl,nomen                   ; LD HL,33879       ; {Pick up the number of lives remaining from #R33879
        movb *hl,a                      ; LD A,(HL)         ; }
-       socb a,a                        ; OR A              ; Are there any lives remaining?
+;      socb a,a                        ; OR A              ; Are there any lives remaining?
        jne  !                          ; JP Z,35140        ; If not, display the game over sequence
        b    @endgam                    ;                   
 !
@@ -2789,7 +2799,7 @@ nxsheet:                               ; 36904
        cb   a,@bytes+20                ; CP 20             ; Is the current cavern #R64512(The Final Barrier)?
        jne  _37009                     ; JR NZ,37009       ; Jump if not
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
-       socb a,a                        ; OR A              ; Are we in demo mode?
+;      socb a,a                        ; OR A              ; Are we in demo mode?
        jeq  !                          ; JP NZ,37008       ; Jump if so
        b    @_37008                    ;                   
 !
@@ -2865,17 +2875,21 @@ _37014:
        li   bc,511                     ; LD BC,511         ; 
        movb a,*hl                      ; LD (HL),A         ; 
        .ldir                           ; LDIR              ; }
-       li   bc,4                       ; LD BC,4           ; {Pause for about 0.004s
-_37029:
-       sb   one,b                      ; DJNZ 37029        ; 
-       jne  _37029                     ;                   
-       sb   one,@c                     ; DEC C             ; 
-       jne  _37029                     ; JR NZ,37029       ; }
+
+       bl   @upload_zx_screen
+
+;       li   bc,4                       ; LD BC,4           ; {Pause for about 0.004s
+;_37029:
+;       sb   one,b                      ; DJNZ 37029        ;
+;       jne  _37029                     ;
+;       sb   one,@c                     ; DEC C             ;
+;       jne  _37029                     ; JR NZ,37029       ; }
+
        sb   one,a                      ; DEC A             ; Decrement the attribute value in #REGa
        jne  _37014                     ; JR NZ,37014       ; Jump back until we've gone through all attribute values
                                                            ; from #b63 down to #b1
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
-       socb a,a                        ; OR A              ; Are we in demo mode?
+;      socb a,a                        ; OR A              ; Are we in demo mode?
        jeq  !                          ; JP NZ,34449       ; If so, demo the next cavern
        b    @newsht                    ;                   
 !

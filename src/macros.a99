@@ -43,9 +43,24 @@
        mov  @-2(sp),#1
        .endm
 
+       .defm clear
+       inc  bc
+       a    bc,hl
+       dec  de
+!      clr  *de+
+       dect bc
+       jne  -!
+       .endm
+
        .defm ldir
 !      movb *hl+,*de+
        dec  bc
+       jne  -!
+       .endm
+
+       .defm ldir2
+!      mov  *hl+,*de+
+       dect bc
        jne  -!
        .endm
 
