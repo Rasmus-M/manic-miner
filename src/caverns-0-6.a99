@@ -100,7 +100,7 @@ cavern0:                               ; 45056
                                                                      ; facing right (see #R32874)
        byte 0                                                        ; Airborne status indicator (see
                                                                      ; #R32875)
-       data attr_buffer_2+418                                        ; Location in the attribute
+       byte (attr_buffer_2+418)%%256,(attr_buffer_2+418)//256        ; Location in the attribute
                                                                      ; buffer at #R23552: (13,2) (see
                                                                      ; #R32876)
        byte 0                                                        ; Jumping animation counter (see
@@ -108,7 +108,7 @@ cavern0:                               ; 45056
 * The next four bytes are copied to #R32879 and specify the direction, location
 * and length of the conveyor.
        byte 0                                                        ; Direction (left)
-       data scrn_buffer_1+2088                                       ; Location in the screen buffer
+       byte (scrn_buffer_1+2088)%%256,(scrn_buffer_1+2088)//256      ; Location in the screen buffer
                                                                      ; at #R28672: (9,8)
        byte 20                                                       ; Length
 * The next byte is copied to #R32883 and specifies the border colour.
@@ -118,23 +118,23 @@ cavern0:                               ; 45056
 * The next 25 bytes are copied to #R32885 and specify the location and initial
 * colour of the items in the cavern.
        byte 3                                                        ; {Item 1 at (0,9)
-       data attr_buffer_2+9                                          ;
+       byte (attr_buffer_2+9)%%256,(attr_buffer_2+9)//256            ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 4                                                        ; {Item 2 at (0,29)
-       data attr_buffer_2+29                                         ;
+       byte (attr_buffer_2+29)%%256,(attr_buffer_2+29)//256          ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 5                                                        ; {Item 3 at (1,16)
-       data attr_buffer_2+48                                         ;
+       byte (attr_buffer_2+48)%%256,(attr_buffer_2+48)//256          ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 6                                                        ; {Item 4 at (4,24)
-       data attr_buffer_2+152                                        ;
+       byte (attr_buffer_2+152)%%256,(attr_buffer_2+152)//256        ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 3                                                        ; {Item 5 at (6,30)
-       data attr_buffer_2+222                                        ;
+       byte (attr_buffer_2+222)%%256,(attr_buffer_2+222)//256        ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 255                                                      ; Terminator
@@ -149,9 +149,9 @@ cavern0:                               ; 45056
        byte 146,73,182,219,255,255,146,73                            ;
        byte 182,219,255,255,146,73,182,219                           ;
        byte 255,255,146,73,182,219,255,255                           ; }
-       data attr_buffer_2+445                                        ; Location in the attribute
+       byte (attr_buffer_2+445)%%256,(attr_buffer_2+445)//256        ; Location in the attribute
                                                                      ; buffer at #R23552: (13,29)
-       data scrn_buffer_2+2237                                       ; Location in the screen buffer
+       byte (scrn_buffer_2+2237)%%256,(scrn_buffer_2+2237)//256      ; Location in the screen buffer
                                                                      ; at #R24576: (13,29)
 * The next eight bytes are copied to #R32948 and define the item graphic.
 * .
@@ -166,7 +166,7 @@ cavern0:                               ; 45056
        byte 252                                                      ; Game clock
 * The next 28 bytes are copied to #R32958 and define the horizontal guardians.
        byte 70                                                       ; {Horizontal guardian 1: y=7,
-       data attr_buffer_2+232                                        ; initial x=8, 8<=x<=15,
+       byte (attr_buffer_2+232)%%256,(attr_buffer_2+232)//256        ; initial x=8, 8<=x<=15,
        byte 96                                                       ; speed=normal
        byte 0                                                        ;
        byte 232                                                      ;
@@ -337,7 +337,7 @@ cavern1:                               ; 46080
                                                                      ; facing right (see #R32874)
        byte 0                                                        ; Airborne status indicator (see
                                                                      ; #R32875)
-       data attr_buffer_2+418                                        ; Location in the attribute
+       byte (attr_buffer_2+418)%%256,(attr_buffer_2+418)//256        ; Location in the attribute
                                                                      ; buffer at #R23552: (13,2) (see
                                                                      ; #R32876)
        byte 0                                                        ; Jumping animation counter (see
@@ -345,7 +345,7 @@ cavern1:                               ; 46080
 * The next four bytes are copied to #R32879 and specify the direction, location
 * and length of the conveyor.
        byte 1                                                        ; Direction (right)
-       data scrn_buffer_1+2147                                       ; Location in the screen buffer
+       byte (scrn_buffer_1+2147)%%256,(scrn_buffer_1+2147)//256      ; Location in the screen buffer
                                                                      ; at #R28672: (11,3)
        byte 4                                                        ; Length
 * The next byte is copied to #R32883 and specifies the border colour.
@@ -355,23 +355,23 @@ cavern1:                               ; 46080
 * The next 25 bytes are copied to #R32885 and specify the location and initial
 * colour of the items in the cavern.
        byte 11                                                       ; {Item 1 at (1,7)
-       data attr_buffer_2+39                                         ;
+       byte (attr_buffer_2+39)%%256,(attr_buffer_2+39)//256          ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 12                                                       ; {Item 2 at (1,24)
-       data attr_buffer_2+56                                         ;
+       byte (attr_buffer_2+56)%%256,(attr_buffer_2+56)//256          ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 13                                                       ; {Item 3 at (7,26)
-       data attr_buffer_2+250                                        ;
+       byte (attr_buffer_2+250)%%256,(attr_buffer_2+250)//256        ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 14                                                       ; {Item 4 at (9,3)
-       data attr_buffer_2+291                                        ;
+       byte (attr_buffer_2+291)%%256,(attr_buffer_2+291)//256        ;
        byte 104                                                      ;
        byte 255                                                      ; }
        byte 11                                                       ; {Item 5 at (12,19)
-       data attr_buffer_2+403                                        ;
+       byte (attr_buffer_2+403)%%256,(attr_buffer_2+403)//256        ;
        byte 104                                                      ;
        byte 255                                                      ; }
        byte 255                                                      ; Terminator
@@ -386,9 +386,9 @@ cavern1:                               ; 46080
        byte 146,73,146,73,146,73,146,73                              ;
        byte 146,73,146,73,146,73,146,73                              ;
        byte 146,73,146,73,146,73,255,255                             ; }
-       data attr_buffer_2+445                                        ; Location in the attribute
+       byte (attr_buffer_2+445)%%256,(attr_buffer_2+445)//256        ; Location in the attribute
                                                                      ; buffer at #R23552: (13,29)
-       data scrn_buffer_2+2237                                       ; Location in the screen buffer
+       byte (scrn_buffer_2+2237)%%256,(scrn_buffer_2+2237)//256      ; Location in the screen buffer
                                                                      ; at #R24576: (13,29)
 * The next eight bytes are copied to #R32948 and define the item graphic.
 * .
@@ -403,13 +403,13 @@ cavern1:                               ; 46080
        byte 252                                                      ; Game clock
 * The next 28 bytes are copied to #R32958 and define the horizontal guardians.
        byte 14                                                       ; {Horizontal guardian 1: y=3,
-       data attr_buffer_2+114                                        ; initial x=18, 1<=x<=18,
+       byte (attr_buffer_2+114)%%256,(attr_buffer_2+114)//256        ; initial x=18, 1<=x<=18,
        byte 96                                                       ; speed=normal
        byte 7                                                        ;
        byte 97                                                       ;
        byte 114                                                      ; }
        byte 13                                                       ; {Horizontal guardian 2: y=13,
-       data attr_buffer_2+445                                        ; initial x=29, 12<=x<=29,
+       byte (attr_buffer_2+445)%%256,(attr_buffer_2+445)//256        ; initial x=29, 12<=x<=29,
        byte 104                                                      ; speed=normal
        byte 7                                                        ;
        byte 172                                                      ;
@@ -579,7 +579,7 @@ cavern2:                               ; 47104
                                                                      ; facing right (see #R32874)
        byte 0                                                        ; Airborne status indicator (see
                                                                      ; #R32875)
-       data attr_buffer_2+418                                        ; Location in the attribute
+       byte (attr_buffer_2+418)%%256,(attr_buffer_2+418)//256        ; Location in the attribute
                                                                      ; buffer at #R23552: (13,2) (see
                                                                      ; #R32876)
        byte 0                                                        ; Jumping animation counter (see
@@ -587,7 +587,7 @@ cavern2:                               ; 47104
 * The next four bytes are copied to #R32879 and specify the direction, location
 * and length of the conveyor.
        byte 0                                                        ; Direction (left)
-       data scrn_buffer_1+2086                                       ; Location in the screen buffer
+       byte (scrn_buffer_1+2086)%%256,(scrn_buffer_1+2086)//256      ; Location in the screen buffer
                                                                      ; at #R28672: (9,6)
        byte 6                                                        ; Length
 * The next byte is copied to #R32883 and specifies the border colour.
@@ -597,23 +597,23 @@ cavern2:                               ; 47104
 * The next 25 bytes are copied to #R32885 and specify the location and initial
 * colour of the items in the cavern.
        byte 3                                                        ; {Item 1 at (0,6)
-       data attr_buffer_2+6                                          ;
+       byte (attr_buffer_2+6)%%256,(attr_buffer_2+6)//256            ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 4                                                        ; {Item 2 at (0,15)
-       data attr_buffer_2+15                                         ;
+       byte (attr_buffer_2+15)%%256,(attr_buffer_2+15)//256          ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 5                                                        ; {Item 3 at (0,23)
-       data attr_buffer_2+23                                         ;
+       byte (attr_buffer_2+23)%%256,(attr_buffer_2+23)//256          ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 6                                                        ; {Item 4 at (6,30)
-       data attr_buffer_2+222                                        ;
+       byte (attr_buffer_2+222)%%256,(attr_buffer_2+222)//256        ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 3                                                        ; {Item 5 at (6,21)
-       data attr_buffer_2+213                                        ;
+       byte (attr_buffer_2+213)%%256,(attr_buffer_2+213)//256        ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 255                                                      ; Terminator
@@ -628,9 +628,9 @@ cavern2:                               ; 47104
        byte 34,34,153,153,68,68,68,68                                ;
        byte 153,153,34,34,34,34,153,153                              ;
        byte 68,68,68,68,153,153,255,255                              ; }
-       data attr_buffer_2+381                                        ; Location in the attribute
+       byte (attr_buffer_2+381)%%256,(attr_buffer_2+381)//256        ; Location in the attribute
                                                                      ; buffer at #R23552: (11,29)
-       data scrn_buffer_2+2173                                       ; Location in the screen buffer
+       byte (scrn_buffer_2+2173)%%256,(scrn_buffer_2+2173)//256      ; Location in the screen buffer
                                                                      ; at #R24576: (11,29)
 * The next eight bytes are copied to #R32948 and define the item graphic.
 * .
@@ -645,19 +645,19 @@ cavern2:                               ; 47104
        byte 128                                                      ; Game clock
 * The next 28 bytes are copied to #R32958 and define the horizontal guardians.
        byte 68                                                       ; {Horizontal guardian 1: y=13,
-       data attr_buffer_2+435                                        ; initial x=19, 1<=x<=19,
+       byte (attr_buffer_2+435)%%256,(attr_buffer_2+435)//256        ; initial x=19, 1<=x<=19,
        byte 104                                                      ; speed=normal
        byte 7                                                        ;
        byte 161                                                      ;
        byte 179                                                      ; }
        byte 67                                                       ; {Horizontal guardian 2: y=3,
-       data attr_buffer_2+112                                        ; initial x=16, 1<=x<=16,
+       byte (attr_buffer_2+112)%%256,(attr_buffer_2+112)//256        ; initial x=16, 1<=x<=16,
        byte 96                                                       ; speed=normal
        byte 7                                                        ;
        byte 97                                                       ;
        byte 112                                                      ; }
        byte 66                                                       ; {Horizontal guardian 3: y=3,
-       data attr_buffer_2+114                                        ; initial x=18, 18<=x<=29,
+       byte (attr_buffer_2+114)%%256,(attr_buffer_2+114)//256        ; initial x=18, 18<=x<=29,
        byte 96                                                       ; speed=normal
        byte 0                                                        ;
        byte 114                                                      ;
@@ -827,7 +827,7 @@ cavern3:                               ; 48128
                                                                      ; facing left (see #R32874)
        byte 0                                                        ; Airborne status indicator (see
                                                                      ; #R32875)
-       data attr_buffer_2+445                                        ; Location in the attribute
+       byte (attr_buffer_2+445)%%256,(attr_buffer_2+445)//256        ; Location in the attribute
                                                                      ; buffer at #R23552: (13,29)
                                                                      ; (see #R32876)
        byte 0                                                        ; Jumping animation counter (see
@@ -835,7 +835,7 @@ cavern3:                               ; 48128
 * The next four bytes are copied to #R32879 and specify the direction, location
 * and length of the conveyor.
        byte 1                                                        ; Direction (right)
-       data scrn_buffer_1+2113                                       ; Location in the screen buffer
+       byte (scrn_buffer_1+2113)%%256,(scrn_buffer_1+2113)//256      ; Location in the screen buffer
                                                                      ; at #R28672: (10,1)
        byte 3                                                        ; Length
 * The next byte is copied to #R32883 and specifies the border colour.
@@ -845,23 +845,23 @@ cavern3:                               ; 48128
 * The next 25 bytes are copied to #R32885 and specify the location and initial
 * colour of the items in the cavern.
        byte 3                                                        ; {Item 1 at (0,1)
-       data attr_buffer_2+1                                          ;
+       byte (attr_buffer_2+1)%%256,(attr_buffer_2+1)//256            ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 4                                                        ; {Item 2 at (1,12)
-       data attr_buffer_2+44                                         ;
+       byte (attr_buffer_2+44)%%256,(attr_buffer_2+44)//256          ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 5                                                        ; {Item 3 at (1,25)
-       data attr_buffer_2+57                                         ;
+       byte (attr_buffer_2+57)%%256,(attr_buffer_2+57)//256          ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 6                                                        ; {Item 4 at (6,16)
-       data attr_buffer_2+208                                        ;
+       byte (attr_buffer_2+208)%%256,(attr_buffer_2+208)//256        ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 3                                                        ; {Item 5 at (6,30)
-       data attr_buffer_2+222                                        ;
+       byte (attr_buffer_2+222)%%256,(attr_buffer_2+222)//256        ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 255                                                      ; Terminator
@@ -876,9 +876,9 @@ cavern3:                               ; 48128
        byte 34,34,17,17,136,136,68,68                                ;
        byte 34,34,17,17,136,136,68,68                                ;
        byte 34,34,17,17,136,136,68,68                                ; }
-       data attr_buffer_2+61                                         ; Location in the attribute
+       byte (attr_buffer_2+61)%%256,(attr_buffer_2+61)//256          ; Location in the attribute
                                                                      ; buffer at #R23552: (1,29)
-       data scrn_buffer_2+61                                         ; Location in the screen buffer
+       byte (scrn_buffer_2+61)%%256,(scrn_buffer_2+61)//256          ; Location in the screen buffer
                                                                      ; at #R24576: (1,29)
 * The next eight bytes are copied to #R32948 and define the item graphic.
 * .
@@ -893,13 +893,13 @@ cavern3:                               ; 48128
        byte 128                                                      ; Game clock
 * The next 28 bytes are copied to #R32958 and define the horizontal guardians.
        byte 66                                                       ; {Horizontal guardian 1: y=13,
-       data attr_buffer_2+417                                        ; initial x=1, 1<=x<=10,
+       byte (attr_buffer_2+417)%%256,(attr_buffer_2+417)//256        ; initial x=1, 1<=x<=10,
        byte 104                                                      ; speed=normal
        byte 0                                                        ;
        byte 161                                                      ;
        byte 170                                                      ; }
        byte 68                                                       ; {Horizontal guardian 2: y=13,
-       data attr_buffer_2+423                                        ; initial x=7, 6<=x<=15,
+       byte (attr_buffer_2+423)%%256,(attr_buffer_2+423)//256        ; initial x=7, 6<=x<=15,
        byte 104                                                      ; speed=normal
        byte 0                                                        ;
        byte 166                                                      ;
@@ -1060,7 +1060,7 @@ cavern4:                               ; 49152
                                                                      ; facing right (see #R32874)
        byte 0                                                        ; Airborne status indicator (see
                                                                      ; #R32875)
-       data attr_buffer_2+97                                         ; Location in the attribute
+       byte (attr_buffer_2+97)%%256,(attr_buffer_2+97)//256          ; Location in the attribute
                                                                      ; buffer at #R23552: (3,1) (see
                                                                      ; #R32876)
        byte 0                                                        ; Jumping animation counter (see
@@ -1068,7 +1068,7 @@ cavern4:                               ; 49152
 * The next four bytes are copied to #R32879 and specify the direction, location
 * and length of the conveyor.
        byte 0                                                        ; Direction (left)
-       data scrn_buffer_1+2066                                       ; Location in the screen buffer
+       byte (scrn_buffer_1+2066)%%256,(scrn_buffer_1+2066)//256      ; Location in the screen buffer
                                                                      ; at #R28672: (8,18)
        byte 10                                                       ; Length
 * The next byte is copied to #R32883 and specifies the border colour.
@@ -1078,23 +1078,23 @@ cavern4:                               ; 49152
 * The next 25 bytes are copied to #R32885 and specify the location and initial
 * colour of the items in the cavern.
        byte 19                                                       ; {Item 1 at (1,30)
-       data attr_buffer_2+62                                         ;
+       byte (attr_buffer_2+62)%%256,(attr_buffer_2+62)//256          ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 20                                                       ; {Item 2 at (6,10)
-       data attr_buffer_2+202                                        ;
+       byte (attr_buffer_2+202)%%256,(attr_buffer_2+202)//256        ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 21                                                       ; {Item 3 at (7,29)
-       data attr_buffer_2+253                                        ;
+       byte (attr_buffer_2+253)%%256,(attr_buffer_2+253)//256        ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 22                                                       ; {Item 4 at (12,7)
-       data attr_buffer_2+391                                        ;
+       byte (attr_buffer_2+391)%%256,(attr_buffer_2+391)//256        ;
        byte 104                                                      ;
        byte 255                                                      ; }
        byte 19                                                       ; {Item 5 at (12,9)
-       data attr_buffer_2+393                                        ;
+       byte (attr_buffer_2+393)%%256,(attr_buffer_2+393)//256        ;
        byte 104                                                      ;
        byte 255                                                      ; }
        byte 255                                                      ; Terminator
@@ -1109,9 +1109,9 @@ cavern4:                               ; 49152
        byte 170,170,170,170,170,170,170,170                          ;
        byte 170,170,170,170,170,170,170,170                          ;
        byte 170,170,170,170,170,170,255,255                          ; }
-       data attr_buffer_2+431                                        ; Location in the attribute
+       byte (attr_buffer_2+431)%%256,(attr_buffer_2+431)//256        ; Location in the attribute
                                                                      ; buffer at #R23552: (13,15)
-       data scrn_buffer_2+2223                                       ; Location in the screen buffer
+       byte (scrn_buffer_2+2223)%%256,(scrn_buffer_2+2223)//256      ; Location in the screen buffer
                                                                      ; at #R24576: (13,15)
 * The next eight bytes are copied to #R32948 and define the item graphic.
 * .
@@ -1126,13 +1126,13 @@ cavern4:                               ; 49152
        byte 128                                                      ; Game clock
 * The next 28 bytes are copied to #R32958 and define the horizontal guardians.
        byte 22                                                       ; {Horizontal guardian 1: y=3,
-       data attr_buffer_2+108                                        ; initial x=12, 1<=x<=12,
+       byte (attr_buffer_2+108)%%256,(attr_buffer_2+108)//256        ; initial x=12, 1<=x<=12,
        byte 96                                                       ; speed=normal
        byte 7                                                        ;
        byte 97                                                       ;
        byte 108                                                      ; }
        byte 16                                                       ; {Horizontal guardian 2: y=7,
-       data attr_buffer_2+228                                        ; initial x=4, 4<=x<=12,
+       byte (attr_buffer_2+228)%%256,(attr_buffer_2+228)//256        ; initial x=4, 4<=x<=12,
        byte 96                                                       ; speed=normal
        byte 0                                                        ;
        byte 228                                                      ;
@@ -1300,7 +1300,7 @@ cavern5:                               ; 50176
                                                                      ; facing left (see #R32874)
        byte 0                                                        ; Airborne status indicator (see
                                                                      ; #R32875)
-       data attr_buffer_2+111                                        ; Location in the attribute
+       byte (attr_buffer_2+111)%%256,(attr_buffer_2+111)//256        ; Location in the attribute
                                                                      ; buffer at #R23552: (3,15) (see
                                                                      ; #R32876)
        byte 0                                                        ; Jumping animation counter (see
@@ -1308,7 +1308,7 @@ cavern5:                               ; 50176
 * The next four bytes are copied to #R32879 and specify the direction, location
 * and length of the conveyor.
        byte 0                                                        ; Direction (left)
-       data scrn_buffer_1+2211                                       ; Location in the screen buffer
+       byte (scrn_buffer_1+2211)%%256,(scrn_buffer_1+2211)//256      ; Location in the screen buffer
                                                                      ; at #R28672: (13,3)
        byte 4                                                        ; Length
 * The next byte is copied to #R32883 and specifies the border colour.
@@ -1318,23 +1318,23 @@ cavern5:                               ; 50176
 * The next 25 bytes are copied to #R32885 and specify the location and initial
 * colour of the items in the cavern.
        byte 3                                                        ; {Item 1 at (6,15)
-       data attr_buffer_2+207                                        ;
+       byte (attr_buffer_2+207)%%256,(attr_buffer_2+207)//256        ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 4                                                        ; {Item 2 at (6,17)
-       data attr_buffer_2+209                                        ;
+       byte (attr_buffer_2+209)%%256,(attr_buffer_2+209)//256        ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 5                                                        ; {Item 3 at (7,30)
-       data attr_buffer_2+254                                        ;
+       byte (attr_buffer_2+254)%%256,(attr_buffer_2+254)//256        ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 6                                                        ; {Item 4 at (10,1)
-       data attr_buffer_2+321                                        ;
+       byte (attr_buffer_2+321)%%256,(attr_buffer_2+321)//256        ;
        byte 104                                                      ;
        byte 255                                                      ; }
        byte 3                                                        ; {Item 5 at (11,13)
-       data attr_buffer_2+365                                        ;
+       byte (attr_buffer_2+365)%%256,(attr_buffer_2+365)//256        ;
        byte 104                                                      ;
        byte 255                                                      ; }
        byte 255                                                      ; Terminator
@@ -1349,9 +1349,9 @@ cavern5:                               ; 50176
        byte 176,13,176,13,176,13,240,15                              ;
        byte 240,15,176,13,176,13,176,13                              ;
        byte 191,253,191,253,129,129,255,255                          ; }
-       data attr_buffer_2+29                                         ; Location in the attribute
+       byte (attr_buffer_2+29)%%256,(attr_buffer_2+29)//256          ; Location in the attribute
                                                                      ; buffer at #R23552: (0,29)
-       data scrn_buffer_2+29                                         ; Location in the screen buffer
+       byte (scrn_buffer_2+29)%%256,(scrn_buffer_2+29)//256          ; Location in the screen buffer
                                                                      ; at #R24576: (0,29)
 * The next eight bytes are copied to #R32948 and define the item graphic.
 * .
@@ -1366,25 +1366,25 @@ cavern5:                               ; 50176
        byte 128                                                      ; Game clock
 * The next 28 bytes are copied to #R32958 and define the horizontal guardians.
        byte 70                                                       ; {Horizontal guardian 1: y=8,
-       data attr_buffer_2+262                                        ; initial x=6, 6<=x<=13,
+       byte (attr_buffer_2+262)%%256,(attr_buffer_2+262)//256        ; initial x=6, 6<=x<=13,
        byte 104                                                      ; speed=normal
        byte 0                                                        ;
        byte 6                                                        ;
        byte 13                                                       ; }
        byte 67                                                       ; {Horizontal guardian 2: y=8,
-       data attr_buffer_2+270                                        ; initial x=14, 14<=x<=21,
+       byte (attr_buffer_2+270)%%256,(attr_buffer_2+270)//256        ; initial x=14, 14<=x<=21,
        byte 104                                                      ; speed=normal
        byte 1                                                        ;
        byte 14                                                       ;
        byte 21                                                       ; }
        byte 69                                                       ; {Horizontal guardian 3: y=13,
-       data attr_buffer_2+424                                        ; initial x=8, 8<=x<=20,
+       byte (attr_buffer_2+424)%%256,(attr_buffer_2+424)//256        ; initial x=8, 8<=x<=20,
        byte 104                                                      ; speed=normal
        byte 2                                                        ;
        byte 168                                                      ;
        byte 180                                                      ; }
        byte 6                                                        ; {Horizontal guardian 4: y=13,
-       data attr_buffer_2+440                                        ; initial x=24, 24<=x<=29,
+       byte (attr_buffer_2+440)%%256,(attr_buffer_2+440)//256        ; initial x=24, 24<=x<=29,
        byte 104                                                      ; speed=normal
        byte 3                                                        ;
        byte 184                                                      ;
@@ -1543,7 +1543,7 @@ cavern6:                               ; 51200
                                                                      ; facing right (see #R32874)
        byte 0                                                        ; Airborne status indicator (see
                                                                      ; #R32875)
-       data attr_buffer_2+418                                        ; Location in the attribute
+       byte (attr_buffer_2+418)%%256,(attr_buffer_2+418)//256        ; Location in the attribute
                                                                      ; buffer at #R23552: (13,2) (see
                                                                      ; #R32876)
        byte 0                                                        ; Jumping animation counter (see
@@ -1551,7 +1551,7 @@ cavern6:                               ; 51200
 * The next four bytes are copied to #R32879 and specify the direction, location
 * and length of the conveyor.
        byte 0                                                        ; Direction (left)
-       data scrn_buffer_1+167                                        ; Location in the screen buffer
+       byte (scrn_buffer_1+167)%%256,(scrn_buffer_1+167)//256        ; Location in the screen buffer
                                                                      ; at #R28672: (5,7)
        byte 5                                                        ; Length
 * The next byte is copied to #R32883 and specifies the border colour.
@@ -1561,23 +1561,23 @@ cavern6:                               ; 51200
 * The next 25 bytes are copied to #R32885 and specify the location and initial
 * colour of the items in the cavern.
        byte 19                                                       ; {Item 1 at (3,30)
-       data attr_buffer_2+126                                        ;
+       byte (attr_buffer_2+126)%%256,(attr_buffer_2+126)//256        ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 20                                                       ; {Item 2 at (6,20)
-       data attr_buffer_2+212                                        ;
+       byte (attr_buffer_2+212)%%256,(attr_buffer_2+212)//256        ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 21                                                       ; {Item 3 at (7,27)
-       data attr_buffer_2+251                                        ;
+       byte (attr_buffer_2+251)%%256,(attr_buffer_2+251)//256        ;
        byte 96                                                       ;
        byte 255                                                      ; }
        byte 22                                                       ; {Item 4 at (10,19)
-       data attr_buffer_2+339                                        ;
+       byte (attr_buffer_2+339)%%256,(attr_buffer_2+339)//256        ;
        byte 104                                                      ;
        byte 255                                                      ; }
        byte 19                                                       ; {Item 5 at (11,30)
-       data attr_buffer_2+382                                        ;
+       byte (attr_buffer_2+382)%%256,(attr_buffer_2+382)//256        ;
        byte 104                                                      ;
        byte 255                                                      ; }
        byte 255                                                      ; Terminator
@@ -1592,9 +1592,9 @@ cavern6:                               ; 51200
        byte 129,129,129,129,129,129,255,255                          ;
        byte 255,255,129,129,129,129,129,129                          ;
        byte 129,129,129,129,129,129,255,255                          ; }
-       data attr_buffer_2+431                                        ; Location in the attribute
+       byte (attr_buffer_2+431)%%256,(attr_buffer_2+431)//256        ; Location in the attribute
                                                                      ; buffer at #R23552: (13,15)
-       data scrn_buffer_2+2223                                       ; Location in the screen buffer
+       byte (scrn_buffer_2+2223)%%256,(scrn_buffer_2+2223)//256      ; Location in the screen buffer
                                                                      ; at #R24576: (13,15)
 * The next eight bytes are copied to #R32948 and define the item graphic.
 * .
@@ -1609,19 +1609,19 @@ cavern6:                               ; 51200
        byte 128                                                      ; Game clock
 * The next 28 bytes are copied to #R32958 and define the horizontal guardians.
        byte 69                                                       ; {Horizontal guardian 1: y=1,
-       data attr_buffer_2+47                                         ; initial x=15, 15<=x<=29,
+       byte (attr_buffer_2+47)%%256,(attr_buffer_2+47)//256          ; initial x=15, 15<=x<=29,
        byte 96                                                       ; speed=normal
        byte 0                                                        ;
        byte 47                                                       ;
        byte 61                                                       ; }
        byte 67                                                       ; {Horizontal guardian 2: y=8,
-       data attr_buffer_2+266                                        ; initial x=10, 2<=x<=10,
+       byte (attr_buffer_2+266)%%256,(attr_buffer_2+266)//256        ; initial x=10, 2<=x<=10,
        byte 104                                                      ; speed=normal
        byte 7                                                        ;
        byte 2                                                        ;
        byte 10                                                       ; }
        byte 6                                                        ; {Horizontal guardian 3: y=13,
-       data attr_buffer_2+433                                        ; initial x=17, 17<=x<=29,
+       byte (attr_buffer_2+433)%%256,(attr_buffer_2+433)//256        ; initial x=17, 17<=x<=29,
        byte 104                                                      ; speed=normal
        byte 0                                                        ;
        byte 177                                                      ;

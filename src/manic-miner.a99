@@ -809,7 +809,7 @@ start:                                 ; 34252
        li   de,willyr2                 ; LD DE,33344       ;
        sb   @c,@c                      ; LD C,0            ;
        .call @drwfix                   ; CALL 36852        ; }
-       seto @caverns_13_19_bank_select
+       seto @caverns_14_19_bank_select
        li   hl,cavern19                ; LD HL,64512       ; {Copy the attribute bytes from #R64512 to the top third
        li   de,zx_attrs                ; LD DE,22528       ; of the attribute file
        li   bc,256                     ; LD BC,256         ;
@@ -920,11 +920,13 @@ newsht:                                ; 34449
        jhe  !
        seto @caverns_0_6_bank_select
        jmp  !!!
-!      cb   a,@bytes+13
+!      cb   a,@bytes+14
        jhe  !
-       seto @caverns_7_12_bank_select
+       sb   @bytes+7,a
+       seto @caverns_7_13_bank_select
        jmp  !!
-!      seto @caverns_13_19_bank_select
+!      sb   @bytes+14,a
+       seto @caverns_14_19_bank_select
 !
 ;      sla  a,1                        ; SLA A             ; {Point #REGhl at the first byte of the cavern definition
        sla  a,2                        ; SLA A             ;

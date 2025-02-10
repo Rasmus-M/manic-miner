@@ -59,9 +59,9 @@ gplws:
        equ  >83e0
 caverns_0_6_bank_select:
        equ  >6008
-caverns_7_12_bank_select:
+caverns_7_13_bank_select:
        equ  >600a
-caverns_13_19_bank_select:
+caverns_14_19_bank_select:
        equ  >600c
 title_screen_bank_select:
        equ  >600e

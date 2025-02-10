@@ -162,12 +162,18 @@ public class SkoolConverter {
             instruction = "text " + String.join(",", messageParts);
         } else {
             boolean isWord = z80Line.getInstruction().startsWith("DEFW");
-            instruction = z80Line.getInstruction().replace("DEFB", "byte").replace("DEFW", "data");
+            boolean wantBytes = true; // Depends on whether it's data or code
+            instruction = z80Line.getInstruction().replace("DEFB", "byte").replace("DEFW", wantBytes ? "byte" : "data");
             if (isWord) {
                 String[] words = instruction.substring(4).trim().split(",");
                 for (String word : words) {
                     if (!word.isEmpty() && references.contains(Util.parseInt(word))) {
-                        instruction = instruction.replace(word, getValidLabel(Util.parseInt(word)));
+                        String label = getValidLabel(Util.parseInt(word));
+                        if (wantBytes) {
+                            instruction = instruction.replace(word, "(" + label + ")%%256,(" + label + ")//256");
+                        } else {
+                            instruction = instruction.replace(word, label);
+                        }
                     }
                 }
             } else {
