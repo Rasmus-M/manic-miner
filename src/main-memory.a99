@@ -6,7 +6,7 @@
        copy "caverns-14-19.a99"
        copy "title-screen.a99"
 
-       save >2000,>3fff
+       save >2000,>4000
        copy "lower-memory.a99"
 
        save >a000,

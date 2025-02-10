@@ -496,6 +496,7 @@ begin:                                 ; 33792
        limi 0                          ; DI                ; Disable interrupts
 ;      li   sp,_40190                  ; LD SP,40190       ; Place the stack somewhere safe (near the end of the
                                                            ; source code remnants at #R37708)
+       clr  af
        b    @start                     ; JP 34252          ; Display the title screen and play the theme tune
 
 * Current cavern number
@@ -817,23 +818,23 @@ start:                                 ; 34252
        li   hl,lowerattrs              ; LD HL,40448       ; {Copy the attribute bytes from #R40448 to the bottom
        li   bc,512                     ; LD BC,512         ; two-thirds of the attribute file
        .ldir                           ; LDIR              ; }
+
        bl   @upload_zx_screen
-       bl   @ti_wait_fire
-       jmp  start_demo
 
 * Now check whether there is a joystick connected.
-       li   bc,31                      ; LD BC,31          ; This is the joystick port
-       limi 0                          ; DI                ; Disable interrupts (which are already disabled)
-       sb   a,a                        ; XOR A             ; #REGa=0
-_34337:
-       ; IN E,(C)                      ; IN E,(C)          ; {Combine 256 readings of the joystick port in #REGa; if
-       socb @e,a                       ; OR E              ; no joystick is connected, some of these readings will
-       sb   one,b                      ; DJNZ 34337        ; have bit 5 set}
-       jne  _34337                     ;                   
-       andi a,32*256                   ; AND 32            ; Is a joystick connected (bit 5 reset)?
-       jne  _34351                     ; JR NZ,34351       ; Jump if not
-       movb one,a                      ; LD A,1            ; {Set the Kempston joystick indicator at #R33881 to 1
-       movb a,@kemp                    ; LD (33881),A      ; }
+;       li   bc,31                      ; LD BC,31          ; This is the joystick port
+;       limi 0                          ; DI                ; Disable interrupts (which are already disabled)
+;       sb   a,a                        ; XOR A             ; #REGa=0
+;_34337:
+;       ; IN E,(C)                      ; IN E,(C)          ; {Combine 256 readings of the joystick port in #REGa; if
+;       socb @e,a                       ; OR E              ; no joystick is connected, some of these readings will
+;       sb   one,b                      ; DJNZ 34337        ; have bit 5 set}
+;       jne  _34337                     ;
+;       andi a,32*256                   ; AND 32            ; Is a joystick connected (bit 5 reset)?
+;       jne  _34351                     ; JR NZ,34351       ; Jump if not
+;       movb one,a                      ; LD A,1            ; {Set the Kempston joystick indicator at #R33881 to 1
+;       movb a,@kemp                    ; LD (33881),A      ; }
+
 * And finally, play the theme tune and check for keypresses.
 * .
 * #AUDIO4(tune.wav)(34351,34358)
@@ -841,44 +842,55 @@ _34351:
        li   iy,themetune               ; LD IY,33902       ; Point #REGiy at the theme tune data at #R33902
        .call @playtune                 ; CALL 37596        ; Play the theme tune
        jeq  !                          ; JP NZ,34436       ; Start the game if ENTER or the fire button was pressed
-       b    @startgame                 ;                   
+       b    @startgame                 ;
+
 !
        sb   a,a                        ; XOR A             ; {Initialise the game status buffer variable at #R32988;
-       movb a,@eughgt                  ; LD (32988),A      ; this will be used as an index for the message scrolled
-                                                           ; across the screen}
+       movb a,@eughgt                  ; LD (32988),A      ; this will be used as an index for the message scrolled; across the screen}
 _34365:
        movb @eughgt,a                  ; LD A,(32988)      ; Pick up the message index from #R32988
        li   ix,messintro               ; LD IX,40192       ; {Point #REGix at the corresponding location in the
-       movb a,@ixl                     ; LD IXL,A          ; message at #R40192}
+;       movb a,@ixl                     ; LD IXL,A          ; message at #R40192}
+       mov  a,r0
+       swpb r0
+       a    r0,ix
        li   de,zx_screen+4192          ; LD DE,20576       ; {Print 32 characters of the message at (19,0)
        movb @bytes+32,@c               ; LD C,32           ; 
        .call @pmess                    ; CALL 37562        ; }
        movb @eughgt,a                  ; LD A,(32988)      ; Pick up the message index from #R32988
        andi a,6*256                    ; AND 6             ; {Keep only bits 1 and 2, and move them into bits 6 and
-       srl  a,1                        ; RRCA              ; TODO: check code. 7, so that #REGa holds #b0, #b64, #b128 or #b192; this
-       srl  a,1                        ; RRCA              ; TODO: check code. value determines the animation frame to use for Willy
-       srl  a,1                        ; RRCA              ; TODO: check code. }
+;      srl  a,1                        ; RRCA              ; 7, so that #REGa holds #b0, #b64, #b128 or #b192; this
+;      srl  a,1                        ; RRCA              ; value determines the animation frame to use for Willy
+       sla  a,5                        ; RRCA              ; }
        movb a,@e                       ; LD E,A            ; {Point #REGde at the graphic data for Willy's sprite
        movb @bytes+(mandat//256),d     ; LD D,130          ; (#R33280+#REGa)}
        li   hl,zx_screen+2109          ; LD HL,18493       ; {Draw Willy at (9,29)
        sb   @c,@c                      ; LD C,0            ; 
        .call @drwfix                   ; CALL 36852        ; }
-       li   bc,100                     ; LD BC,100         ; {Pause for about 0.1s
-_34404:
-       sb   one,b                      ; DJNZ 34404        ; 
-       jne  _34404                     ;                   
-       sb   one,@c                     ; DEC C             ; 
-       jne  _34404                     ; JR NZ,34404       ; }
-       li   bc,49150                   ; LD BC,49150       ; {Read keys H-J-K-L-ENTER
-       ; IN A,(C)                      ; IN A,(C)          ; }
-       andi a,1*256                    ; AND 1             ; Keep only bit 0 of the result (ENTER)
-       cb   a,one                      ; CP 1              ; Is ENTER being pressed?
-       jne  startgame                  ; JR NZ,34436       ; If so, start the game
+
+;       li   bc,100                     ; LD BC,100         ; {Pause for about 0.1s
+;_34404:
+;       sb   one,b                      ; DJNZ 34404        ;
+;       jne  _34404                     ;
+;       sb   one,@c                     ; DEC C             ;
+;       jne  _34404                     ; JR NZ,34404       ; }
+
+       bl   @upload_zx_screen
+
+;       li   bc,49150                   ; LD BC,49150       ; {Read keys H-J-K-L-ENTER
+;       ; IN A,(C)                      ; IN A,(C)          ; }
+;       andi a,1*256                    ; AND 1             ; Keep only bit 0 of the result (ENTER)
+;       cb   a,one                      ; CP 1              ; Is ENTER being pressed?
+;       jne  startgame                  ; JR NZ,34436       ; If so, start the game
+       li   r0,KEY_EN
+       bl   @ti_check_key
+       jne  start_demo
+
        movb @eughgt,a                  ; LD A,(32988)      ; Pick up the message index from #R32988
        ab   one,a                      ; INC A             ; Increment it
+       movb a,@eughgt                  ; LD (32988),A      ; Store the new message index at #R32988
        cb   a,@bytes+224               ; CP 224            ; Set the zero flag if we've reached the end of the
                                                            ; message
-       movb a,@eughgt                  ; LD (32988),A      ; Store the new message index at #R32988
        jne  _34365                     ; JR NZ,34365       ; Jump back unless we've finished scrolling the message
                                                            ; across the screen
 start_demo:
@@ -3337,7 +3349,7 @@ playtune:                              ; 37596
                                                            ; #R33902
        cb   a,@b255                    ; CP 255            ; Has the tune finished?
        jne  !                          ; RET Z             ; Return (with the zero flag set) if so
-       .ret                            ;                   
+       .ret_eq                         ;
 !
        movb a,@c                       ; LD C,A            ; Copy the first byte of data for this note (which
                                                            ; determines the duration) to #REGc
@@ -3356,29 +3368,39 @@ playtune:                              ; 37596
                                                            ; corresponding piano key
        movb @bytes+40,*hl              ; LD (HL),40        ; Set the attribute byte for the piano key to #b40 (INK 0:
                                                            ; PAPER 5: BRIGHT 0)
-_37624:
-       ; OUT (254),A                   ; OUT (254),A       ; {Produce a sound based on the frequency parameters in
-       sb   one,d                      ; DEC D             ; the second and third bytes of data for this note (copied
-       jne  _37634                     ; JR NZ,37634       ; into #REGd and #REGe)
-       movb @1(iy),d                   ; LD D,(IY+1)       ; 
-       li   r0,24*256                  ; XOR 24            ; 
-       xor  r0,a                       ;                   
-_37634:
-       sb   one,@e                     ; DEC E             ; 
-       jne  _37642                     ; JR NZ,37642       ; 
-       movb @2(iy),@e                  ; LD E,(IY+2)       ; 
-       li   r0,24*256                  ; XOR 24            ; 
-       xor  r0,a                       ;                   
-_37642:
-       sb   one,b                      ; DJNZ 37624        ; 
-       jne  _37624                     ;                   
-       sb   one,@c                     ; DEC C             ; 
-       jne  _37624                     ; JR NZ,37624       ; }
-       .call @checkenter               ; CALL 37687        ; Check whether ENTER or the fire button is being pressed
-       jeq  !                          ; RET NZ            ; Return (with the zero flag reset) if it is
-       .ret                            ;                   
-!
-       movb @1(iy),a                   ; LD A,(IY+1)       ; Pick up the second byte of data for this note
+       bl   @upload_zx_screen
+
+;_37624:
+;       ; OUT (254),A                   ; OUT (254),A       ; {Produce a sound based on the frequency parameters in
+;       sb   one,d                      ; DEC D             ; the second and third bytes of data for this note (copied
+;       jne  _37634                     ; JR NZ,37634       ; into #REGd and #REGe)
+;       movb @1(iy),d                   ; LD D,(IY+1)       ;
+;       li   r0,24*256                  ; XOR 24            ;
+;       xor  r0,a                       ;
+;_37634:
+;       sb   one,@e                     ; DEC E             ;
+;       jne  _37642                     ; JR NZ,37642       ;
+;       movb @2(iy),@e                  ; LD E,(IY+2)       ;
+;       li   r0,24*256                  ; XOR 24            ;
+;       xor  r0,a                       ;
+;_37642:
+;       sb   one,b                      ; DJNZ 37624        ;
+;       jne  _37624                     ;
+;       sb   one,@c                     ; DEC C             ;
+;       jne  _37624                     ; JR NZ,37624       ; }
+;       .call @checkenter               ; CALL 37687        ; Check whether ENTER or the fire button is being pressed
+;       jeq  !                          ; RET NZ            ; Return (with the zero flag reset) if it is
+;       .ret                            ;
+;!
+       li   r0,JOY_FI
+       bl   @ti_check_key
+       jne  !
+       li   r0,KEY_EN
+       bl   @ti_check_key
+       jeq  !!
+!      .ret
+
+!      movb @1(iy),a                   ; LD A,(IY+1)       ; Pick up the second byte of data for this note
        .call @pianokey                 ; CALL 37675        ; Calculate the attribute file address for the
                                                            ; corresponding piano key
        movb @bytes+56,*hl              ; LD (HL),56        ; Set the attribute byte for the piano key back to #b56
@@ -3388,6 +3410,8 @@ _37642:
                                                            ; corresponding piano key
        movb @bytes+56,*hl              ; LD (HL),56        ; Set the attribute byte for the piano key back to #b56
                                                            ; (INK 0: PAPER 7: BRIGHT 0)
+       bl   @upload_zx_screen
+
        inc  iy                         ; INC IY            ; {Move #REGiy along to the data for the next note in the
        inc  iy                         ; INC IY            ; tune
        inc  iy                         ; INC IY            ; }
@@ -3401,14 +3425,14 @@ _37642:
 * A Frequency parameter from the tune data table at #R33902
 pianokey:                              ; 37675
        sb   @bytes+8,a                 ; SUB 8             ; {Compute the piano key index (K) based on the frequency
-       srl  a,1                        ; RRCA              ; TODO: check code. parameter (F), and store it in bits 0-4 of #REGa:
-       srl  a,1                        ; RRCA              ; TODO: check code. K=31-INT((F-8)/8)
-       srl  a,1                        ; RRCA              ; TODO: check code. 
+;      srl  a,1                        ; RRCA              ; parameter (F), and store it in bits 0-4 of #REGa:
+;      srl  a,1                        ; RRCA              ; K=31-INT((F-8)/8)
+       srl  a,3                        ; RRCA              ; .
        inv  a                          ; CPL               ; }
        socb @bytes+224,a               ; OR 224            ; #REGa=#b224+K; this is the LSB
        movb a,@l                       ; LD L,A            ; {Set #REGhl to the attribute file address for the piano
-       movb @bytes+89,h                ; LD H,89           ; key}
-       .ret                            ; RET               ; 
+       movb @bytes+zx_attrs_msb+1,h    ; LD H,89           ; key}
+       .ret                            ; RET               ;
 
 * Check whether ENTER or the fire button is being pressed
 * 

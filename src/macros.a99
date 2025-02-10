@@ -13,6 +13,13 @@
        b    *r11
        .endm
 
+       .defm ret_eq
+       dect sp
+       mov  *sp,r11
+       c    r11,r11
+       b    *r11
+       .endm
+
        .defm proc
        mov  r11,*sp+
        .endm
