@@ -842,7 +842,7 @@ _34351:
        li   iy,themetune               ; LD IY,33902       ; Point #REGiy at the theme tune data at #R33902
        .call @playtune                 ; CALL 37596        ; Play the theme tune
        jeq  !                          ; JP NZ,34436       ; Start the game if ENTER or the fire button was pressed
-       b    @startgame                 ;
+       b    @start_demo                ;
 
 !
        sb   a,a                        ; XOR A             ; {Initialise the game status buffer variable at #R32988;
@@ -922,8 +922,8 @@ newsht:                                ; 34449
        jmp  !!
 !      seto @caverns_13_19_bank_select
 !
-       sla  a,1                        ; SLA A             ; {Point #REGhl at the first byte of the cavern definition
-       sla  a,1                        ; SLA A             ;
+;      sla  a,1                        ; SLA A             ; {Point #REGhl at the first byte of the cavern definition
+       sla  a,2                        ; SLA A             ;
 ;       ab   @bytes+176,a               ; ADD A,176         ;
        movb a,h                        ; LD H,A            ;
        sb   @l,@l                      ; LD L,0            ; }
@@ -1612,13 +1612,13 @@ _35468:
        movb *ix,a                      ; LD A,(IX+0)       ; Pick up an attribute byte from the buffer at #R24064;
                                                            ; this identifies the type of tile to draw
        li   hl,background              ; LD HL,32800       ; {Move #REGhl through the attribute bytes and graphic
-       li   bc,72                      ; LD BC,72          ; data of the background, floor, crumbling floor, wall,
-!      cb   a,*hl+                     ; CPIR              ; conveyor and nasty tiles starting at #R32800 until we
+       li   bc,8                       ; LD BC,72          ; data of the background, floor, crumbling floor, wall,
+!      cb   a,*hl                      ; CPIR              ; conveyor and nasty tiles starting at #R32800 until we
        jeq  !                                              ; find a byte that matches the attribute byte of the tile
+       ai   hl,9                       ; We're actually only interested in checking every 9th byte, although the original checks them all.
        dec  bc                                             ; to be drawn}
        jne  -!
-!      dec  hl
-
+!
        movb @e,@c                      ; LD C,E            ; Restore the value of the tile counter in #REGc
        movb @bytes+8,b                 ; LD B,8            ; There are eight bytes in the tile
 sbmsb:                                 ; 35483
