@@ -406,54 +406,60 @@ upload_scrn_buffer_2:
 
 upload_screen_buffer:
        lwpi ti_wrksp
-       li   r8,vdpwd
-       li   r9,>0100
+       li   r13,vdpwd
+       li   r1,>0100
 *      Patterns
        li   r0,pattern_table
        bl   @vwad
-       mov  r14,r5                     ; Screen address
-       li   r6,3
+       li   r2,3
 upload_screen_buffer_1:
-       li   r7,256
+       mov  r14,r4
+       a    r1,r14
+       mov  r14,r5
+       a    r1,r14
+       mov  r14,r6
+       a    r1,r14
+       mov  r14,r7
+       a    r1,r14
+       mov  r14,r8
+       a    r1,r14
+       mov  r14,r9
+       a    r1,r14
+       mov  r14,r11
+       a    r1,r14
+       mov  r14,r12
+       a    r1,r14
+       li   r3,256
 upload_screen_buffer_2:
-       movb *r5,*r8
-       a    r9,r5
-       movb *r5,*r8
-       a    r9,r5
-       movb *r5,*r8
-       a    r9,r5
-       movb *r5,*r8
-       a    r9,r5
-       movb *r5,*r8
-       a    r9,r5
-       movb *r5,*r8
-       a    r9,r5
-       movb *r5,*r8
-       a    r9,r5
-       movb *r5,*r8
-       ai   r5,256-2048+1
-       dec  r7
+       movb *r4+,*r13
+       movb *r5+,*r13
+       movb *r6+,*r13
+       movb *r7+,*r13
+       movb *r8+,*r13
+       movb *r9+,*r13
+       movb *r11+,*r13
+       movb *r12+,*r13
+       dec  r3
        jne  upload_screen_buffer_2
-       ai   r5,2048-256
-       dec  r6
+       dec  r2
        jne  upload_screen_buffer_1
 *      Colors
        li   r0,color_table
        bl   @vwad
-       mov  r15,r5                     ; Attributes address
-       li   r6,>300
+       li   r2,>300
 upload_screen_buffer_3:
-       movb *r5+,a
-       bl   @ti_color                  ; Color in r0, modifies r1-r3, a=r4
-       movb r0,*r8
-       movb r0,*r8
-       movb r0,*r8
-       movb r0,*r8
-       movb r0,*r8
-       movb r0,*r8
-       movb r0,*r8
-       movb r0,*r8
-       dec  r6
+       movb *r15+,r1
+       srl  r1,8
+       movb @ti_colors(r1),r0
+       movb r0,*r13
+       movb r0,*r13
+       movb r0,*r13
+       movb r0,*r13
+       movb r0,*r13
+       movb r0,*r13
+       movb r0,*r13
+       movb r0,*r13
+       dec  r2
        jne  upload_screen_buffer_3
        lwpi wrksp
        rt
