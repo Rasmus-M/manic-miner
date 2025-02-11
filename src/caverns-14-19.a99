@@ -119,23 +119,23 @@ cavern14:                              ; 59392
 * colour of the items in the cavern.
        byte 3                                                        ; {Item 1 at (2,25)
        byte (attr_buffer_2+89)%%256,(attr_buffer_2+89)//256          ;
-       byte 96                                                       ;
+       byte scrn_buffer_2//256                                                       ;
        byte 255                                                      ; }
        byte 4                                                        ; {Item 2 at (6,12)
        byte (attr_buffer_2+204)%%256,(attr_buffer_2+204)//256        ;
-       byte 96                                                       ;
+       byte scrn_buffer_2//256                                                       ;
        byte 255                                                      ; }
        byte 5                                                        ; {Item 3 at (14,26)
        byte (attr_buffer_2+474)%%256,(attr_buffer_2+474)//256        ;
-       byte 104                                                      ;
+       byte scrn_buffer_2//256+8                                                      ;
        byte 255                                                      ; }
        byte 255                                                      ; {Item 4 at (6,19) (unused)
        byte (attr_buffer_2+211)%%256,(attr_buffer_2+211)//256        ;
-       byte 96                                                       ;
+       byte scrn_buffer_2//256                                                       ;
        byte 255                                                      ; }
        byte 3                                                        ; {Item 5 at (13,30) (unused)
        byte (attr_buffer_2+446)%%256,(attr_buffer_2+446)//256        ;
-       byte 104                                                      ;
+       byte scrn_buffer_2//256+8                                                      ;
        byte 255                                                      ; }
        byte 255                                                      ; Terminator
 * The next 37 bytes are copied to #R32911 and define the portal graphic and its
@@ -366,23 +366,23 @@ cavern15:                              ; 60416
 * colour of the items in the cavern.
        byte 3                                                        ; {Item 1 at (2,30)
        byte (attr_buffer_2+94)%%256,(attr_buffer_2+94)//256          ;
-       byte 96                                                       ;
+       byte scrn_buffer_2//256                                                       ;
        byte 255                                                      ; }
        byte 4                                                        ; {Item 2 at (7,13)
        byte (attr_buffer_2+237)%%256,(attr_buffer_2+237)//256        ;
-       byte 96                                                       ;
+       byte scrn_buffer_2//256                                                       ;
        byte 255                                                      ; }
        byte 5                                                        ; {Item 3 at (0,1)
        byte (attr_buffer_2+1)%%256,(attr_buffer_2+1)//256            ;
-       byte 96                                                       ;
+       byte scrn_buffer_2//256                                                       ;
        byte 255                                                      ; }
        byte 6                                                        ; {Item 4 at (10,17)
        byte (attr_buffer_2+337)%%256,(attr_buffer_2+337)//256        ;
-       byte 104                                                      ;
+       byte scrn_buffer_2//256+8                                                      ;
        byte 255                                                      ; }
        byte 255                                                      ; {Item 5 at (5,26) (unused)
        byte (attr_buffer_2+186)%%256,(attr_buffer_2+186)//256        ;
-       byte 96                                                       ;
+       byte scrn_buffer_2//256                                                       ;
        byte 255                                                      ; }
        byte 255                                                      ; Terminator
 * The next 37 bytes are copied to #R32911 and define the portal graphic and its
@@ -609,23 +609,23 @@ cavern16:                              ; 61440
 * colour of the items in the cavern.
        byte 35                                                       ; {Item 1 at (5,24)
        byte (attr_buffer_2+184)%%256,(attr_buffer_2+184)//256        ;
-       byte 96                                                       ;
+       byte scrn_buffer_2//256                                                       ;
        byte 255                                                      ; }
        byte 36                                                       ; {Item 2 at (7,15)
        byte (attr_buffer_2+239)%%256,(attr_buffer_2+239)//256        ;
-       byte 96                                                       ;
+       byte scrn_buffer_2//256                                                       ;
        byte 255                                                      ; }
        byte 37                                                       ; {Item 3 at (9,1)
        byte (attr_buffer_2+289)%%256,(attr_buffer_2+289)//256        ;
-       byte 104                                                      ;
+       byte scrn_buffer_2//256+8                                                      ;
        byte 255                                                      ; }
        byte 38                                                       ; {Item 4 at (10,19)
        byte (attr_buffer_2+339)%%256,(attr_buffer_2+339)//256        ;
-       byte 104                                                      ;
+       byte scrn_buffer_2//256+8                                                      ;
        byte 255                                                      ; }
        byte 35                                                       ; {Item 5 at (11,26)
        byte (attr_buffer_2+378)%%256,(attr_buffer_2+378)//256        ;
-       byte 104                                                      ;
+       byte scrn_buffer_2//256+8                                                      ;
        byte 255                                                      ; }
        byte 255                                                      ; Terminator
 * The next 37 bytes are copied to #R32911 and define the portal graphic and its
@@ -867,7 +867,7 @@ cavern17:                              ; 62464
 * colour of the items in the cavern.
        byte 3                                                        ; {Item 1 at (1,16)
        byte (attr_buffer_2+48)%%256,(attr_buffer_2+48)//256          ;
-       byte 96                                                       ;
+       byte scrn_buffer_2//256                                                       ;
        byte 255                                                      ; }
        byte 255,255,255,255,255                                      ; Item 2 (unused)
        byte 0,255,255,255,255                                        ; Item 3 (unused)
@@ -1123,15 +1123,15 @@ cavern18:                              ; 63488
 * colour of the items in the cavern.
        byte 35                                                       ; {Item 1 at (1,30)
        byte (attr_buffer_2+62)%%256,(attr_buffer_2+62)//256          ;
-       byte 96                                                       ;
+       byte scrn_buffer_2//256                                                       ;
        byte 255                                                      ; }
        byte 36                                                       ; {Item 2 at (5,1)
        byte (attr_buffer_2+161)%%256,(attr_buffer_2+161)//256        ;
-       byte 96                                                       ;
+       byte scrn_buffer_2//256                                                       ;
        byte 255                                                      ; }
        byte 37                                                       ; {Item 3 at (12,30)
        byte (attr_buffer_2+414)%%256,(attr_buffer_2+414)//256        ;
-       byte 104                                                      ;
+       byte scrn_buffer_2//256+8                                                      ;
        byte 255                                                      ; }
        byte 255,255,255,255,255                                      ; Item 4 (unused)
        byte 0,255,255,255,255                                        ; Item 5 (unused)
@@ -1380,23 +1380,23 @@ cavern19:                              ; 64512
 * colour of the items in the cavern.
        byte 3                                                        ; {Item 1 at (5,23)
        byte (attr_buffer_2+183)%%256,(attr_buffer_2+183)//256        ;
-       byte 96                                                       ;
+       byte scrn_buffer_2//256                                                       ;
        byte 255                                                      ; }
        byte 4                                                        ; {Item 2 at (6,30)
        byte (attr_buffer_2+222)%%256,(attr_buffer_2+222)//256        ;
-       byte 96                                                       ;
+       byte scrn_buffer_2//256                                                       ;
        byte 255                                                      ; }
        byte 5                                                        ; {Item 3 at (11,10)
        byte (attr_buffer_2+362)%%256,(attr_buffer_2+362)//256        ;
-       byte 104                                                      ;
+       byte scrn_buffer_2//256+8                                                      ;
        byte 255                                                      ; }
        byte 6                                                        ; {Item 4 at (11,14)
        byte (attr_buffer_2+366)%%256,(attr_buffer_2+366)//256        ;
-       byte 104                                                      ;
+       byte scrn_buffer_2//256+8                                                      ;
        byte 255                                                      ; }
        byte 3                                                        ; {Item 5 at (11,19)
        byte (attr_buffer_2+371)%%256,(attr_buffer_2+371)//256        ;
-       byte 104                                                      ;
+       byte scrn_buffer_2//256+8                                                      ;
        byte 255                                                      ; }
        byte 255                                                      ; Terminator
 * The next 37 bytes are copied to #R32911 and define the portal graphic and its

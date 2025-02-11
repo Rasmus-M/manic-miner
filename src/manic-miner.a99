@@ -293,7 +293,7 @@ _34623:
                                                            ; screen buffer at #R24576
 ;       .call @drawhg                   ; CALL 36266        ; Draw the horizontal guardians in the current cavern
 ;       .call @mvconveyor               ; CALL 37125        ; Move the conveyor in the current cavern
-;       .call @drawitems                ; CALL 36707        ; Draw the items in the current cavern and collect any
+       .call @drawitems                ; CALL 36707        ; Draw the items in the current cavern and collect any
                                                            ; that Willy is touching
 ;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
 ;       cb   a,@bytes+4                 ; CP 4              ; Are we in #R49152(Eugene's Lair)?
@@ -341,9 +341,9 @@ _34722:
        jeq  _34760                     ; JR Z,34760        ; Jump if so
        sb   one,a                      ; DEC A             ; {Decrement the screen flash counter at #R33880
        movb a,@flash                   ; LD (33880),A      ; }
-;      sla  a,1                        ; RLCA              ; TODO: check code. {Move bits 0-2 into bits 3-5 and clear all the other
-;      sla  a,1                        ; RLCA              ; TODO: check code. bits
-       sla  a,3                        ; RLCA              ; TODO: check code.
+;      sla  a,1                        ; RLCA              ; {Move bits 0-2 into bits 3-5 and clear all the other
+;      sla  a,1                        ; RLCA              ; bits
+       sla  a,3                        ; RLCA              ;
        andi a,56*256                   ; AND 56            ; }
        li   hl,attr_buffer_2           ; LD HL,23552       ; {Set every attribute byte in the buffer at #R23552 to
        li   de,attr_buffer_2+1         ; LD DE,23553       ; this value
