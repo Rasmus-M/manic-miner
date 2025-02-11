@@ -1,35 +1,278 @@
-bytes:
-       byte >00,>01,>02,>03,>04,>05,>06,>07,>08,>09,>0a,>0b,>0c,>0d,>0e,>0f
-       byte >10,>11,>12,>13,>14,>15,>16,>17,>18,>19,>1a,>1b,>1c,>1d,>1e,>1f
-       byte >20,>21,>22,>23,>24,>25,>26,>27,>28,>29,>2a,>2b,>2c,>2d,>2e,>2f
-       byte >30,>31,>32,>33,>34,>35,>36,>37,>38,>39,>3a,>3b,>3c,>3d,>3e,>3f
-       byte >40,>41,>42,>43,>44,>45,>46,>47,>48,>49,>4a,>4b,>4c,>4d,>4e,>4f
-       byte >50,>51,>52,>53,>54,>55,>56,>57,>58,>59,>5a,>5b,>5c,>5d,>5e,>5f
-       byte >60,>61,>62,>63,>64,>65,>66,>67,>68,>69,>6a,>6b,>6c,>6d,>6e,>6f
-       byte >70,>71,>72,>73,>74,>75,>76,>77,>78,>79,>7a,>7b,>7c,>7d,>7e,>7f
-       byte >80,>81,>82,>83,>84,>85,>86,>87,>88,>89,>8a,>8b,>8c,>8d,>8e,>8f
-       byte >90,>91,>92,>93,>94,>95,>96,>97,>98,>99,>9a,>9b,>9c,>9d,>9e,>9f
-       byte >a0,>a1,>a2,>a3,>a4,>a5,>a6,>a7,>a8,>a9,>aa,>ab,>ac,>ad,>ae,>af
-       byte >b0,>b1,>b2,>b3,>b4,>b5,>b6,>b7,>b8,>b9,>ba,>bb,>bc,>bd,>be,>bf
-       byte >c0,>c1,>c2,>c3,>c4,>c5,>c6,>c7,>c8,>c9,>ca,>cb,>cc,>cd,>ce,>cf
-       byte >d0,>d1,>d2,>d3,>d4,>d5,>d6,>d7,>d8,>d9,>da,>db,>dc,>dd,>de,>df
-       byte >e0,>e1,>e2,>e3,>e4,>e5,>e6,>e7,>e8,>e9,>ea,>eb,>ec,>ed,>ee,>ef
-       byte >f0,>f1,>f2,>f3,>f4,>f5,>f6,>f7,>f8,>f9,>fa,>fb,>fc,>fd,>fe,>ff
+* Current cavern number
+*
+* Initialised by the routine at #R34252, used by the routines at #R34436,
+* #R34574, #R35445 and #R36266, and updated by the routine at #R36904.
+sheet:                                 ; 33799
+       byte 0
 
-ti_colors:
-       byte >11,>41,>61,>d1,>c1,>71,>a1,>e1,>14,>44,>64,>d4,>c4,>74,>a4,>e4
-       byte >16,>46,>66,>d6,>c6,>76,>a6,>e6,>1d,>4d,>6d,>dd,>cd,>7d,>ad,>ed
-       byte >1c,>4c,>6c,>dc,>cc,>7c,>ac,>ec,>17,>47,>67,>d7,>c7,>77,>a7,>e7
-       byte >1a,>4a,>6a,>da,>ca,>7a,>aa,>ea,>1e,>4e,>6e,>de,>ce,>7e,>ae,>ee
-       byte >11,>51,>81,>d1,>21,>71,>b1,>f1,>15,>55,>85,>d5,>25,>75,>b5,>f5
-       byte >18,>58,>88,>d8,>28,>78,>b8,>f8,>1d,>5d,>8d,>dd,>2d,>7d,>bd,>fd
-       byte >12,>52,>82,>d2,>22,>72,>b2,>f2,>17,>57,>87,>d7,>27,>77,>b7,>f7
-       byte >1b,>5b,>8b,>db,>2b,>7b,>bb,>fb,>1f,>5f,>8f,>df,>2f,>7f,>bf,>ff
-       byte >11,>14,>16,>1d,>1c,>17,>1a,>1e,>41,>44,>46,>4d,>4c,>47,>4a,>4e
-       byte >61,>64,>66,>6d,>6c,>67,>6a,>6e,>d1,>d4,>d6,>dd,>dc,>d7,>da,>de
-       byte >c1,>c4,>c6,>cd,>cc,>c7,>ca,>ce,>71,>74,>76,>7d,>7c,>77,>7a,>7e
-       byte >a1,>a4,>a6,>ad,>ac,>a7,>aa,>ae,>e1,>e4,>e6,>ed,>ec,>e7,>ea,>ee
-       byte >11,>15,>18,>1d,>12,>17,>1b,>1f,>51,>55,>58,>5d,>52,>57,>5b,>5f
-       byte >81,>85,>88,>8d,>82,>87,>8b,>8f,>d1,>d5,>d8,>dd,>d2,>d7,>db,>df
-       byte >21,>25,>28,>2d,>22,>27,>2b,>2f,>71,>75,>78,>7d,>72,>77,>7b,>7f
-       byte >b1,>b5,>b8,>bd,>b2,>b7,>bb,>bf,>f1,>f5,>f8,>fd,>f2,>f7,>fb,>ff
+* Left-right movement table
+*
+* Used by the routine at #R35805. The entries in this table are used to map the
+* existing value (V) of Willy's direction and movement flags at #R32874 to a
+* new value (V'), depending on the direction Willy is facing and how he is
+* moving or being moved (by 'left' and 'right' keypresses and joystick input,
+* or by a conveyor).
+* .
+* One of the first four entries is used when Willy is not moving.
+lrmovement:                            ; 33800
+       byte 0                                                        ; V=0 (facing right, no movement) + no movement: V'=0 (no
+                                                                     ; change)
+       byte 1                                                        ; V=1 (facing left, no movement) + no movement: V'=1 (no
+                                                                     ; change)
+       byte 0                                                        ; V=2 (facing right, moving) + no movement: V'=0 (facing
+                                                                     ; right, no movement) (i.e. stop)
+       byte 1                                                        ; V=3 (facing left, moving) + no movement: V'=1 (facing
+                                                                     ; left, no movement) (i.e. stop)
+* One of the next four entries is used when Willy is moving left.
+       byte 1                                                        ; V=0 (facing right, no movement) + move left: V'=1
+                                                                     ; (facing left, no movement) (i.e. turn around)
+       byte 3                                                        ; V=1 (facing left, no movement) + move left: V'=3 (facing
+                                                                     ; left, moving)
+       byte 1                                                        ; V=2 (facing right, moving) + move left: V'=1 (facing
+                                                                     ; left, no movement) (i.e. turn around)
+       byte 3                                                        ; V=3 (facing left, moving) + move left: V'=3 (no change)
+* One of the next four entries is used when Willy is moving right.
+       byte 2                                                        ; V=0 (facing right, no movement) + move right: V'=2
+                                                                     ; (facing right, moving)
+       byte 0                                                        ; V=1 (facing left, no movement) + move right: V'=0
+                                                                     ; (facing right, no movement) (i.e. turn around)
+       byte 2                                                        ; V=2 (facing right, moving) + move right: V'=2 (no
+                                                                     ; change)
+       byte 0                                                        ; V=3 (facing left, moving) + move right: V'=0 (facing
+                                                                     ; right, no movement) (i.e. turn around)
+* One of the final four entries is used when Willy is being pulled both left
+* and right; each entry leaves the flags at #R32874 unchanged (so Willy carries
+* on moving in the direction he's already moving, or remains stationary).
+       byte 0                                                        ; V=V'=0 (facing right, no movement)
+       byte 1                                                        ; V=V'=1 (facing left, no movement)
+       byte 2                                                        ; V=V'=2 (facing right, moving)
+       byte 3                                                        ; V=V'=3 (facing left, moving)
+
+* 'AIR'
+*
+* Used by the routine at #R34436.
+messair:                               ; 33816
+       text 'AIR'
+
+* Unused
+       text '0000'
+
+* High score
+*
+* Used by the routine at #R34574 and updated by the routine at #R35140.
+hghscor:                               ; 33823
+       text '000000'
+
+* Score
+*
+* Initialised by the routine at #R34436, and used by the routines at #R34574,
+* #R35140, #R36904 and #R37098.
+score:                                 ; 33829
+       text '0000'                                                   ; Overflow digits (these may be updated, but are never
+                                                                     ; printed)
+scorbuf:                               ; 33833
+       text '000000'
+
+* 'High Score 000000#SPACE(3)Score 000000'
+*
+* Used by the routine at #R34436.
+messhssc:                              ; 33839
+       text 'HIGH SCORE 000000   SCORE 000000'
+
+* 'Game'
+*
+* Used by the routine at #R35140.
+messg:                                 ; 33871
+       text 'GAME'
+
+* 'Over'
+*
+* Used by the routine at #R35140.
+messo:                                 ; 33875
+       text 'OVER'
+
+* Lives remaining
+*
+* Initialised to 2 by the routine at #R34252, and used and updated by the
+* routines at #R34574 and #R37098.
+nomen:                                 ; 33879
+       byte 0
+
+* Screen flash counter
+*
+* Initialised by the routine at #R34252, and used by the routines at #R34574
+* and #R37098.
+flash:                                 ; 33880
+       byte 0
+
+* Kempston joystick indicator
+*
+* Initialised by the routine at #R34252, and used by the routines at #R34574,
+* #R35805 and #R37687. Holds 1 if a joystick is present, 0 otherwise.
+kemp:                                  ; 33881
+       byte 0
+
+* Game mode indicator
+*
+* Initialised by the routine at #R34252, and used by the routines at #R34436,
+* #R34574 and #R36904. Holds #b0 when a game is in progress, or a value from
+* #b1 to #b64 when in demo mode.
+demo:                                  ; 33882
+       byte 0
+
+* In-game music note index
+*
+* Initialised by the routine at #R34252, and used and updated by the routine at
+* #R34574.
+noteindex:                             ; 33883
+       byte 0
+
+* Music flags
+*
+* The keypress flag in bit 0 is initialised by the routine at #R34252; bits 0
+* and 1 are checked and updated by the routine at #R34574.
+* .
+* #TABLE(default,centre,:w)
+* { =h Bit(s) | =h Meaning }
+* { 0 | Keypress flag (set=H-ENTER being pressed, reset=no key pressed) }
+* { 1 | In-game music flag (set=music off, reset=music on) }
+* { 2-7 | Unused }
+* TABLE#
+musicflags:                            ; 33884
+       byte 0
+
+* 6031769 key counter
+*
+* Used by the routines at #R34574 and #R36904.
+cheat:                                 ; 33885
+       byte 0
+
+* 6031769
+*
+* Used by the routine at #R34574. In each pair of bytes here, bits 0-4 of the
+* first byte correspond to keys 1-2-3-4-5, and bits 0-4 of the second byte
+* correspond to keys 0-9-8-7-6; among those bits, a zero indicates a key being
+* pressed.
+       byte :00011111,:00011111                                      ; (no keys pressed)
+cheatdt:                               ; 33888
+       byte :00011111,:00001111                                      ; 6
+       byte :00011111,:00011110                                      ; 0
+       byte :00011011,:00011111                                      ; 3
+       byte :00011110,:00011111                                      ; 1
+       byte :00011111,:00010111                                      ; 7
+       byte :00011111,:00001111                                      ; 6
+       byte :00011111,:00011101                                      ; 9
+
+* Title screen tune data (The Blue Danube)
+*
+* Used by the routine at #R37596. The tune data is organised into 95 groups of
+* three bytes each, one group for each note in the tune. The first byte in each
+* group determines the duration of the note, and the second and third bytes
+* determine the frequency (and also the piano keys that light up).
+themetune:                             ; 33902
+       byte 80,128,129
+       byte 80,102,103
+       byte 80,86,87
+       byte 50,86,87
+       byte 50,171,203
+       byte 50,43,51
+       byte 50,43,51
+       byte 50,171,203
+       byte 50,51,64
+       byte 50,51,64
+       byte 50,171,203
+       byte 50,128,129
+       byte 50,128,129
+       byte 50,102,103
+       byte 50,86,87
+       byte 50,96,86
+       byte 50,171,192
+       byte 50,43,48
+       byte 50,43,48
+       byte 50,171,192
+       byte 50,48,68
+       byte 50,48,68
+       byte 50,171,192
+       byte 50,136,137
+       byte 50,136,137
+       byte 50,114,115
+       byte 50,76,77
+       byte 50,76,77
+       byte 50,171,192
+       byte 50,38,48
+       byte 50,38,48
+       byte 50,171,192
+       byte 50,48,68
+       byte 50,48,68
+       byte 50,171,192
+       byte 50,136,137
+       byte 50,136,137
+       byte 50,114,115
+       byte 50,76,77
+       byte 50,76,77
+       byte 50,171,203
+       byte 50,38,51
+       byte 50,38,51
+       byte 50,171,203
+       byte 50,51,64
+       byte 50,51,64
+       byte 50,171,203
+       byte 50,128,129
+       byte 50,128,129
+       byte 50,102,103
+       byte 50,86,87
+       byte 50,64,65
+       byte 50,128,171
+       byte 50,32,43
+       byte 50,32,43
+       byte 50,128,171
+       byte 50,43,51
+       byte 50,43,51
+       byte 50,128,171
+       byte 50,128,129
+       byte 50,128,129
+       byte 50,102,103
+       byte 50,86,87
+       byte 50,64,65
+       byte 50,128,152
+       byte 50,32,38
+       byte 50,32,38
+       byte 50,128,152
+       byte 50,38,48
+       byte 50,38,48
+       byte 50,0,0
+       byte 50,114,115
+       byte 50,114,115
+       byte 50,96,97
+       byte 50,76,77
+       byte 50,76,153
+       byte 50,76,77
+       byte 50,76,77
+       byte 50,76,153
+       byte 50,91,92
+       byte 50,86,87
+       byte 50,51,205
+       byte 50,51,52
+       byte 50,51,52
+       byte 50,51,205
+       byte 50,64,65
+       byte 50,102,103
+       byte 100,102,103
+       byte 50,114,115
+       byte 100,76,77
+       byte 50,86,87
+       byte 50,128,203
+       byte 25,128,0
+       byte 25,128,129
+       byte 50,128,203
+       byte 255                                                      ; End marker
+
+* In-game tune data (In the Hall of the Mountain King)
+*
+* Used by the routine at #R34574.
+gametune:                              ; 34188
+       byte 128,114,102,96,86,102,86,86,81,96,81,81,86,102,86,86
+       byte 128,114,102,96,86,102,86,86,81,96,81,81,86,86,86,86
+       byte 128,114,102,96,86,102,86,86,81,96,81,81,86,102,86,86
+       byte 128,114,102,96,86,102,86,64,86,102,128,102,86,86,86,86
+

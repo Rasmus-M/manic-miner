@@ -1,0 +1,491 @@
+* Attribute buffer (cavern + Willy + guardians + items + portal)
+*
+* The routine at #R34574 initialises this buffer with the contents of the
+* attribute buffer at #R24064 (empty cavern), writes the attributes for Willy,
+* the guardians, the items and the portal into it, and then copies the result
+* to the attribute file.
+attr_buffer_2:                         ; 23552
+       bss 512
+
+* Attribute buffer (empty cavern)
+*
+* Initialised upon entry to a cavern by the routine at #R34436, and updated by
+* the routines at #R35770 and #R37173.
+attr_buffer_1:                         ; 24064
+       bss 512
+
+* Screen buffer (cavern + Willy + guardians + items + portal)
+*
+* The routine at #R34574 initialises this buffer with the contents of the
+* screen buffer at #R28672 (empty cavern), draws Willy, the guardians, the
+* items and the portal over this background, and then copies the result to the
+* display file.
+scrn_buffer_2:                         ; 24576
+       bss 4096
+
+* Screen buffer (empty cavern)
+*
+* Initialised upon entry to a cavern by the routine at #R35445, and updated by
+* the routines at #R35770, #R37125 and #R37173.
+scrn_buffer_1:                         ; 28672
+       bss 4096
+
+* Manic Miner disassembly
+* https://skoolkit.ca
+*
+* Copyright 1983 Bug-Byte Ltd (Manic Miner)
+* Copyright 2010, 2012-2022 Richard Dymond (this disassembly)
+
+;       b    @begin                     ; JP 33792
+
+* Cavern name
+*
+* The cavern name is copied here and then used by the routine at #R34436.
+cavernname:                            ; 32768
+       bss 32
+
+* Cavern tiles
+*
+* The cavern tiles are copied here by the routine at #R34436 and then used to
+* draw the cavern by the routine at #R35445.
+* .
+* The extra tile at #R32863 behaves like a floor tile, and is used as such in
+* #R54272(The Endorian Forest), #R55296(Attack of the Mutant Telephones),
+* #R57344(Ore Refinery), #R58368(Skylab Landing Bay) and #R59392(The Bank). It
+* is also used in #R47104(The Menagerie) as spider silk, and in #R52224(Miner
+* Willy meets the Kong Beast) and #R56320(Return of the Alien Kong Beast) as a
+* switch.
+background:                            ; 32800
+       bss 9                                                         ; Background tile (also used by the routines at #R35515,
+                                                                     ; #R35770, #R36211, #R36344, #R37173 and #R37471)
+floor:                                 ; 32809
+       bss 9                                                         ; Floor tile (also used by the routine at #R36211)
+crumbling:                             ; 32818
+       bss 9                                                         ; Crumbling floor tile (also used by the routine at
+                                                                     ; #R35515)
+wall:                                  ; 32827
+       bss 9                                                         ; Wall tile (also used by the routines at #R35515, #R35805
+                                                                     ; and #R36211)
+conveyor:                              ; 32836
+       bss 9                                                         ; Conveyor tile (also used by the routine at #R35805)
+nasty1:                                ; 32845
+       bss 9                                                         ; Nasty tile 1 (also used by the routines at #R35515 and
+                                                                     ; #R37471)
+nasty2:                                ; 32854
+       bss 9                                                         ; Nasty tile 2 (also used by the routines at #R35515 and
+                                                                     ; #R37471)
+extra:                                 ; 32863
+       bss 9                                                         ; Extra tile (also used by the routine at #R37403)
+
+* Willy's y-coordinate
+*
+* Initialised by the routine at #R34436, and used by the routines at #R35515,
+* #R35805, #R37434 and #R37503. Holds the LSB of the address of the entry in
+* the screen buffer address lookup table at #R33536 that corresponds to Willy's
+* pixel y-coordinate; in practice, this LSB is twice Willy's actual pixel
+* y-coordinate.
+willy_y:                               ; 32872
+       byte 0
+
+* Willy's animation frame
+*
+* Initialised upon entry to a cavern or after losing a life by the routine at
+* #R34436, used by the routine at #R37503, and updated by the routine at
+* #R35805. Possible values are 0, 1, 2 and 3.
+frame:                                 ; 32873
+       byte 0
+
+* Willy's direction and movement flags
+*
+* Initialised by the routine at #R34436.
+* .
+* #TABLE(default,centre,:w)
+* { =h Bit(s) | =h Meaning | =h Used by }
+* { 0 | Direction Willy is facing (reset=right, set=left) | #R35805, #R37503 }
+* { 1 | Willy's movement flag (set=moving) | #R35515, #R35805 }
+* { 2-7 | Unused (always reset) | }
+* TABLE#
+dmflags:                               ; 32874
+       byte 0
+
+* Airborne status indicator
+*
+* Initialised by the routine at #R34436, and used by the routines at #R34574,
+* #R35515, #R35805 and #R36101. Possible values are:
+* .
+* #TABLE(default,centre,:w)
+* { =h Value | =h Meaning }
+* { #b0      | Willy is neither falling nor jumping }
+* { #b1      | Willy is jumping }
+* { #b2-#b11 | Willy is falling, and can land safely }
+* { #b12+    | Willy is falling, and has fallen too far to land safely (see
+* #R35805#35805) }
+* { #b255    | Willy has collided with a nasty or a guardian (see #R36101) }
+* TABLE#
+airborne:                              ; 32875
+       byte 0
+
+* Address of Willy's location in the attribute buffer at #N23552
+*
+* Initialised by the routine at #R34436, used by the routines at #R35515,
+* #R36805, #R37403, #R37434 and #R37503, and updated by the routine at #R35805.
+location:                              ; 32876
+       data 0
+
+* Jumping animation counter
+*
+* Initialised by the routine at #R34436, and used by the routines at #R35515
+* and #R35805.
+jumping:                               ; 32878
+       byte 0
+
+* Conveyor definition
+*
+* The conveyor definition is copied here by the routine at #R34436.
+convdir:                               ; 32879
+       byte 0                                                        ; Direction (0=left, 1=right; used by the routines at
+                                                                     ; #R35805 and #R37125)
+convloc:                               ; 32880
+       data 0                                                        ; Address of the conveyor's location in the screen buffer
+                                                                     ; at #R28672 (used by the routine at #R37125)
+convlen:                               ; 32882
+       byte 0                                                        ; Length (used by the routine at #R37125)
+
+* Border colour
+*
+* Initialised and used by the routine at #R34436, and also used by the routines
+* at #R34574, #R35515 and #R37173.
+border:                                ; 32883
+       byte 0
+
+* Attribute of the last item drawn
+*
+* Used by the routines at #R36344 and #R36707. Holds the attribute byte of the
+* last item drawn, or #b0 if all the items have been collected.
+itemattr:                              ; 32884
+       byte 0
+
+* Item definitions
+*
+* The item definitions are copied here by the routine at #R34436, and then used
+* by the routine at #R36707. An item definition contains the following
+* information:
+* .
+* #TABLE(default,centre,:w)
+* { =h Byte(s) | =h Contents }
+* { 0 | Current attribute }
+* { 1,2 | Address of the item's location in the attribute buffer at #R23552 }
+* { 3 | MSB of the address of the item's location in the screen buffer at
+* #R24576 }
+* { 4 | Unused (always #b255) }
+* TABLE#
+items:                                 ; 32885
+       bss 5                                                         ; Item 1
+       bss 5                                                         ; Item 2
+       bss 5                                                         ; Item 3
+       bss 5                                                         ; Item 4
+       bss 5                                                         ; Item 5
+       byte 0                                                        ; Terminator (set to #b255)
+
+* Portal definition
+*
+* The portal definition is copied here by the routine at #R34436.
+portal:                                ; 32911
+       byte 0                                                        ; Attribute byte (used by the routines at #R36707 and
+                                                                     ; #R36805)
+portalg:                               ; 32912
+       bss 32                                                        ; Graphic data (used by the routine at #R36805)
+portalloc1:                            ; 32944
+       data 0                                                        ; Address of the portal's location in the attribute buffer
+                                                                     ; at #R23552 (used by the routine at #R36805)
+portalloc2:                            ; 32946
+       data 0                                                        ; Address of the portal's location in the screen buffer at
+                                                                     ; #R24576 (used by the routine at #R36805)
+
+* Item graphic
+*
+* The item graphic is copied here by the routine at #R34436, and then used by
+* the routine at #R36707.
+item:                                  ; 32948
+       bss 8
+
+* Remaining air supply
+*
+* Initialised (always to #b63 in practice) and used by the routine at #R34436,
+* updated by the routine at #R35388, and also used by the routine at #R36904.
+* Its value ranges from #b36 to #b63 and is actually the LSB of the display
+* file address for the cell at the right end of the air bar. The amount of air
+* to draw in this cell is determined by the value of the game clock at #R32957.
+air:                                   ; 32956
+       byte 0
+
+* Game clock
+*
+* Initialised by the routine at #R34436, updated on every pass through the main
+* loop by the routine at #R35388, and used for timing purposes by the routines
+* at #R36111, #R36344 and #R37173. Its value (which is always a multiple of 4)
+* is also used by the routine at #R35388 to compute the amount of air to draw
+* in the cell at the right end of the air bar.
+clock:                                 ; 32957
+       byte 0
+
+* Horizontal guardians
+*
+* The horizontal guardian definitions are copied here by the routine at
+* #R34436, and then used by the routines at #R36111 and #R36266. There are four
+* slots, each one seven bytes long, used to hold the state of the horizontal
+* guardians in the current cavern.
+* .
+* For each horizontal guardian, the seven bytes are used as follows:
+* .
+* #TABLE(default,centre,:w)
+* { =h Byte | =h Contents }
+* { =r2 0 | Bit 7: animation speed (0=normal, 1=slow) }
+* { Bits 0-6: attribute (BRIGHT, PAPER and INK) }
+* { 1,2 | Address of the guardian's location in the attribute buffer at #R23552
+* }
+* { 3 | MSB of the address of the guardian's location in the screen buffer at
+* #R24576 }
+* { 4 | Animation frame }
+* { 5 | LSB of the address of the leftmost point of the guardian's path in the
+* attribute buffer }
+* { 6 | LSB of the address of the rightmost point of the guardian's path in the
+* attribute buffer }
+* TABLE#
+hguards:                               ; 32958
+       bss 7                                                         ; Horizontal guardian 1
+hguard2:                               ; 32965
+       bss 7                                                         ; Horizontal guardian 2
+       bss 7                                                         ; Horizontal guardian 3
+       bss 7                                                         ; Horizontal guardian 4
+       byte 0                                                        ; Terminator (set to #b255)
+
+* Eugene's direction or the Kong Beast's status
+*
+* Initialised by the routine at #R34436, and used by the routines at #R36344
+* (to hold Eugene's direction: 0=down, 1=up) and #R37173 (to hold the Kong
+* Beast's status: 0=on the ledge, 1=falling, 2=dead).
+eugdir:                                ; 32987
+       byte 0
+
+* Eugene's or the Kong Beast's pixel y-coordinate
+*
+* Initialised by the routine at #R34436, and used by the routines at #R34252
+* (to hold the index into the message scrolled across the screen after the
+* theme tune has finished playing), #R35140 (to hold the distance of the boot
+* from the top of the screen as it descends onto Willy), #R36344 (to hold
+* Eugene's pixel y-coordinate) and #R37173 (to hold the Kong Beast's pixel
+* y-coordinate).
+eughgt:                                ; 32988
+       byte 0
+
+* Vertical guardians
+*
+* The vertical guardian definitions are copied here by the routine at #R34436,
+* and then used by the routines at #R36469 and #R36593. There are four slots,
+* each one seven bytes long, used to hold the state of the vertical guardians
+* in the current cavern.
+* .
+* For each vertical guardian, the seven bytes are used as follows:
+* .
+* #TABLE(default,centre,:w)
+* { =h Byte | =h Contents }
+* { 0 | Attribute }
+* { 1 | Animation frame }
+* { 2 | Pixel y-coordinate }
+* { 3 | x-coordinate }
+* { 4 | Pixel y-coordinate increment }
+* { 5 | Minimum pixel y-coordinate }
+* { 6 | Maximum pixel y-coordinate }
+* TABLE#
+* .
+* In most of the caverns that do not have vertical guardians, this area is
+* overwritten by unused bytes from the cavern definition. The exception is
+* #R49152(Eugene's Lair): the routine at #R34436 copies the graphic data for
+* the Eugene sprite into the last 32 bytes of this area, where it is then used
+* by the routine at #R36344.
+vguards:                               ; 32989
+       bss 7                                                         ; Vertical guardian 1
+       bss 7                                                         ; Vertical guardian 2
+       bss 7                                                         ; Vertical guardian 3
+       bss 7                                                         ; Vertical guardian 4
+       byte 0                                                        ; Terminator (set to #b255 in caverns that have four
+                                                                     ; vertical guardians)
+       bss 6                                                         ; Spare
+
+* Guardian graphic data
+*
+* The guardian graphic data is copied here by the routine at #R34436, and then
+* used by the routines at #R36266, #R36469, #R36593 and #R37173.
+ggdata:                                ; 33024
+       bss 256
+
+* Willy sprite graphic data
+*
+* Used by the routines at #R34252, #R34574 and #R37503.
+* .
+* #UDGTABLE
+* { #FOR(0,3)//n/#UDGARRAY2,7,2,2;(33280+32*n)-(33297+32*n)-1-16(willyn*)/ | //
+* | #UDGARRAY*willy0;willy1;willy2;willy3(willy_r) }
+* { #FOR(4,7)//n/#UDGARRAY2,7,2,2;(33280+32*n)-(33297+32*n)-1-16(willyn*)/ | //
+* | #UDGARRAY*willy7;willy6;willy5;willy4(willy_l) }
+* TABLE#
+mandat:                                ; 33280
+       byte 6,0,62,0,124,0,52,0,62,0,60,0,24,0,60,0
+       byte 126,0,126,0,247,0,251,0,60,0,118,0,110,0,119,0
+       byte 1,128,15,128,31,0,13,0,15,128,15,0,6,0,15,0
+       byte 27,128,27,128,27,128,29,128,15,0,6,0,6,0,7,0
+willyr2:                               ; 33344
+       byte 0,96,3,224,7,192,3,64,3,224,3,192,1,128,3,192
+       byte 7,224,7,224,15,112,15,176,3,192,7,96,6,224,7,112
+willyr3:                               ; 33376
+       byte 0,24,0,248,1,240,0,208,0,248,0,240,0,96,0,240
+       byte 1,248,3,252,7,254,6,246,0,248,1,218,3,14,3,132
+       byte 24,0,31,0,15,128,11,0,31,0,15,0,6,0,15,0
+       byte 31,128,63,192,127,224,111,96,31,0,91,128,112,192,33,192
+       byte 6,0,7,192,3,224,2,192,7,192,3,192,1,128,3,192
+       byte 7,224,7,224,14,240,13,240,3,192,6,224,7,96,14,224
+       byte 1,128,1,240,0,248,0,176,1,240,0,240,0,96,0,240
+       byte 1,248,1,216,1,216,1,184,0,240,0,96,0,96,0,224
+       byte 0,96,0,124,0,62,0,44,0,124,0,60,0,24,0,60
+       byte 0,126,0,126,0,239,0,223,0,60,0,110,0,118,0,238
+
+* Screen buffer address lookup table
+*
+* Used by the routines at #R35140, #R36344, #R36469, #R36593, #R37173 and
+* #R37503. The value of the Nth entry (0<=N<=127) in this lookup table is the
+* screen buffer address for the point with pixel coordinates (x,y)=(0,N), with
+* the origin (0,0) at the top-left corner.
+sbufaddrs:                             ; 33536
+       data scrn_buffer_2                                            ; y=0
+       data scrn_buffer_2+256                                        ; y=1
+       data scrn_buffer_2+512                                        ; y=2
+       data scrn_buffer_2+768                                        ; y=3
+       data scrn_buffer_2+1024                                       ; y=4
+       data scrn_buffer_2+1280                                       ; y=5
+       data scrn_buffer_2+1536                                       ; y=6
+       data scrn_buffer_2+1792                                       ; y=7
+       data scrn_buffer_2+32                                         ; y=8
+       data scrn_buffer_2+288                                        ; y=9
+       data scrn_buffer_2+544                                        ; y=10
+       data scrn_buffer_2+800                                        ; y=11
+       data scrn_buffer_2+1056                                       ; y=12
+       data scrn_buffer_2+1312                                       ; y=13
+       data scrn_buffer_2+1568                                       ; y=14
+       data scrn_buffer_2+1824                                       ; y=15
+       data scrn_buffer_2+64                                         ; y=16
+       data scrn_buffer_2+320                                        ; y=17
+       data scrn_buffer_2+576                                        ; y=18
+       data scrn_buffer_2+832                                        ; y=19
+       data scrn_buffer_2+1088                                       ; y=20
+       data scrn_buffer_2+1344                                       ; y=21
+       data scrn_buffer_2+1600                                       ; y=22
+       data scrn_buffer_2+1856                                       ; y=23
+       data scrn_buffer_2+96                                         ; y=24
+       data scrn_buffer_2+352                                        ; y=25
+       data scrn_buffer_2+608                                        ; y=26
+       data scrn_buffer_2+864                                        ; y=27
+       data scrn_buffer_2+1120                                       ; y=28
+       data scrn_buffer_2+1376                                       ; y=29
+       data scrn_buffer_2+1632                                       ; y=30
+       data scrn_buffer_2+1888                                       ; y=31
+       data scrn_buffer_2+128                                        ; y=32
+       data scrn_buffer_2+384                                        ; y=33
+       data scrn_buffer_2+640                                        ; y=34
+       data scrn_buffer_2+896                                        ; y=35
+       data scrn_buffer_2+1152                                       ; y=36
+       data scrn_buffer_2+1408                                       ; y=37
+       data scrn_buffer_2+1664                                       ; y=38
+       data scrn_buffer_2+1920                                       ; y=39
+       data scrn_buffer_2+160                                        ; y=40
+       data scrn_buffer_2+416                                        ; y=41
+       data scrn_buffer_2+672                                        ; y=42
+       data scrn_buffer_2+928                                        ; y=43
+       data scrn_buffer_2+1184                                       ; y=44
+       data scrn_buffer_2+1440                                       ; y=45
+       data scrn_buffer_2+1696                                       ; y=46
+       data scrn_buffer_2+1952                                       ; y=47
+       data scrn_buffer_2+192                                        ; y=48
+       data scrn_buffer_2+448                                        ; y=49
+       data scrn_buffer_2+704                                        ; y=50
+       data scrn_buffer_2+960                                        ; y=51
+       data scrn_buffer_2+1216                                       ; y=52
+       data scrn_buffer_2+1472                                       ; y=53
+       data scrn_buffer_2+1728                                       ; y=54
+       data scrn_buffer_2+1984                                       ; y=55
+       data scrn_buffer_2+224                                        ; y=56
+       data scrn_buffer_2+480                                        ; y=57
+       data scrn_buffer_2+736                                        ; y=58
+       data scrn_buffer_2+992                                        ; y=59
+       data scrn_buffer_2+1248                                       ; y=60
+       data scrn_buffer_2+1504                                       ; y=61
+       data scrn_buffer_2+1760                                       ; y=62
+       data scrn_buffer_2+2016                                       ; y=63
+       data scrn_buffer_2+2048                                       ; y=64
+       data scrn_buffer_2+2304                                       ; y=65
+       data scrn_buffer_2+2560                                       ; y=66
+       data scrn_buffer_2+2816                                       ; y=67
+       data scrn_buffer_2+3072                                       ; y=68
+       data scrn_buffer_2+3328                                       ; y=69
+       data scrn_buffer_2+3584                                       ; y=70
+       data scrn_buffer_2+3840                                       ; y=71
+       data scrn_buffer_2+2080                                       ; y=72
+       data scrn_buffer_2+2336                                       ; y=73
+       data scrn_buffer_2+2592                                       ; y=74
+       data scrn_buffer_2+2848                                       ; y=75
+       data scrn_buffer_2+3104                                       ; y=76
+       data scrn_buffer_2+3360                                       ; y=77
+       data scrn_buffer_2+3616                                       ; y=78
+       data scrn_buffer_2+3872                                       ; y=79
+       data scrn_buffer_2+2112                                       ; y=80
+       data scrn_buffer_2+2368                                       ; y=81
+       data scrn_buffer_2+2624                                       ; y=82
+       data scrn_buffer_2+2880                                       ; y=83
+       data scrn_buffer_2+3136                                       ; y=84
+       data scrn_buffer_2+3392                                       ; y=85
+       data scrn_buffer_2+3648                                       ; y=86
+       data scrn_buffer_2+3904                                       ; y=87
+       data scrn_buffer_2+2144                                       ; y=88
+       data scrn_buffer_2+2400                                       ; y=89
+       data scrn_buffer_2+2656                                       ; y=90
+       data scrn_buffer_2+2912                                       ; y=91
+       data scrn_buffer_2+3168                                       ; y=92
+       data scrn_buffer_2+3424                                       ; y=93
+       data scrn_buffer_2+3680                                       ; y=94
+       data scrn_buffer_2+3936                                       ; y=95
+       data scrn_buffer_2+2176                                       ; y=96
+       data scrn_buffer_2+2432                                       ; y=97
+       data scrn_buffer_2+2688                                       ; y=98
+       data scrn_buffer_2+2944                                       ; y=99
+       data scrn_buffer_2+3200                                       ; y=100
+       data scrn_buffer_2+3456                                       ; y=101
+       data scrn_buffer_2+3712                                       ; y=102
+       data scrn_buffer_2+3968                                       ; y=103
+       data scrn_buffer_2+2208                                       ; y=104
+       data scrn_buffer_2+2464                                       ; y=105
+       data scrn_buffer_2+2720                                       ; y=106
+       data scrn_buffer_2+2976                                       ; y=107
+       data scrn_buffer_2+3232                                       ; y=108
+       data scrn_buffer_2+3488                                       ; y=109
+       data scrn_buffer_2+3744                                       ; y=110
+       data scrn_buffer_2+4000                                       ; y=111
+       data scrn_buffer_2+2240                                       ; y=112
+       data scrn_buffer_2+2496                                       ; y=113
+       data scrn_buffer_2+2752                                       ; y=114
+       data scrn_buffer_2+3008                                       ; y=115
+       data scrn_buffer_2+3264                                       ; y=116
+       data scrn_buffer_2+3520                                       ; y=117
+       data scrn_buffer_2+3776                                       ; y=118
+       data scrn_buffer_2+4032                                       ; y=119
+       data scrn_buffer_2+2272                                       ; y=120
+       data scrn_buffer_2+2528                                       ; y=121
+       data scrn_buffer_2+2784                                       ; y=122
+       data scrn_buffer_2+3040                                       ; y=123
+       data scrn_buffer_2+3296                                       ; y=124
+       data scrn_buffer_2+3552                                       ; y=125
+       data scrn_buffer_2+3808                                       ; y=126
+       data scrn_buffer_2+4064                                       ; y=127
+
+sbufaddrs_msb_byte:
+       equ  bytes+(sbufaddrs//8)     ; Unsigned division
+

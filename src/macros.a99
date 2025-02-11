@@ -52,6 +52,18 @@
        jne  -!
        .endm
 
+       .defm fill
+       movb *hl,r0
+       swpb r0
+       movb *hl,r0
+       inc  bc
+       a    bc,hl
+       dec  de
+!      mov  r0,*de+
+       dect bc
+       jne  -!
+       .endm
+
        .defm ldir
 !      movb *hl+,*de+
        dec  bc

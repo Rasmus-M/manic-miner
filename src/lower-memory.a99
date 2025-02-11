@@ -6,7 +6,7 @@
 
        aorg >3b00
 
-       copy "data.a99"
+       copy "ti-data.a99"
 
 font:
        bcopy "../zx spectrum/font.bin"

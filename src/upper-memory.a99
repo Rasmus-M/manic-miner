@@ -6,7 +6,7 @@ init:
        limi 0
        lwpi wrksp
        bl   @ti_setup_environment
-       b    @begin
+       b    @start
 
        copy "ti-general-routines.a99"
 
