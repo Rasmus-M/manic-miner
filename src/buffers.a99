@@ -1,19 +1,3 @@
-* Attribute buffer (cavern + Willy + guardians + items + portal)
-*
-* The routine at #R34574 initialises this buffer with the contents of the
-* attribute buffer at #R24064 (empty cavern), writes the attributes for Willy,
-* the guardians, the items and the portal into it, and then copies the result
-* to the attribute file.
-attr_buffer_2:                         ; 23552
-       bss 512
-
-* Attribute buffer (empty cavern)
-*
-* Initialised upon entry to a cavern by the routine at #R34436, and updated by
-* the routines at #R35770 and #R37173.
-attr_buffer_1:                         ; 24064
-       bss 512
-
 * Screen buffer (cavern + Willy + guardians + items + portal)
 *
 * The routine at #R34574 initialises this buffer with the contents of the
@@ -29,6 +13,22 @@ scrn_buffer_2:                         ; 24576
 * the routines at #R35770, #R37125 and #R37173.
 scrn_buffer_1:                         ; 28672
        bss 4096
+
+* Attribute buffer (cavern + Willy + guardians + items + portal)
+*
+* The routine at #R34574 initialises this buffer with the contents of the
+* attribute buffer at #R24064 (empty cavern), writes the attributes for Willy,
+* the guardians, the items and the portal into it, and then copies the result
+* to the attribute file.
+attr_buffer_2:                         ; 23552
+       bss 512
+
+* Attribute buffer (empty cavern)
+*
+* Initialised upon entry to a cavern by the routine at #R34436, and updated by
+* the routines at #R35770 and #R37173.
+attr_buffer_1:                         ; 24064
+       bss 512
 
 * Manic Miner disassembly
 * https://skoolkit.ca
@@ -196,10 +196,10 @@ portal:                                ; 32911
 portalg:                               ; 32912
        bss 32                                                        ; Graphic data (used by the routine at #R36805)
 portalloc1:                            ; 32944
-       data 0                                                        ; Address of the portal's location in the attribute buffer
+       byte 0,0                                                      ; Address of the portal's location in the attribute buffer
                                                                      ; at #R23552 (used by the routine at #R36805)
 portalloc2:                            ; 32946
-       data 0                                                        ; Address of the portal's location in the screen buffer at
+       byte 0,0                                                      ; Address of the portal's location in the screen buffer at
                                                                      ; #R24576 (used by the routine at #R36805)
 
 * Item graphic
