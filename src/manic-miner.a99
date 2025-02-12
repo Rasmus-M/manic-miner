@@ -299,7 +299,7 @@ _34623:
                                                            ; sprite in the buffer at #R23552, and draw Willy to the
                                                            ; screen buffer at #R24576
        .call @drawhg                   ; CALL 36266        ; Draw the horizontal guardians in the current cavern
-;       .call @mvconveyor               ; CALL 37125        ; Move the conveyor in the current cavern
+       .call @mvconveyor               ; CALL 37125        ; Move the conveyor in the current cavern
        .call @drawitems                ; CALL 36707        ; Draw the items in the current cavern and collect any
                                                            ; that Willy is touching
 ;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
@@ -2218,42 +2218,48 @@ _37118:
 * 
 * Used by the routine at #R34574.
 mvconveyor:                            ; 37125
-       mov  @convloc,hl                ; LD HL,(32880)     ; Pick up the address of the conveyor's location in the
-                                                           ; screen buffer at #R28672 from #R32880
-       movb @l,@e                      ; LD E,L            ; {Copy this address to #REGde
-       movb h,d                        ; LD D,H            ; }
-       movb @convlen,a                 ; LD A,(32882)      ; Pick up the length of the conveyor from #R32882
-       movb a,b                        ; LD B,A            ; #REGb will count the conveyor tiles
+       movb @convloc+1,h               ; LD HL,(32880)     ; Pick up the address of the conveyor's location in the
+       movb @convloc,@l                ; screen buffer at #R28672 from #R32880
+;      movb @l,@e                      ; LD E,L            ; {Copy this address to #REGde
+;      movb h,d                        ; LD D,H            ; }
+       mov  hl,de
+       movb @convlen,b                 ; LD A,(32882)      ; Pick up the length of the conveyor from #R32882
+;      movb a,b                        ; LD B,A            ; #REGb will count the conveyor tiles
        movb @convdir,a                 ; LD A,(32879)      ; Pick up the direction of the conveyor from #R32879
-       socb a,a                        ; OR A              ; Is the conveyor moving right?
+;      socb a,a                        ; OR A              ; Is the conveyor moving right?
        jne  _37159                     ; JR NZ,37159       ; Jump if so
 * The conveyor is moving left.
-       movb *hl,a                      ; LD A,(HL)         ; Copy the first pixel row of the conveyor tile to #REGa
-       sla  a,1                        ; RLC A             ; TODO: check code. {Rotate it left twice
-       sla  a,1                        ; RLC A             ; TODO: check code. }
-       ab   one,h                      ; INC H             ; {Point #REGhl at the third pixel row of the conveyor
-       ab   one,h                      ; INC H             ; tile}
-       movb *hl,@c                     ; LD C,(HL)         ; Copy this pixel row to #REGc
-       ; RRC C                         ; RRC C             ; {Rotate it right twice
+       movb *hl,r0                     ; LD A,(HL)         ; Copy the first pixel row of the conveyor tile to #REGa
+       movb r0,@r0lb                   ; RLC A             ; {Rotate it left twice
+       src  r0,14                       ; RLC A             ; }
+       movb r0,a
+;      ab   one,h                      ; INC H             ; {Point #REGhl at the third pixel row of the conveyor
+       ab   @bytes+2,h                 ; INC H             ; tile}
+       movb *hl,r0                     ; LD C,(HL)         ; Copy this pixel row to #REGc
+       movb r0,@r0lb
+       src  r0,2                       ; RRC C             ; {Rotate it right twice
+       movb r0,@c
        ; RRC C                         ; RRC C             ; }
 _37152:
-       movb a,*de                      ; LD (DE),A         ; {Update the first and third pixel rows of every conveyor
-       movb @c,*hl                     ; LD (HL),C         ; tile in the screen buffer at #R28672
-       ab   one,@l                     ; INC L             ; 
-       ab   one,@e                     ; INC E             ; 
+       movb a,*de+                     ; LD (DE),A         ; {Update the first and third pixel rows of every conveyor
+       movb @c,*hl+                    ; LD (HL),C         ; tile in the screen buffer at #R28672
+;      ab   one,@l                     ; INC L             ;
+;      ab   one,@e                     ; INC E             ;
        sb   one,b                      ; DJNZ 37152        ; }
        jne  _37152                     ;                   
        .ret                            ; RET               ; 
 * The conveyor is moving right.
 _37159:
-       movb *hl,a                      ; LD A,(HL)         ; Copy the first pixel row of the conveyor tile to #REGa
-       sra  a,1                        ; RRC A             ; TODO: check code. {Rotate it right twice
-       sra  a,1                        ; RRC A             ; TODO: check code. }
-       ab   one,h                      ; INC H             ; {Point #REGhl at the third pixel row of the conveyor
-       ab   one,h                      ; INC H             ; tile}
-       movb *hl,@c                     ; LD C,(HL)         ; Copy this pixel row to #REGc
-       ; RLC C                         ; RLC C             ; {Rotate it left twice
-       ; RLC C                         ; RLC C             ; }
+       movb *hl,r0                     ; LD A,(HL)         ; Copy the first pixel row of the conveyor tile to #REGa
+       movb r0,@r0lb                   ; RRC A             ; {Rotate it right twice
+       src  r0,2                       ; RRC A             ; }
+       mov  r0,a
+;      ab   one,h                      ; INC H             ; {Point #REGhl at the third pixel row of the conveyor
+       ab   @bytes+2,h                 ; INC H             ; tile}
+       movb *hl,r0                     ; LD C,(HL)         ; Copy this pixel row to #REGc
+       movb r0,@r0lb                   ; RLC C             ; {Rotate it left twice
+       src  r0,14                      ; RLC C             ; }
+       movb r0,@c
        jmp  _37152                     ; JR 37152          ; Jump back to update the first and third pixel rows of
                                                            ; every conveyor tile
 
