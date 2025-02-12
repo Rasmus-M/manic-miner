@@ -166,11 +166,11 @@ cavern0:                               ; 45056
        byte 252                                                      ; Game clock
 * The next 28 bytes are copied to #R32958 and define the horizontal guardians.
        byte 70                                                       ; {Horizontal guardian 1: y=7,
-       byte (attr_buffer_2+232)%%256,(attr_buffer_2+232)//256        ; initial x=8, 8<=x<=15,
-       byte 96                                                       ; speed=normal
-       byte 0                                                        ;
-       byte 232                                                      ;
-       byte 239                                                      ; }
+       byte (attr_buffer_2+232)%%256,(attr_buffer_2+232)//256        ; initial x=8, 8<=x<=15, speed=normal
+       byte scrn_buffer_2//256                                       ; }
+       byte 0                                                        ; Initial direction
+       byte 232                                                      ; Left boundary
+       byte 239                                                      ; Right boundary
        byte 255,0,0,0,0,0,0                                          ; Horizontal guardian 2 (unused)
        byte 0,0,0,0,0,0,0                                            ; Horizontal guardian 3 (unused)
        byte 0,0,0,0,0,0,0                                            ; Horizontal guardian 4 (unused)
@@ -404,13 +404,13 @@ cavern1:                               ; 46080
 * The next 28 bytes are copied to #R32958 and define the horizontal guardians.
        byte 14                                                       ; {Horizontal guardian 1: y=3,
        byte (attr_buffer_2+114)%%256,(attr_buffer_2+114)//256        ; initial x=18, 1<=x<=18,
-       byte 96                                                       ; speed=normal
+       byte scrn_buffer_2//256                                       ; speed=normal
        byte 7                                                        ;
        byte 97                                                       ;
        byte 114                                                      ; }
        byte 13                                                       ; {Horizontal guardian 2: y=13,
        byte (attr_buffer_2+445)%%256,(attr_buffer_2+445)//256        ; initial x=29, 12<=x<=29,
-       byte 104                                                      ; speed=normal
+       byte scrn_buffer_2//256+8                                     ; speed=normal
        byte 7                                                        ;
        byte 172                                                      ;
        byte 189                                                      ; }
@@ -646,19 +646,19 @@ cavern2:                               ; 47104
 * The next 28 bytes are copied to #R32958 and define the horizontal guardians.
        byte 68                                                       ; {Horizontal guardian 1: y=13,
        byte (attr_buffer_2+435)%%256,(attr_buffer_2+435)//256        ; initial x=19, 1<=x<=19,
-       byte 104                                                      ; speed=normal
+       byte scrn_buffer_2//256+8                                     ; speed=normal
        byte 7                                                        ;
        byte 161                                                      ;
        byte 179                                                      ; }
        byte 67                                                       ; {Horizontal guardian 2: y=3,
        byte (attr_buffer_2+112)%%256,(attr_buffer_2+112)//256        ; initial x=16, 1<=x<=16,
-       byte 96                                                       ; speed=normal
+       byte scrn_buffer_2//256                                       ; speed=normal
        byte 7                                                        ;
        byte 97                                                       ;
        byte 112                                                      ; }
        byte 66                                                       ; {Horizontal guardian 3: y=3,
        byte (attr_buffer_2+114)%%256,(attr_buffer_2+114)//256        ; initial x=18, 18<=x<=29,
-       byte 96                                                       ; speed=normal
+       byte scrn_buffer_2//256                                       ; speed=normal
        byte 0                                                        ;
        byte 114                                                      ;
        byte 125                                                      ; }
@@ -894,13 +894,13 @@ cavern3:                               ; 48128
 * The next 28 bytes are copied to #R32958 and define the horizontal guardians.
        byte 66                                                       ; {Horizontal guardian 1: y=13,
        byte (attr_buffer_2+417)%%256,(attr_buffer_2+417)//256        ; initial x=1, 1<=x<=10,
-       byte 104                                                      ; speed=normal
+       byte scrn_buffer_2//256+8                                     ; speed=normal
        byte 0                                                        ;
        byte 161                                                      ;
        byte 170                                                      ; }
        byte 68                                                       ; {Horizontal guardian 2: y=13,
        byte (attr_buffer_2+423)%%256,(attr_buffer_2+423)//256        ; initial x=7, 6<=x<=15,
-       byte 104                                                      ; speed=normal
+       byte scrn_buffer_2//256+8                                     ; speed=normal
        byte 0                                                        ;
        byte 166                                                      ;
        byte 175                                                      ; }
@@ -1127,13 +1127,13 @@ cavern4:                               ; 49152
 * The next 28 bytes are copied to #R32958 and define the horizontal guardians.
        byte 22                                                       ; {Horizontal guardian 1: y=3,
        byte (attr_buffer_2+108)%%256,(attr_buffer_2+108)//256        ; initial x=12, 1<=x<=12,
-       byte 96                                                       ; speed=normal
+       byte scrn_buffer_2//256                                       ; speed=normal
        byte 7                                                        ;
        byte 97                                                       ;
        byte 108                                                      ; }
        byte 16                                                       ; {Horizontal guardian 2: y=7,
        byte (attr_buffer_2+228)%%256,(attr_buffer_2+228)//256        ; initial x=4, 4<=x<=12,
-       byte 96                                                       ; speed=normal
+       byte scrn_buffer_2//256                                       ; speed=normal
        byte 0                                                        ;
        byte 228                                                      ;
        byte 236                                                      ; }
@@ -1367,25 +1367,25 @@ cavern5:                               ; 50176
 * The next 28 bytes are copied to #R32958 and define the horizontal guardians.
        byte 70                                                       ; {Horizontal guardian 1: y=8,
        byte (attr_buffer_2+262)%%256,(attr_buffer_2+262)//256        ; initial x=6, 6<=x<=13,
-       byte 104                                                      ; speed=normal
+       byte scrn_buffer_2//256+8                                     ; speed=normal
        byte 0                                                        ;
        byte 6                                                        ;
        byte 13                                                       ; }
        byte 67                                                       ; {Horizontal guardian 2: y=8,
        byte (attr_buffer_2+270)%%256,(attr_buffer_2+270)//256        ; initial x=14, 14<=x<=21,
-       byte 104                                                      ; speed=normal
+       byte scrn_buffer_2//256+8                                     ; speed=normal
        byte 1                                                        ;
        byte 14                                                       ;
        byte 21                                                       ; }
        byte 69                                                       ; {Horizontal guardian 3: y=13,
        byte (attr_buffer_2+424)%%256,(attr_buffer_2+424)//256        ; initial x=8, 8<=x<=20,
-       byte 104                                                      ; speed=normal
+       byte scrn_buffer_2//256+8                                     ; speed=normal
        byte 2                                                        ;
        byte 168                                                      ;
        byte 180                                                      ; }
        byte 6                                                        ; {Horizontal guardian 4: y=13,
        byte (attr_buffer_2+440)%%256,(attr_buffer_2+440)//256        ; initial x=24, 24<=x<=29,
-       byte 104                                                      ; speed=normal
+       byte scrn_buffer_2//256+8                                     ; speed=normal
        byte 3                                                        ;
        byte 184                                                      ;
        byte 189                                                      ; }
@@ -1610,19 +1610,19 @@ cavern6:                               ; 51200
 * The next 28 bytes are copied to #R32958 and define the horizontal guardians.
        byte 69                                                       ; {Horizontal guardian 1: y=1,
        byte (attr_buffer_2+47)%%256,(attr_buffer_2+47)//256          ; initial x=15, 15<=x<=29,
-       byte 96                                                       ; speed=normal
+       byte scrn_buffer_2//256                                       ; speed=normal
        byte 0                                                        ;
        byte 47                                                       ;
        byte 61                                                       ; }
        byte 67                                                       ; {Horizontal guardian 2: y=8,
        byte (attr_buffer_2+266)%%256,(attr_buffer_2+266)//256        ; initial x=10, 2<=x<=10,
-       byte 104                                                      ; speed=normal
+       byte scrn_buffer_2//256+8                                     ; speed=normal
        byte 7                                                        ;
        byte 2                                                        ;
        byte 10                                                       ; }
        byte 6                                                        ; {Horizontal guardian 3: y=13,
        byte (attr_buffer_2+433)%%256,(attr_buffer_2+433)//256        ; initial x=17, 17<=x<=29,
-       byte 104                                                      ; speed=normal
+       byte scrn_buffer_2//256+8                                     ; speed=normal
        byte 0                                                        ;
        byte 177                                                      ;
        byte 189                                                      ; }

@@ -1,6 +1,13 @@
-* Copyright 2010, 2012-2022 Richard Dymond (rjdymond@gmail.com)
 
-       copy "buffers.a99"
+* Manic Miner disassembly
+* https://skoolkit.ca
+*
+* Copyright 1983 Bug-Byte Ltd (Manic Miner)
+* Copyright 2010, 2012-2022 Richard Dymond (this disassembly)
+
+;       b    @begin                     ; JP 33792
+
+* Copyright 2010, 2012-2022 Richard Dymond (rjdymond@gmail.com)
 
 * The game has just loaded
 begin:                                 ; 33792
@@ -8,8 +15,6 @@ begin:                                 ; 33792
 ;      li   sp,_40190                  ; LD SP,40190       ; Place the stack somewhere safe (near the end of the
                                                            ; source code remnants at #R37708)
 ;      b    @start                     ; JP 34252          ; Display the title screen and play the theme tune
-
-       copy "data.a99"
 
 * Display the title screen and play the theme tune
 * 
@@ -278,7 +283,9 @@ _34623:
        li   de,scrn_buffer_2           ; LD DE,24576       ; tiles for the empty cavern) into the screen buffer at
        li   bc,4096                    ; LD BC,4096        ; #R24576
        .ldir2                          ; LDIR              ; }
-;       .call @movehg                   ; CALL 36111        ; Move the horizontal guardians in the current cavern
+
+       .call @movehg                   ; CALL 36111        ; Move the horizontal guardians in the current cavern
+
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
 ;      socb a,a                        ; OR A              ; Are we in demo mode?
        jne  !                          ; CALL Z,35515      ; If not, move Willy
@@ -291,7 +298,7 @@ _34623:
 !
                                                            ; sprite in the buffer at #R23552, and draw Willy to the
                                                            ; screen buffer at #R24576
-;       .call @drawhg                   ; CALL 36266        ; Draw the horizontal guardians in the current cavern
+       .call @drawhg                   ; CALL 36266        ; Draw the horizontal guardians in the current cavern
 ;       .call @mvconveyor               ; CALL 37125        ; Move the conveyor in the current cavern
        .call @drawitems                ; CALL 36707        ; Draw the items in the current cavern and collect any
                                                            ; that Willy is touching
@@ -337,7 +344,7 @@ _34722:
        .ldir2                          ; LDIR              ; }
 
        movb @flash,a                   ; LD A,(33880)      ; Pick up the screen flash counter from #R33880
-       socb a,a                        ; OR A              ; Is it zero?
+;      socb a,a                        ; OR A              ; Is it zero?
        jeq  _34760                     ; JR Z,34760        ; Jump if so
        sb   one,a                      ; DEC A             ; {Decrement the screen flash counter at #R33880
        movb a,@flash                   ; LD (33880),A      ; }
@@ -1435,12 +1442,13 @@ _36118:
        jeq  _36207                     ; JR Z,36207        ; If so, skip it and consider the next one
        movb @clock,a                   ; LD A,(32957)      ; Pick up the value of the game clock at #R32957
        andi a,4*256                    ; AND 4             ; {Move bit 2 (which is toggled on each pass through the
-       srl  a,1                        ; RRCA              ; TODO: check code. main loop) to bit 7 and clear all the other bits
-       srl  a,1                        ; RRCA              ; TODO: check code. 
-       srl  a,1                        ; RRCA              ; TODO: check code. }
-       ; AND (IY+0)                    ; AND (IY+0)        ; Combine this bit with bit 7 of the first byte of the
-                                                           ; guardian definition, which specifies the guardian's
-                                                           ; animation speed: 0=normal, 1=slow
+;      srl  a,1                        ; RRCA              ; main loop) to bit 7 and clear all the other bits
+;      srl  a,1                        ; RRCA              ;
+;      srl  a,1                        ; RRCA              ; }
+       sla  a,5
+       movb *iy,r0                     ; AND (IY+0)        ; Combine this bit with bit 7 of the first byte of the
+       inv  r0                                             ; guardian definition, which specifies the guardian's
+       szcb r0,a                                           ; animation speed: 0=normal, 1=slow
        jne  _36207                     ; JR NZ,36207       ; Jump to consider the next guardian if this one is not
                                                            ; due to be moved on this pass
 * The guardian will be moved on this pass.
@@ -1453,7 +1461,7 @@ _36118:
                                                            ; a guardian moving left)?
        jeq  _36186                     ; JR Z,36186        ; Jump if so to move the guardian left across a cell
                                                            ; boundary or turn it round
-       jnc  _36158                     ; JR NC,36158       ; TODO: check code. Jump if the animation frame is 5, 6 or 7
+       jhe  _36158                     ; JR NC,36158       ; Jump if the animation frame is 5, 6 or 7
        ab   one,@4(iy)                 ; INC (IY+4)        ; Increment the animation frame (this guardian is moving
                                                            ; right)
        jmp  _36207                     ; JR 36207          ; Jump forward to consider the next guardian
@@ -1564,24 +1572,25 @@ _36270:
 !
        socb a,a                        ; OR A              ; Is this guardian definition blank?
        jeq  _36337                     ; JR Z,36337        ; If so, skip it and consider the next one
-       li   de,31                      ; LD DE,31          ; Prepare #REGde for addition
+;      li   de,31                      ; LD DE,31          ; Prepare #REGde for addition
        movb @1(iy),@l                  ; LD L,(IY+1)       ; {Point #REGhl at the address of the guardian's location
        movb @2(iy),h                   ; LD H,(IY+2)       ; in the attribute buffer at #R23552}
        andi a,127*256                  ; AND 127           ; Reset bit 7 (which specifies the animation speed) of the
                                                            ; attribute byte, ensuring no FLASH
-       movb a,*hl                      ; LD (HL),A         ; {Set the attribute bytes for the guardian in the buffer
-       inc  hl                         ; INC HL            ; at #R23552
+       movb a,*hl+                     ; LD (HL),A         ; {Set the attribute bytes for the guardian in the buffer
+;      inc  hl                         ; INC HL            ; at #R23552
        movb a,*hl                      ; LD (HL),A         ; 
-       a    de,hl                      ; ADD HL,DE         ; 
-       movb a,*hl                      ; LD (HL),A         ; 
-       inc  hl                         ; INC HL            ; 
+       ai   hl,31                      ; ADD HL,DE         ;
+       movb a,*hl+                     ; LD (HL),A         ;
+;      inc  hl                         ; INC HL            ;
        movb a,*hl                      ; LD (HL),A         ; }
        movb one,@c                     ; LD C,1            ; Prepare #REGc for the call to the drawing routine at
                                                            ; #R36852 later on
        movb @4(iy),a                   ; LD A,(IY+4)       ; Pick up the animation frame (0-7)
-       srl  a,1                        ; RRCA              ; TODO: check code. {Multiply it by 32
-       srl  a,1                        ; RRCA              ; TODO: check code. 
-       srl  a,1                        ; RRCA              ; TODO: check code. }
+;      srl  a,1                        ; RRCA              ; {Multiply it by 32
+;      srl  a,1                        ; RRCA              ;
+;      srl  a,1                        ; RRCA              ; }
+       sla  a,5
        movb a,@e                       ; LD E,A            ; Copy the result to #REGe
        movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+7                 ; CP 7              ; Are we in one of the first seven caverns?
@@ -1593,19 +1602,18 @@ _36270:
        socb @bits+7,@e                 ; SET 7,E           ; Add #b128 to #REGe (the horizontal guardians in this
                                                            ; cavern use frames 4-7 only)
 _36323:
-       movb @bytes+129,d               ; LD D,129          ; Point #REGde at the graphic data for the appropriate
+       movb @bytes+(ggdata//256),d     ; LD D,129          ; Point #REGde at the graphic data for the appropriate
                                                            ; guardian sprite (at #R33024+#REGe)
        movb @1(iy),@l                  ; LD L,(IY+1)       ; {Point #REGhl at the address of the guardian's location
        movb @3(iy),h                   ; LD H,(IY+3)       ; in the screen buffer at #R24576}
        .call @drwfix                   ; CALL 36852        ; Draw the guardian to the screen buffer at #R24576
        jeq  !                          ; JP NZ,36102       ; Kill Willy if the guardian collided with him
-       b    @_36102                    ;                   
+        b    @_36102                    ;
 !
 * The current guardian definition has been dealt with. Time for the next one.
 _36337:
-       equ  $
-       li   de,7                       ; LD DE,7           ; {Point #REGiy at the first byte of the next horizontal
-       a    de,iy                      ; ADD IY,DE         ; guardian definition}
+;      li   de,7                       ; LD DE,7           ; {Point #REGiy at the first byte of the next horizontal
+       ai    iy,7                      ; ADD IY,DE         ; guardian definition}
        jmp  _36270                     ; JR 36270          ; Jump back to deal with the next horizontal guardian
 
 * Move and draw Eugene in Eugene's Lair
@@ -1747,7 +1755,7 @@ _36527:
        srl  a,1                        ; RRCA              ; TODO: check code. 
        srl  a,1                        ; RRCA              ; TODO: check code. }
        movb a,@e                       ; LD E,A            ; {Point #REGde at the graphic data for the corresponding
-       movb @bytes+129,d               ; LD D,129          ; Skylab sprite (at #R33024+#REGa)}
+       movb @bytes+(ggdata//256),d     ; LD D,129          ; Skylab sprite (at #R33024+#REGa)}
        movb one,@c                     ; LD C,1            ; {Draw the Skylab to the screen buffer at #R24576
        .call @drwfix                   ; CALL 36852        ; }
        jeq  !                          ; JP NZ,36103       ; Kill Willy if the Skylab collided with him
@@ -1815,11 +1823,12 @@ _36639:
        movb *de,a                      ; LD A,(DE)         ; 
        movb a,h                        ; LD H,A            ; }
        movb @1(iy),a                   ; LD A,(IY+1)       ; Pick up the guardian's animation frame (0-3)
-       srl  a,1                        ; RRCA              ; TODO: check code. {Multiply it by 32
-       srl  a,1                        ; RRCA              ; TODO: check code. 
-       srl  a,1                        ; RRCA              ; TODO: check code. }
+;      srl  a,1                        ; RRCA              ; {Multiply it by 32
+;      srl  a,1                        ; RRCA              ;
+;      srl  a,1                        ; RRCA              ; }
+       sla  a,5
        movb a,@e                       ; LD E,A            ; {Point #REGde at the graphic data for the appropriate
-       movb @bytes+129,d               ; LD D,129          ; guardian sprite (at #R33024+#REGa)}
+       movb @bytes+(ggdata//256),d     ; LD D,129          ; guardian sprite (at #R33024+#REGa)}
        movb one,@c                     ; LD C,1            ; {Draw the guardian to the screen buffer at #R24576
        .call @drwfix                   ; CALL 36852        ; }
        jeq  !                          ; JP NZ,36102       ; Kill Willy if the guardian collided with him
@@ -1895,11 +1904,12 @@ _36750:
        .call @_37589                   ; CALL 37589        ; Draw the item to the screen buffer at #R24576
 * The current item definition has been dealt with. Time for the next one.
 _36782:
-       inc  iy                         ; INC IY            ; {Point #REGiy at the first byte of the next item
-       inc  iy                         ; INC IY            ; definition
-       inc  iy                         ; INC IY            ; 
-       inc  iy                         ; INC IY            ; 
-       inc  iy                         ; INC IY            ; }
+;      inc  iy                         ; INC IY            ; {Point #REGiy at the first byte of the next item
+;      inc  iy                         ; INC IY            ; definition
+;      inc  iy                         ; INC IY            ;
+;      inc  iy                         ; INC IY            ;
+;      inc  iy                         ; INC IY            ; }
+       ai   iy,5
        jmp  _36715                     ; JR 36715          ; Jump back to deal with the next item
 * All the items have been dealt with. Check whether there were any left.
 _36794:
@@ -2023,7 +2033,7 @@ _36875:
 ;      ab   @bytes+32,a                ; ADD A,32          ;
 ;      movb a,@l                       ; LD L,A            ; }
        ab   @bytes+32,@l
-       mov  @l,a
+       movb @l,a
        andi a,224*256                  ; AND 224           ; Was the last pair of cells at y-coordinate 7 or 15?
        jne  _36900                     ; JR NZ,36900       ; Jump if not
 ;      movb h,a                        ; LD A,H            ; {Otherwise adjust #REGhl to account for the movement
@@ -2035,7 +2045,7 @@ _36900:
        sb   one,b                      ; DJNZ 36854        ; Jump back until all 16 rows of pixels have been drawn
        jne  _36854                     ;                   
        sb   a,a                        ; XOR A             ; Set the zero flag (to indicate no collision)
-       .ret                            ; RET               ; 
+       .ret_eq                         ; RET               ;
 
 * Move to the next cavern
 * 

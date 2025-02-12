@@ -1,5 +1,7 @@
        aorg >a000
 
+       copy "buffers.a99"
+       copy "data.a99"
        copy "manic-miner.a99"
 
 init:
@@ -12,4 +14,6 @@ init:
 
 upper_memory_max:
        equ  $
+
+
 
