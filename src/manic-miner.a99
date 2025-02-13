@@ -25,7 +25,7 @@ begin:                                 ; 33792
 start:                                 ; 34252
        clr  af                         ; XOR A             ; #REGa=0
        movb a,@sheet                   ; LD (33799),A      ; Initialise the current cavern number at #R33799
-;      movb @bytes+13,@sheet
+       movb @bytes+4,@sheet
        movb a,@kemp                    ; LD (33881),A      ; Initialise the Kempston joystick indicator at #R33881
        movb a,@demo                    ; LD (33882),A      ; Initialise the game mode indicator at #R33882
        movb a,@noteindex               ; LD (33883),A      ; Initialise the in-game music note index at #R33883
@@ -302,11 +302,11 @@ _34623:
        .call @mvconveyor               ; CALL 37125        ; Move the conveyor in the current cavern
        .call @drawitems                ; CALL 36707        ; Draw the items in the current cavern and collect any
                                                            ; that Willy is touching
-;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-;       cb   a,@bytes+4                 ; CP 4              ; Are we in #R49152(Eugene's Lair)?
-;       jne  !                          ; CALL Z,36344      ; If so, move and draw Eugene
-;       .call @eugene                   ;
-;!
+       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       cb   a,@bytes+4                 ; CP 4              ; Are we in #R49152(Eugene's Lair)?
+       jne  !                          ; CALL Z,36344      ; If so, move and draw Eugene
+       .call @eugene                   ;
+!
        movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+13                ; CP 13             ; Are we in #R58368(Skylab Landing Bay)?
        jne  !                          ; JP Z,36469        ; If so, move and draw the Skylabs
@@ -1622,10 +1622,10 @@ _36337:
 eugene:                                ; 36344
        movb @itemattr,a                ; LD A,(32884)      ; Pick up the attribute of the last item drawn from
                                                            ; #R32884
-       socb a,a                        ; OR A              ; Have all the items been collected?
+;      socb a,a                        ; OR A              ; Have all the items been collected?
        jeq  _36367                     ; JR Z,36367        ; Jump if so
        movb @eugdir,a                  ; LD A,(32987)      ; Pick up Eugene's direction from #R32987
-       socb a,a                        ; OR A              ; Is Eugene moving downwards?
+;      socb a,a                        ; OR A              ; Is Eugene moving downwards?
        jeq  _36367                     ; JR Z,36367        ; Jump if so
        movb @eughgt,a                  ; LD A,(32988)      ; Pick up Eugene's pixel y-coordinate from #R32988
        sb   one,a                      ; DEC A             ; Decrement it (moving Eugene up)
@@ -1650,10 +1650,10 @@ _36388:
        sla  a,1                        ; RLCA              ; TODO: check code. lookup table at #R33536 that corresponds to Eugene's
        movb a,@e                       ; LD E,A            ; y-coordinate
        movb @sbufaddrs_msb_byte,d      ; LD D,131          ; }
-       movb *de,a                      ; LD A,(DE)         ; {Point #REGhl at the address of Eugene's location in the
+       movb *de+,a                     ; LD A,(DE)         ; {Point #REGhl at the address of Eugene's location in the
        socb @bytes+15,a                ; OR 15             ; screen buffer at #R24576
        movb a,@l                       ; LD L,A            ; 
-       inc  de                         ; INC DE            ; 
+;      inc  de                         ; INC DE            ;
        movb *de,a                      ; LD A,(DE)         ; 
        movb a,h                        ; LD H,A            ; }
        li   de,vguards+3               ; LD DE,32992       ; {Draw Eugene to the screen buffer at #R24576
@@ -1664,13 +1664,14 @@ _36388:
 !
        movb @eughgt,a                  ; LD A,(32988)      ; Pick up Eugene's pixel y-coordinate from #R32988
        andi a,120*256                  ; AND 120           ; {Point #REGhl at the address of Eugene's location in the
-       sla  a,1                        ; RLCA              ; TODO: check code. attribute buffer at #R23552
+       sla  a,1                        ; RLCA              ; attribute buffer at #R23552
        socb @bytes+7,a                 ; OR 7              ; 
-       ; SCF                           ; SCF               ; 
-       sla  a,1                        ; RL A              ; TODO: check code. 
+       ; SCF                           ; SCF               ; Set carry flag, which will be rolled into bit 0
+       sla  a,1                        ; RL A              ;
+       socb one,a
        movb a,@l                       ; LD L,A            ; 
        sb   a,a                        ; LD A,0            ; 
-       ab   @bytes+92,a                ; ADC A,92          ; 
+       ab   @bytes+(attr_buffer_2//256),a                  ; ADC A,92          ;
        movb a,h                        ; LD H,A            ; }
        movb @itemattr,a                ; LD A,(32884)      ; Pick up the attribute of the last item drawn from
                                                            ; #R32884
@@ -1678,9 +1679,10 @@ _36388:
        movb @bytes+7,a                 ; LD A,7            ; Assume we will draw Eugene with white INK
        jne  _36447                     ; JR NZ,36447       ; Jump if there are items remaining to be collected
        movb @clock,a                   ; LD A,(32957)      ; Pick up the value of the game clock at #R32957
-       srl  a,1                        ; RRCA              ; TODO: check code. {Move bits 2-4 into bits 0-2 and clear the other bits;
-       srl  a,1                        ; RRCA              ; TODO: check code. this value (which decreases by one on each pass through
+;      srl  a,1                        ; RRCA              ; {Move bits 2-4 into bits 0-2 and clear the other bits;
+       srl  a,2                        ; RRCA              ; this value (which decreases by one on each pass through
        andi a,7*256                    ; AND 7             ; the main loop) will be Eugene's INK colour}
+
 * This entry point is used by the routines at #R36469 (to set the attributes
 * for a Skylab), #R36593 (to set the attributes for a vertical guardian) and
 * #R37173 (to set the attributes for the Kong Beast).
