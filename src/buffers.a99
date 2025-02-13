@@ -4,7 +4,7 @@
 * screen buffer at #R28672 (empty cavern), draws Willy, the guardians, the
 * items and the portal over this background, and then copies the result to the
 * display file.
-scrn_buffer_2:                         ; 24576
+scrn_buffer_2a:                         ; 24576
        bss 4096
 
 * Screen buffer (empty cavern)
@@ -20,7 +20,7 @@ scrn_buffer_1:                         ; 28672
 * attribute buffer at #R24064 (empty cavern), writes the attributes for Willy,
 * the guardians, the items and the portal into it, and then copies the result
 * to the attribute file.
-attr_buffer_2:                         ; 23552
+attr_buffer_2a:                         ; 23552
        bss 512
 
 * Attribute buffer (empty cavern)

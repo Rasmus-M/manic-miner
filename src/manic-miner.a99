@@ -25,7 +25,7 @@ begin:                                 ; 33792
 start:                                 ; 34252
        clr  af                         ; XOR A             ; #REGa=0
        movb a,@sheet                   ; LD (33799),A      ; Initialise the current cavern number at #R33799
-       movb @bytes+13,@sheet
+;      movb @bytes+13,@sheet
        movb a,@kemp                    ; LD (33881),A      ; Initialise the Kempston joystick indicator at #R33881
        movb a,@demo                    ; LD (33882),A      ; Initialise the game mode indicator at #R33882
        movb a,@noteindex               ; LD (33883),A      ; Initialise the in-game music note index at #R33883
@@ -338,10 +338,10 @@ _34719:
                                                            ; entered it
 * This entry point is used by the routine at #R36101.
 _34722:
-       li   hl,scrn_buffer_2           ; LD HL,24576       ; {Copy the contents of the screen buffer at #R24576 to
-       li   de,zx_screen               ; LD DE,16384       ; the display file
-       li   bc,4096                    ; LD BC,4096        ; 
-       .ldir2                          ; LDIR              ; }
+;       li   hl,scrn_buffer_2           ; LD HL,24576       ; {Copy the contents of the screen buffer at #R24576 to
+;       li   de,zx_screen               ; LD DE,16384       ; the display file
+;       li   bc,4096                    ; LD BC,4096        ;
+;       .ldir2                          ; LDIR              ; }
 
        movb @flash,a                   ; LD A,(33880)      ; Pick up the screen flash counter from #R33880
 ;      socb a,a                        ; OR A              ; Is it zero?
@@ -359,10 +359,10 @@ _34722:
        .fill                           ; LDIR              ; }
 
 _34760:
-       li   hl,attr_buffer_2           ; LD HL,23552       ; {Copy the contents of the attribute buffer at #R23552 to
-       li   de,zx_attrs                ; LD DE,22528       ; the attribute file
-       li   bc,512                     ; LD BC,512         ; 
-       .ldir2                          ; LDIR              ; }
+;       li   hl,attr_buffer_2           ; LD HL,23552       ; {Copy the contents of the attribute buffer at #R23552 to
+;       li   de,zx_attrs                ; LD DE,22528       ; the attribute file
+;       li   bc,512                     ; LD BC,512         ;
+;       .ldir2                          ; LDIR              ; }
 
        li   ix,scorbuf                 ; LD IX,33833       ; {Print the score (see #R33833) at (19,26)
        li   de,zx_screen+4218          ; LD DE,20602       ; 
