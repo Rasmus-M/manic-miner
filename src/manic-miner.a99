@@ -2630,13 +2630,17 @@ playtune:                              ; 37596
                                                            ; #R33902
        cb   a,@b255                    ; CP 255            ; Has the tune finished?
        jne  !                          ; RET Z             ; Return (with the zero flag set) if so
+       li   r0,>9fbf
+       movb r0,@sound
+       swpb r0
+       movb r0,@sound
        .ret_eq                         ;
 !
        movb a,@c                       ; LD C,A            ; Copy the first byte of data for this note (which
                                                            ; determines the duration) to #REGc
        sb   b,b                        ; LD B,0            ; Initialise #REGb, which will be used as a delay counter
                                                            ; in the note-producing loop
-       sb   a,a                        ; XOR A             ; Set #REGa=0 (for no apparent reasaon)
+;      sb   a,a                        ; XOR A             ; Set #REGa=0 (for no apparent reasaon)
        movb @1(iy),d                   ; LD D,(IY+1)       ; Pick up the second byte of data for this note
        movb d,a                        ; LD A,D            ; Copy it to #REGa
        .call @pianokey                 ; CALL 37675        ; Calculate the attribute file address for the
@@ -2651,7 +2655,31 @@ playtune:                              ; 37596
                                                            ; PAPER 5: BRIGHT 0)
        bl   @upload_zx_screen
 
-;_37624:
+       li   r0,>9400
+       movb r0,@sound
+       movb d,r0
+       andi r0,>0700
+       sla  r0,1
+       ori  r0,>8000
+       movb r0,@sound
+       movb d,r0
+       srl  r0,3
+       movb r0,@sound
+
+       li   r0,>b400
+       movb r0,@sound
+       movb @e,r0
+       andi r0,>0700
+       sla  r0,1
+       ori  r0,>a000
+       movb r0,@sound
+       movb @e,r0
+       srl  r0,3
+       movb r0,@sound
+
+       sb   @bytes+25,@c
+       jeq  !
+_37624:
 ;       ; OUT (254),A                   ; OUT (254),A       ; {Produce a sound based on the frequency parameters in
 ;       sb   one,d                      ; DEC D             ; the second and third bytes of data for this note (copied
 ;       jne  _37634                     ; JR NZ,37634       ; into #REGd and #REGe)
@@ -2665,21 +2693,27 @@ playtune:                              ; 37596
 ;       li   r0,24*256                  ; XOR 24            ;
 ;       xor  r0,a                       ;
 ;_37642:
-;       sb   one,b                      ; DJNZ 37624        ;
-;       jne  _37624                     ;
-;       sb   one,@c                     ; DEC C             ;
-;       jne  _37624                     ; JR NZ,37624       ; }
+       sb   one,b                      ; DJNZ 37624        ;
+       jne  _37624                     ;
+       sb   one,@c                     ; DEC C             ;
+       jne  _37624                     ; JR NZ,37624       ; }
+
 ;       .call @checkenter               ; CALL 37687        ; Check whether ENTER or the fire button is being pressed
 ;       jeq  !                          ; RET NZ            ; Return (with the zero flag reset) if it is
 ;       .ret                            ;
 ;!
-       li   r0,JOY_FI
+
+!      li   r0,JOY_FI
        bl   @ti_check_key
        jne  !
        li   r0,KEY_EN
        bl   @ti_check_key
        jeq  !!
-!      .ret
+!      li   r0,>9fbf
+       movb r0,@sound
+       swpb r0
+       movb r0,@sound
+      .ret
 
 !      movb @1(iy),a                   ; LD A,(IY+1)       ; Pick up the second byte of data for this note
        .call @pianokey                 ; CALL 37675        ; Calculate the attribute file address for the
@@ -2696,7 +2730,7 @@ playtune:                              ; 37596
        inc  iy                         ; INC IY            ; {Move #REGiy along to the data for the next note in the
        inc  iy                         ; INC IY            ; tune
        inc  iy                         ; INC IY            ; }
-       jmp  playtune                   ; JR 37596          ; Jump back to play the next note
+       b    @playtune                  ; JR 37596          ; Jump back to play the next note
 
 * Calculate the attribute file address for a piano key
 * 
@@ -2736,18 +2770,3 @@ _37698:
        andi a,1*256                    ; AND 1             ; Keep only bit 0 of the result (ENTER)
        cb   a,one                      ; CP 1              ; Reset the zero flag if ENTER is being pressed
        .ret                            ; RET               ; 
-
-_40190:
-       text >09,'A'                                                  ; }
-
-* '...MANIC MINER . . #CHR(169) BUG-BYTE ltd. 1983...'
-* 
-* Used by the routine at #R34252.
-messintro:                             ; 40192
-       text '.  .  .  .  .  .  .  .  .  .  . MANIC MINER . . '
-       text >7f,' BUG-BYTE LTD. 1983 . . BY MATTHEW SMITH . . . '
-       text 'Q TO P = LEFT & RIGHT . . BOTTOM ROW = JUMP . . '
-       text 'A TO G = PAUSE . . H TO L = TUNE ON/OFF . . . '
-       text 'GUIDE MINER WILLY THROUGH 20 LETHAL CAVERNS'
-       text ' .  .  .  .  .  .  .  .'
-
