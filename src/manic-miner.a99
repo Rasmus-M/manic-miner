@@ -25,6 +25,7 @@ begin:                                 ; 33792
 start:                                 ; 34252
        clr  af                         ; XOR A             ; #REGa=0
        movb a,@sheet                   ; LD (33799),A      ; Initialise the current cavern number at #R33799
+       movb @bytes+13,@sheet
        movb a,@kemp                    ; LD (33881),A      ; Initialise the Kempston joystick indicator at #R33881
        movb a,@demo                    ; LD (33882),A      ; Initialise the game mode indicator at #R33882
        movb a,@noteindex               ; LD (33883),A      ; Initialise the in-game music note index at #R33883
@@ -295,8 +296,7 @@ _34623:
 ;      socb a,a                        ; OR A              ; Are we in demo mode?
        jne  !                          ; CALL Z,37434      ; If not, check and set the attribute bytes for Willy's
        .call @willyattrs               ;                   
-!
-                                                           ; sprite in the buffer at #R23552, and draw Willy to the
+!                                                          ; sprite in the buffer at #R23552, and draw Willy to the
                                                            ; screen buffer at #R24576
        .call @drawhg                   ; CALL 36266        ; Draw the horizontal guardians in the current cavern
        .call @mvconveyor               ; CALL 37125        ; Move the conveyor in the current cavern
@@ -307,16 +307,16 @@ _34623:
 ;       jne  !                          ; CALL Z,36344      ; If so, move and draw Eugene
 ;       .call @eugene                   ;
 ;!
-;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-;       cb   a,@bytes+13                ; CP 13             ; Are we in #R58368(Skylab Landing Bay)?
-;       jne  !                          ; JP Z,36469        ; If so, move and draw the Skylabs
-;       b    @skylabs                   ;
-;!
-;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-;       cb   a,@bytes+8                 ; CP 8              ; Are we in #R53248(Wacky Amoebatrons) or beyond?
-;       jl   !                          ; CALL NC,36593     ; If so, move and draw the vertical guardians
-;       .call @vguardians               ;
-;!
+       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       cb   a,@bytes+13                ; CP 13             ; Are we in #R58368(Skylab Landing Bay)?
+       jne  !                          ; JP Z,36469        ; If so, move and draw the Skylabs
+       b    @skylabs                   ;
+!
+       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       cb   a,@bytes+8                 ; CP 8              ; Are we in #R53248(Wacky Amoebatrons) or beyond?
+       jl   !                          ; CALL NC,36593     ; If so, move and draw the vertical guardians
+       .call @vguardians               ;
+!
 ;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
 ;       cb   a,@bytes+7                 ; CP 7              ; Are we in #R52224(Miner Willy meets the Kong Beast)?
 ;       jne  !                          ; CALL Z,37173      ; If so, move and draw the Kong Beast
@@ -377,7 +377,6 @@ _34760:
        jne  !                          ; JP Z,35071        ; Jump if there's no air left
        b    @mandead                   ;
 !
-
        bl   @upload_zx_screen
 
 ;* Now check whether SHIFT and SPACE are being pressed.
@@ -1691,18 +1690,18 @@ _36447:
                                                            ; the current cavern from #R32800
        andi a,248*256                  ; AND 248           ; {Combine its PAPER colour with the chosen INK colour
        socb *hl,a                      ; OR (HL)           ; }
-       movb a,*hl                      ; LD (HL),A         ; Set the attribute byte for the top-left cell of the
+       movb a,*hl+                     ; LD (HL),A         ; Set the attribute byte for the top-left cell of the
                                                            ; sprite in the attribute buffer at #R23552
        li   de,31                      ; LD DE,31          ; Prepare #REGde for addition
-       inc  hl                         ; INC HL            ; {Set the attribute byte for the top-right cell of the
+;      inc  hl                         ; INC HL            ; {Set the attribute byte for the top-right cell of the
        movb a,*hl                      ; LD (HL),A         ; sprite in the attribute buffer at #R23552}
        a    de,hl                      ; ADD HL,DE         ; {Set the attribute byte for the middle-left cell of the
-       movb a,*hl                      ; LD (HL),A         ; sprite in the attribute buffer at #R23552}
-       inc  hl                         ; INC HL            ; {Set the attribute byte for the middle-right cell of the
+       movb a,*hl+                     ; LD (HL),A         ; sprite in the attribute buffer at #R23552}
+;      inc  hl                         ; INC HL            ; {Set the attribute byte for the middle-right cell of the
        movb a,*hl                      ; LD (HL),A         ; sprite in the attribute buffer at #R23552}
        a    de,hl                      ; ADD HL,DE         ; {Set the attribute byte for the bottom-left cell of the
-       movb a,*hl                      ; LD (HL),A         ; sprite in the attribute buffer at #R23552}
-       inc  hl                         ; INC HL            ; {Set the attribute byte for the bottom-right cell of the
+       movb a,*hl+                     ; LD (HL),A         ; sprite in the attribute buffer at #R23552}
+;      inc  hl                         ; INC HL            ; {Set the attribute byte for the bottom-right cell of the
        movb a,*hl                      ; LD (HL),A         ; sprite in the attribute buffer at #R23552}
        .ret                            ; RET               ; 
 
@@ -1740,8 +1739,9 @@ _36497:
        sb   @1(iy),@1(iy)              ; LD (IY+1),0       ; Reset the animation frame to 0
 * Now that the Skylab's movement has been dealt with, time to draw it.
 _36527:
-       movb @2(iy),@e                  ; LD E,(IY+2)       ; Pick up the Skylab's pixel y-coordinate in #REGe
-       ; RLC E                         ; RLC E             ; {Point #REGde at the entry in the screen buffer address
+       movb @2(iy),a                   ; LD E,(IY+2)       ; Pick up the Skylab's pixel y-coordinate in #REGe
+       sla  a,1                        ; RLC E             ; {Point #REGde at the entry in the screen buffer address
+       movb a,@e
        movb @sbufaddrs_msb_byte,d      ; LD D,131          ; lookup table at #R33536 that corresponds to the Skylab's
                                                            ; pixel y-coordinate}
        movb *de,a                      ; LD A,(DE)         ; {Point #REGhl at the address of the Skylab's location in
@@ -1751,9 +1751,9 @@ _36527:
        movb *de,a                      ; LD A,(DE)         ; 
        movb a,h                        ; LD H,A            ; }
        movb @1(iy),a                   ; LD A,(IY+1)       ; Pick up the animation frame (0-7)
-       srl  a,1                        ; RRCA              ; TODO: check code. {Multiply it by 32
-       srl  a,1                        ; RRCA              ; TODO: check code. 
-       srl  a,1                        ; RRCA              ; TODO: check code. }
+;      srl  a,1                        ; RRCA              ; {Multiply it by 32
+;      srl  a,1                        ; RRCA              ;
+       sla  a,5                        ; RRCA              ; }
        movb a,@e                       ; LD E,A            ; {Point #REGde at the graphic data for the corresponding
        movb @bytes+(ggdata//256),d     ; LD D,129          ; Skylab sprite (at #R33024+#REGa)}
        movb one,@c                     ; LD C,1            ; {Draw the Skylab to the screen buffer at #R24576
@@ -1763,13 +1763,13 @@ _36527:
 !
        movb @2(iy),a                   ; LD A,(IY+2)       ; {Point #REGhl at the address of the Skylab's location in
        andi a,64*256                   ; AND 64            ; the attribute buffer at #R23552
-       sla  a,1                        ; RLCA              ; TODO: check code. 
-       sla  a,1                        ; RLCA              ; TODO: check code. 
-       ab   @bytes+92,a                ; ADD A,92          ; 
+;      sla  a,1                        ; RLCA              ;
+       srl  a,6                        ; RLCA              ;
+       ab   @bytes+(attr_buffer_2//256),a                  ; ADD A,92          ;
        movb a,h                        ; LD H,A            ; 
        movb @2(iy),a                   ; LD A,(IY+2)       ; 
-       sla  a,1                        ; RLCA              ; TODO: check code. 
-       sla  a,1                        ; RLCA              ; TODO: check code. 
+;      sla  a,1                        ; RLCA              ;
+       sla  a,2                        ; RLCA              ;
        andi a,224*256                  ; AND 224           ; 
        socb @3(iy),a                   ; OR (IY+3)         ; 
        movb a,@l                       ; LD L,A            ; }
@@ -1813,7 +1813,7 @@ _36631:
 _36639:
        movb @2(iy),a                   ; LD A,(IY+2)       ; Pick up the guardian's pixel y-coordinate
        andi a,127*256                  ; AND 127           ; {Point #REGde at the entry in the screen buffer address
-       sla  a,1                        ; RLCA              ; TODO: check code. lookup table at #R33536 that corresponds to the
+       sla  a,1                        ; RLCA              ; lookup table at #R33536 that corresponds to the
        movb a,@e                       ; LD E,A            ; guardian's pixel y-coordinate
        movb @sbufaddrs_msb_byte,d      ; LD D,131          ; }
        movb *de,a                      ; LD A,(DE)         ; {Point #REGhl at the address of the guardian's location
@@ -1836,21 +1836,21 @@ _36639:
 !
        movb @2(iy),a                   ; LD A,(IY+2)       ; Pick up the guardian's pixel y-coordinate
        andi a,64*256                   ; AND 64            ; {Point #REGhl at the address of the guardian's location
-       sla  a,1                        ; RLCA              ; TODO: check code. in the attribute buffer at #R23552
-       sla  a,1                        ; RLCA              ; TODO: check code. 
-       ab   @bytes+92,a                ; ADD A,92          ; 
+;      sla  a,1                        ; RLCA              ; in the attribute buffer at #R23552
+       srl  a,6                        ; RLCA              ;
+       ab   @bytes+(attr_buffer_2//256),a                  ; ADD A,92       ;
        movb a,h                        ; LD H,A            ; 
        movb @2(iy),a                   ; LD A,(IY+2)       ; 
-       sla  a,1                        ; RLCA              ; TODO: check code. 
-       sla  a,1                        ; RLCA              ; TODO: check code. 
+;      sla  a,1                        ; RLCA              ;
+       sla  a,2                        ; RLCA              ;
        andi a,224*256                  ; AND 224           ; 
        socb @3(iy),a                   ; OR (IY+3)         ; 
        movb a,@l                       ; LD L,A            ; }
        movb *iy,a                      ; LD A,(IY+0)       ; Pick up the guardian's attribute byte
        .call @_36447                   ; CALL 36447        ; Set the attribute bytes for the guardian
 * The current guardian definition has been dealt with. Time for the next one.
-       li   de,7                       ; LD DE,7           ; {Point #REGiy at the first byte of the next vertical
-       a    de,iy                      ; ADD IY,DE         ; guardian definition}
+;      li   de,7                       ; LD DE,7           ; {Point #REGiy at the first byte of the next vertical
+       ai   iy,7                       ; ADD IY,DE         ; guardian definition}
        jmp  _36597                     ; JR 36597          ; Jump back to deal with the next vertical guardian
 
 * Draw the items in the current cavern and collect any that Willy is touching
