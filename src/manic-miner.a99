@@ -25,7 +25,7 @@ begin:                                 ; 33792
 start:                                 ; 34252
        clr  af                         ; XOR A             ; #REGa=0
        movb a,@sheet                   ; LD (33799),A      ; Initialise the current cavern number at #R33799
-       movb @bytes+4,@sheet
+       movb @bytes+7,@sheet
        movb a,@kemp                    ; LD (33881),A      ; Initialise the Kempston joystick indicator at #R33881
        movb a,@demo                    ; LD (33882),A      ; Initialise the game mode indicator at #R33882
        movb a,@noteindex               ; LD (33883),A      ; Initialise the in-game music note index at #R33883
@@ -317,16 +317,16 @@ _34623:
        jl   !                          ; CALL NC,36593     ; If so, move and draw the vertical guardians
        .call @vguardians               ;
 !
-;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-;       cb   a,@bytes+7                 ; CP 7              ; Are we in #R52224(Miner Willy meets the Kong Beast)?
-;       jne  !                          ; CALL Z,37173      ; If so, move and draw the Kong Beast
-;       .call @kongbeast                ;
-;!
-;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-;       cb   a,@bytes+11                ; CP 11             ; Are we in #R56320(Return of the Alien Kong Beast)?
-;       jne  !                          ; CALL Z,37173      ; If so, move and draw the Kong Beast
-;       .call @kongbeast                ;
-;!
+       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       cb   a,@bytes+7                 ; CP 7              ; Are we in #R52224(Miner Willy meets the Kong Beast)?
+       jne  !                          ; CALL Z,37173      ; If so, move and draw the Kong Beast
+       .call @kongbeast                ;
+!
+       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       cb   a,@bytes+11                ; CP 11             ; Are we in #R56320(Return of the Alien Kong Beast)?
+       jne  !                          ; CALL Z,37173      ; If so, move and draw the Kong Beast
+       .call @kongbeast                ;
+!
 ;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
 ;       cb   a,@bytes+18                ; CP 18             ; Are we in #R63488(Solar Power Generator)?
 ;       jne  !                          ; CALL Z,36211      ; If so, move and draw the light beam
@@ -2286,17 +2286,17 @@ kongbeast:                             ; 37173
 * is still in progress.
        movb @attr_buffer_1+369,a       ; LD A,(24433)      ; Pick up the attribute byte of the tile at (11,17) in the
                                                            ; buffer at #R24064
-       socb a,a                        ; OR A              ; Has the wall there been removed yet?
+;      socb a,a                        ; OR A              ; Has the wall there been removed yet?
        jeq  _37238                     ; JR Z,37238        ; Jump if so
        li   hl,scrn_buffer_1+3953      ; LD HL,32625       ; Point #REGhl at the bottom row of pixels of the wall
                                                            ; tile at (11,17) in the screen buffer at #R28672
 _37202:
        movb *hl,a                      ; LD A,(HL)         ; Pick up a pixel row
-       socb a,a                        ; OR A              ; Is it blank yet?
+;      socb a,a                        ; OR A              ; Is it blank yet?
        jne  _37228                     ; JR NZ,37228       ; Jump if not
        sb   one,h                      ; DEC H             ; Point #REGhl at the next pixel row up
        movb h,a                        ; LD A,H            ; {Have we checked all 8 pixel rows yet?
-       cb   a,@bytes+119               ; CP 119            ; }
+       cb   a,@bytes+(scrn_buffer_1//256)+7                ; CP 119            ; }
        jne  _37202                     ; JR NZ,37202       ; If not, jump back to check the next one
        movb @background,a              ; LD A,(32800)      ; Pick up the attribute byte of the background tile for
                                                            ; the current cavern from #R32800
@@ -2350,23 +2350,25 @@ _37277:
        jeq  _37363                     ; JR Z,37363        ; Jump if so
        ab   @bytes+4,a                 ; ADD A,4           ; {Add 4 to the Kong Beast's pixel y-coordinate at #R32988
        movb a,@eughgt                  ; LD (32988),A      ; (moving him downwards)}
-       movb a,@c                       ; LD C,A            ; Copy the pixel y-coordinate to #REGc; this value
-                                                           ; determines the pitch of the sound effect
-       movb @bytes+16,d                ; LD D,16           ; This value determines the duration of the sound effect
-       movb @border,a                  ; LD A,(32883)      ; Pick up the border colour for the current cavern from
-                                                           ; #R32883
-_37301:
-       ; OUT (254),A                   ; OUT (254),A       ; {Make a falling sound effect
-       li   r0,24*256                  ; XOR 24            ; 
-       xor  r0,a                       ;                   
-       movb @c,b                       ; LD B,C            ; 
-_37306:
-       sb   one,b                      ; DJNZ 37306        ; 
-       jne  _37306                     ;                   
-       sb   one,d                      ; DEC D             ; 
-       jne  _37301                     ; JR NZ,37301       ; }
+
+;       movb a,@c                       ; LD C,A            ; Copy the pixel y-coordinate to #REGc; this value
+;                                                           ; determines the pitch of the sound effect
+;       movb @bytes+16,d                ; LD D,16           ; This value determines the duration of the sound effect
+;       movb @border,a                  ; LD A,(32883)      ; Pick up the border colour for the current cavern from
+;                                                           ; #R32883
+;_37301:
+;       ; OUT (254),A                   ; OUT (254),A       ; {Make a falling sound effect
+;       li   r0,24*256                  ; XOR 24            ;
+;       xor  r0,a                       ;
+;       movb @c,b                       ; LD B,C            ;
+;_37306:
+;       sb   one,b                      ; DJNZ 37306        ;
+;       jne  _37306                     ;
+;       sb   one,d                      ; DEC D             ;
+;       jne  _37301                     ; JR NZ,37301       ; }
+;
        movb @c,a                       ; LD A,C            ; Copy the Kong Beast's pixel y-coordinate back into #REGa
-       sla  a,1                        ; RLCA              ; TODO: check code. {Point #REGde at the entry in the screen buffer address
+       sla  a,1                        ; RLCA              ; {Point #REGde at the entry in the screen buffer address
        movb a,@e                       ; LD E,A            ; lookup table at #R33536 that corresponds to the Kong
        movb @sbufaddrs_msb_byte,d      ; LD D,131          ; Beast's pixel y-coordinate}
        movb *de,a                      ; LD A,(DE)         ; {Point #REGhl at the address of the Kong Beast's
@@ -2375,7 +2377,7 @@ _37306:
        inc  de                         ; INC DE            ; 
        movb *de,a                      ; LD A,(DE)         ; 
        movb a,h                        ; LD H,A            ; }
-       movb @bytes+129,d               ; LD D,129          ; {Use bit 5 of the value of the game clock at #R32957
+       movb @bytes+(ggdata//256),d     ; LD D,129          ; {Use bit 5 of the value of the game clock at #R32957
        movb @clock,a                   ; LD A,(32957)      ; (which is toggled once every eight passes through the
        andi a,32*256                   ; AND 32            ; main loop) to point #REGde at the graphic data for the
        socb @bytes+64,a                ; OR 64             ; appropriate Kong Beast sprite
@@ -2385,9 +2387,9 @@ _37306:
        li   hl,scorbuf+3               ; LD HL,33836       ; {Add 100 to the score
        .call @_37118                   ; CALL 37118        ; }
        movb @eughgt,a                  ; LD A,(32988)      ; Pick up the Kong Beast's pixel y-coordinate from #R32988
-       andi a,120*256                  ; AND 120           ; {Point #REGhl at the address of the Kong Beast's
+       andi a,120*256                  ; AND 120 >78       ; {Point #REGhl at the address of the Kong Beast's
        movb a,@l                       ; LD L,A            ; location in the attribute buffer at #R23552
-       movb @bytes+23,h                ; LD H,23           ; 
+       movb @bytes+(attr_buffer_2/256/4),h                 ; LD H,23
        a    hl,hl                      ; ADD HL,HL         ; 
        a    hl,hl                      ; ADD HL,HL         ; 
        movb @l,a                       ; LD A,L            ; 
@@ -2405,7 +2407,7 @@ _37369:
        movb @clock,a                   ; LD A,(32957)      ; Pick up the value of the game clock at #R32957
        andi a,32*256                   ; AND 32            ; {Use bit 5 of this value (which is toggled once every
        movb a,@e                       ; LD E,A            ; eight passes through the main loop) to point #REGde at
-       movb @bytes+129,d               ; LD D,129          ; the graphic data for the appropriate Kong Beast sprite}
+       movb @bytes+(ggdata//256),d     ; LD D,129          ; the graphic data for the appropriate Kong Beast sprite}
        li   hl,scrn_buffer_2+15        ; LD HL,24591       ; {Draw the Kong Beast at (0,15) in the screen buffer at
        movb one,@c                     ; LD C,1            ; #R24576
        .call @drwfix                   ; CALL 36852        ; }
@@ -2443,11 +2445,11 @@ chkswitch:                             ; 37403
 !
        movb @extra+6,a                 ; LD A,(32869)      ; Pick up the sixth byte of the graphic data for the
                                                            ; switch tile from #R32863(#N32869)
-       movb @bytes+117,h               ; LD H,117          ; Point #REGhl at the sixth row of pixels of the switch
+       movb @bytes+(scrn_buffer_1//256)+5,h                ; LD H,117          ; Point #REGhl at the sixth row of pixels of the switch
                                                            ; tile in the screen buffer at #R28672
        cb   a,*hl                      ; CP (HL)           ; Has the switch already been flipped?
        jeq  !                          ; RET NZ            ; Return (with the zero flag reset) if so
-       .ret                            ;                   
+       .ret                            ;
 !
 * Willy is flipping the switch.
        movb @bytes+8,*hl               ; LD (HL),8         ; {Update the sixth, seventh and eighth rows of pixels of
@@ -2456,8 +2458,8 @@ chkswitch:                             ; 37403
        ab   one,h                      ; INC H             ; 
        movb @bytes+6,*hl               ; LD (HL),6         ; }
        sb   a,a                        ; XOR A             ; Set the zero flag: Willy has flipped the switch
-       socb a,a                        ; OR A              ; This instruction is redundant
-       .ret                            ; RET               ; 
+;      socb a,a                        ; OR A              ; This instruction is redundant
+       .ret_eq                         ; RET               ;
 
 * Check and set the attribute bytes for Willy's sprite in the buffer at #N23552
 * 
