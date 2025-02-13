@@ -25,7 +25,7 @@ begin:                                 ; 33792
 start:                                 ; 34252
        clr  af                         ; XOR A             ; #REGa=0
        movb a,@sheet                   ; LD (33799),A      ; Initialise the current cavern number at #R33799
-       movb @bytes+7,@sheet
+       movb @bytes+18,@sheet
        movb a,@kemp                    ; LD (33881),A      ; Initialise the Kempston joystick indicator at #R33881
        movb a,@demo                    ; LD (33882),A      ; Initialise the game mode indicator at #R33882
        movb a,@noteindex               ; LD (33883),A      ; Initialise the in-game music note index at #R33883
@@ -327,11 +327,11 @@ _34623:
        jne  !                          ; CALL Z,37173      ; If so, move and draw the Kong Beast
        .call @kongbeast                ;
 !
-;       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-;       cb   a,@bytes+18                ; CP 18             ; Are we in #R63488(Solar Power Generator)?
-;       jne  !                          ; CALL Z,36211      ; If so, move and draw the light beam
-;       .call @lightbeam                ;
-;!
+       movb @sheet,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       cb   a,@bytes+18                ; CP 18             ; Are we in #R63488(Solar Power Generator)?
+       jne  !                          ; CALL Z,36211      ; If so, move and draw the light beam
+       .call @lightbeam                ;
+!
 * This entry point is used by the routine at #R36469.
 _34719:
        .call @chkportal                ; CALL 36805        ; Draw the portal, or move to the next cavern if Willy has
@@ -1512,20 +1512,20 @@ lightbeam:                             ; 36211
                                                            ; downwards to start with)
 * The beam-drawing loop begins here.
 _36217:
-       movb @floor,a                   ; LD A,(32809)      ; Pick up the attribute byte of the floor tile for the
+;      movb @floor,a                   ; LD A,(32809)      ; Pick up the attribute byte of the floor tile for the
                                                            ; cavern from #R32809
-       cb   a,*hl                      ; CP (HL)           ; Does #REGhl point at a floor tile?
+       cb   @floor,*hl                 ; CP (HL)           ; Does #REGhl point at a floor tile?
        jne  !                          ; RET Z             ; Return if so (the light beam stops here)
        .ret                            ;                   
 !
-       movb @wall,a                    ; LD A,(32827)      ; Pick up the attribute byte of the wall tile for the
+;      movb @wall,a                    ; LD A,(32827)      ; Pick up the attribute byte of the wall tile for the
                                                            ; cavern from #R32827
-       cb   a,*hl                      ; CP (HL)           ; Does #REGhl point at a wall tile?
+       cb   @wall,*hl                  ; CP (HL)           ; Does #REGhl point at a wall tile?
        jne  !                          ; RET Z             ; Return if so (the light beam stops here)
        .ret                            ;                   
 !
-       movb @bytes+39,a                ; LD A,39           ; #REGa=#b39 (INK 7: PAPER 4)
-       cb   a,*hl                      ; CP (HL)           ; Does #REGhl point at a tile with this attribute value?
+;      movb @bytes+39,a                ; LD A,39           ; #REGa=#b39 (INK 7: PAPER 4)
+       cb   @bytes+39,*hl              ; CP (HL)           ; Does #REGhl point at a tile with this attribute value?
        jne  _36248                     ; JR NZ,36248       ; Jump if not (the light beam is not touching Willy)
        .exx                            ; EXX               ; Switch to the shadow registers briefly (to preserve
                                                            ; #REGde and #REGhl)
@@ -1537,9 +1537,9 @@ _36217:
                                                            ; and #REGhl)
        jmp  _36261                     ; JR 36261          ; Jump forward to draw the light beam over Willy
 _36248:
-       movb @background,a              ; LD A,(32800)      ; Pick up the attribute byte of the background tile for
+;      movb @background,a              ; LD A,(32800)      ; Pick up the attribute byte of the background tile for
                                                            ; the cavern from #R32800
-       cb   a,*hl                      ; CP (HL)           ; Does #REGhl point at a background tile?
+       cb   @background,*hl            ; CP (HL)           ; Does #REGhl point at a background tile?
        jeq  _36261                     ; JR Z,36261        ; Jump if so (the light beam will not be reflected at this
                                                            ; point)
        movb @e,a                       ; LD A,E            ; {Toggle the value in #REGde between 32 and -1 (and
