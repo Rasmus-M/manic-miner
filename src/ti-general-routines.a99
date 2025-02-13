@@ -322,47 +322,6 @@ ti_pal  byte 1,4,6,13,12,7,10,14,1,5,8,13,2,7,11,15
 
 *********************************************************************************
 *
-* Copy screen buffer 1 to ZX screen
-*
-copy_scrn_buffer_1:
-       .proc
-       li   hl,scrn_buffer_1
-       li   de,zx_screen
-       li   bc,4096
-!      mov  *hl+,*de+
-       dect bc
-       jne  -!
-       li   hl,attr_buffer_1
-       li   de,zx_attrs
-       li   bc,512
-!      mov  *hl+,*de+
-       dect bc
-       jne  -!
-       .endproc
-*// copy_scrn_buffer_1
-
-*********************************************************************************
-*
-* Copy screen buffer 2 to ZX screen
-*
-copy_scrn_buffer_2:
-       li   hl,scrn_buffer_2
-       li   de,zx_screen
-       li   bc,4096
-!      mov  *hl+,*de+
-       dect bc
-       jne  -!
-       li   hl,attr_buffer_2
-       li   de,zx_attrs
-       li   bc,512
-!      mov  *hl+,*de+
-       dect bc
-       jne  -!
-       rt
-*// copy_scrn_buffer_1
-
-*********************************************************************************
-*
 * Upload main ZX screen buffer
 *
 upload_zx_screen:
@@ -372,30 +331,6 @@ upload_zx_screen:
        bl   @upload_screen_buffer
        .endproc
 *// upload_zx_screen
-
-*********************************************************************************
-*
-* Upload screen buffer 1
-*
-upload_scrn_buffer_1:
-       .proc
-       li   r1,scrn_buffer_1
-       li   r2,attr_buffer_1
-       bl   @upload_screen_buffer
-       .endproc
-*// upload_scrn_buffer_1
-
-*********************************************************************************
-*
-* Upload screen buffer 2
-*
-upload_scrn_buffer_2:
-       .proc
-       li   r1,scrn_buffer_2
-       li   r2,attr_buffer_2
-       bl   @upload_screen_buffer
-       .endproc
-*// upload_scrn_buffer_2
 
 *********************************************************************************
 *

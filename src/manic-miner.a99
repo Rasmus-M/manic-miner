@@ -25,7 +25,6 @@ begin:                                 ; 33792
 start:                                 ; 34252
        clr  af                         ; XOR A             ; #REGa=0
        movb a,@sheet                   ; LD (33799),A      ; Initialise the current cavern number at #R33799
-       movb @bytes+18,@sheet
        movb a,@kemp                    ; LD (33881),A      ; Initialise the Kempston joystick indicator at #R33881
        movb a,@demo                    ; LD (33882),A      ; Initialise the game mode indicator at #R33882
        movb a,@noteindex               ; LD (33883),A      ; Initialise the in-game music note index at #R33883
@@ -61,8 +60,6 @@ start:                                 ; 34252
 
        bl   @upload_zx_screen
 
-       bl   @start_demo
-
 * Now check whether there is a joystick connected.
 ;       li   bc,31                      ; LD BC,31          ; This is the joystick port
 ;       limi 0                          ; DI                ; Disable interrupts (which are already disabled)
@@ -85,14 +82,13 @@ _34351:
        .call @playtune                 ; CALL 37596        ; Play the theme tune
        jeq  !                          ; JP NZ,34436       ; Start the game if ENTER or the fire button was pressed
        b    @start_demo                ;
-
 !
        sb   a,a                        ; XOR A             ; {Initialise the game status buffer variable at #R32988;
        movb a,@eughgt                  ; LD (32988),A      ; this will be used as an index for the message scrolled; across the screen}
 _34365:
        movb @eughgt,a                  ; LD A,(32988)      ; Pick up the message index from #R32988
        li   ix,messintro               ; LD IX,40192       ; {Point #REGix at the corresponding location in the
-;       movb a,@ixl                     ; LD IXL,A          ; message at #R40192}
+;      movb a,@ixl                     ; LD IXL,A          ; message at #R40192}
        mov  a,r0
        swpb r0
        a    r0,ix
@@ -124,7 +120,11 @@ _34365:
 ;       andi a,1*256                    ; AND 1             ; Keep only bit 0 of the result (ENTER)
 ;       cb   a,one                      ; CP 1              ; Is ENTER being pressed?
 ;       jne  startgame                  ; JR NZ,34436       ; If so, start the game
+
        li   r0,KEY_EN
+       bl   @ti_check_key
+       jne  start_demo
+       li   r0,JOY_FI
        bl   @ti_check_key
        jne  start_demo
 
