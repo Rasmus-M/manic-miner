@@ -325,29 +325,39 @@ ti_pal  byte 1,4,6,13,12,7,10,14,1,5,8,13,2,7,11,15
 * Upload main ZX screen buffer
 *
 upload_zx_screen:
-       .proc
-       li   r1,zx_screen
-       li   r2,zx_attrs
-       bl   @upload_screen_buffer
-       .endproc
+       lwpi ti_wrksp
+       mov  @wrksp+20,r10
+       clr  r0
+       li   r14,zx_screen
+       li   r15,zx_attrs
+       bl   @upload_screen_part
+       li   r0,>800
+       li   r14,zx_screen+>800
+       li   r15,zx_attrs+>100
+       bl   @upload_screen_part
+       li   r0,>1000
+       li   r14,zx_screen+>1000
+       li   r15,zx_attrs+>200
+       bl   @upload_screen_part
+       lwpi wrksp
+       rt
 *// upload_zx_screen
 
 *********************************************************************************
 *
-* Upload ZX Spectrum screen
+* Upload screen part
 *
-* r1 (r14 in ti_wrksp): Screen address
-* r2: (r15 in ti_wrksp) Attributes address
+* r0: VDP tabæe offset
+* r14: Screen address
+* r15: Attributes address
 
-upload_screen_buffer:
-       lwpi ti_wrksp
+upload_screen_part:
+       .proc
        li   r13,vdpwd
        li   r1,>0100
 *      Patterns
-       li   r0,pattern_table
+       ai   r0,pattern_table
        bl   @vwad
-       li   r2,3
-upload_screen_buffer_1:
        mov  r14,r4
        a    r1,r14
        mov  r14,r5
@@ -365,7 +375,7 @@ upload_screen_buffer_1:
        mov  r14,r12
        a    r1,r14
        li   r3,256
-upload_screen_buffer_2:
+upload_screen_part_1:
        movb *r4+,*r13
        movb *r5+,*r13
        movb *r6+,*r13
@@ -375,14 +385,12 @@ upload_screen_buffer_2:
        movb *r11+,*r13
        movb *r12+,*r13
        dec  r3
-       jne  upload_screen_buffer_2
-       dec  r2
-       jne  upload_screen_buffer_1
+       jne  upload_screen_part_1
 *      Colors
-       li   r0,color_table
+       ai   r0,color_table-pattern_table
        bl   @vwad
-       li   r2,>300
-upload_screen_buffer_3:
+       li   r2,>100
+upload_screen_part_2:
        movb *r15+,r1
        srl  r1,8
        movb @ti_colors(r1),r0
@@ -395,9 +403,8 @@ upload_screen_buffer_3:
        movb r0,*r13
        movb r0,*r13
        dec  r2
-       jne  upload_screen_buffer_3
-       lwpi wrksp
-       rt
+       jne  upload_screen_part_2
+       .endproc
 *// upload_screen_buffer
 
 *********************************************************************
