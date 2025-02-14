@@ -25,12 +25,13 @@ begin:                                 ; 33792
 start:                                 ; 34252
        clr  af                         ; XOR A             ; #REGa=0
        movb a,@cavern                  ; LD (33799),A      ; Initialise the current cavern number at #R33799
+;      movb @bytes+13,@cavern
        movb a,@kemp                    ; LD (33881),A      ; Initialise the Kempston joystick indicator at #R33881
        movb a,@demo                    ; LD (33882),A      ; Initialise the game mode indicator at #R33882
        movb a,@noteindex               ; LD (33883),A      ; Initialise the in-game music note index at #R33883
        movb a,@flash                   ; LD (33880),A      ; Initialise the screen flash counter at #R33880
        movb @bytes+2,a                 ; LD A,2            ; {Initialise the number of lives remaining at #R33879
-       movb a,@nomen                   ; LD (33879),A      ; }
+       movb a,@lives                   ; LD (33879),A      ; }
        li   hl,musicflags              ; LD HL,33884       ; {Initialise the keypress flag in bit 0 at #R33884
        socb @bits+0,*hl                ; SET 0,(HL)        ; }
 * Next, prepare the screen.
@@ -239,7 +240,7 @@ _34519:
 * The first thing to do is check whether there are any remaining lives to draw
 * at the bottom of the screen.
 loop:                                  ; 34574
-       movb @nomen,a                   ; LD A,(33879)      ; Pick up the number of lives remaining from #R33879
+       movb @lives,a                   ; LD A,(33879)      ; Pick up the number of lives remaining from #R33879
        li   hl,zx_screen+4256          ; LD HL,20640       ; Set #REGhl to the display file address at which to draw
                                                            ; the first Willy sprite
        socb a,a                        ; OR A              ; Are there any lives remaining?
@@ -636,7 +637,7 @@ lpdead1:                               ; 35080
        jne  lpdead1                    ; JR NZ,35080       ; If not, jump back to update the INK colour in the top
                                                            ; two thirds of the screen and make another sound effect
 * Finally, check whether any lives remain.
-       li   hl,nomen                   ; LD HL,33879       ; {Pick up the number of lives remaining from #R33879
+       li   hl,lives                   ; LD HL,33879       ; {Pick up the number of lives remaining from #R33879
        movb *hl,a                      ; LD A,(HL)         ; }
 ;      socb a,a                        ; OR A              ; Are there any lives remaining?
        jne  !                          ; JP Z,35140        ; If not, display the game over sequence
@@ -1956,7 +1957,7 @@ _36715:
        jne  _36750                     ; JR NZ,36750       ; Jump if not
 * Willy is touching this item, so add it to his collection.
        li   hl,scorbuf+3               ; LD HL,33836       ; {Add 100 to the score
-       .call @incscore_1                   ; CALL 37118        ; }
+       .call @incscore_1               ; CALL 37118        ; }
        sb   *iy,*iy                    ; LD (IY+0),0       ; Set the item's attribute byte to #b0 so that it will be
                                                            ; skipped the next time
        jmp  _36782                     ; JR 36782          ; Jump forward to consider the next item
@@ -2293,15 +2294,16 @@ _37044:
 incscore:                              ; 37098
        movb @bytes+48,*hl              ; LD (HL),48        ; Roll the digit over from '9' to '0'
        dec  hl                         ; DEC HL            ; Point #REGhl at the next digit to the left
-       movb @l,a                       ; LD A,L            ; {Is this the 10000s digit?
-       cb   a,@bytes+42                ; CP 42             ; }
+;      movb @l,a                       ; LD A,L            ; {Is this the 10000s digit?
+;      cb   a,@bytes+42                ; CP 42             ; }
+       ci   hl,scorbuf+1
        jne  incscore_1                 ; JR NZ,37118       ; Jump if not
 * Willy has scored another 10000 points. Give him an extra life.
        movb @bytes+8,a                 ; LD A,8            ; {Set the screen flash counter at #R33880 to 8
        movb a,@flash                   ; LD (33880),A      ; }
-       movb @nomen,a                   ; LD A,(33879)      ; {Increment the number of lives remaining at #R33879
+       movb @lives,a                   ; LD A,(33879)      ; {Increment the number of lives remaining at #R33879
        ab   one,a                      ; INC A             ; 
-       movb a,@nomen                   ; LD (33879),A      ; }
+       movb a,@lives                   ; LD (33879),A      ; }
 * The entry point to this routine is here and is used by the routines at
 * #R36707, #R36904 and #R37173 with #REGhl pointing at the digit of the score
 * (see #R33833) to be incremented.
@@ -2481,13 +2483,15 @@ _37277:
        sb   @c,@c                      ; LD C,0            ; {Draw the Kong Beast to the screen buffer at #R24576
        .call @draw_sprite              ; CALL 36852        ; }
        li   hl,scorbuf+3               ; LD HL,33836       ; {Add 100 to the score
-       .call @incscore_1                   ; CALL 37118        ; }
+       .call @incscore_1               ; CALL 37118        ; }
        movb @eughgt,a                  ; LD A,(32988)      ; Pick up the Kong Beast's pixel y-coordinate from #R32988
        andi a,120*256                  ; AND 120 >78       ; {Point #REGhl at the address of the Kong Beast's
        movb a,@l                       ; LD L,A            ; location in the attribute buffer at #R23552
-       movb @bytes+(attr_buffer_2/256/4),h                 ; LD H,23
-       a    hl,hl                      ; ADD HL,HL         ; 
-       a    hl,hl                      ; ADD HL,HL         ; 
+attr2_msb_div_4:
+       equ  attr_buffer_2//256//4
+       movb @bytes+attr2_msb_div_4,h   ; LD H,23
+       a    hl,hl                      ; ADD HL,HL         ; x2
+       a    hl,hl                      ; ADD HL,HL         ; x4
        movb @l,a                       ; LD A,L            ; 
        socb @bytes+15,a                ; OR 15             ; 
        movb a,@l                       ; LD L,A            ; }

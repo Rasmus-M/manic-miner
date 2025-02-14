@@ -546,7 +546,7 @@ messo:                                 ; 33875
 *
 * Initialised to 2 by the routine at #R34252, and used and updated by the
 * routines at #R34574 and #R37098.
-nomen:                                 ; 33879
+lives:                                 ; 33879
        byte 0
 
 * Screen flash counter
