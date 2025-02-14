@@ -25,7 +25,7 @@ begin:                                 ; 33792
 start:                                 ; 34252
        clr  af                         ; XOR A             ; #REGa=0
        movb a,@cavern                  ; LD (33799),A      ; Initialise the current cavern number at #R33799
-;      movb @bytes+13,@cavern
+       movb @bytes+19,@cavern
        movb a,@kemp                    ; LD (33881),A      ; Initialise the Kempston joystick indicator at #R33881
        movb a,@demo                    ; LD (33882),A      ; Initialise the game mode indicator at #R33882
        movb a,@noteindex               ; LD (33883),A      ; Initialise the in-game music note index at #R33883
@@ -74,8 +74,6 @@ start:                                 ; 34252
 ;       jne  _34351                     ; JR NZ,34351       ; Jump if not
 ;       movb one,a                      ; LD A,1            ; {Set the Kempston joystick indicator at #R33881 to 1
 ;       movb a,@kemp                    ; LD (33881),A      ; }
-
-;       jmp  start_game
 
 * And finally, play the theme tune and check for keypresses.
 * .
@@ -2162,8 +2160,8 @@ _36900:
 * Move to the next cavern
 * 
 * Used by the routines at #R34574 and #R36805.
-next_cavern:                               ; 36904
-       movb @cavern,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+next_cavern:                           ; 36904
+       movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        ab   one,a                      ; INC A             ; Increment the cavern number
        cb   a,@bytes+20                ; CP 20             ; Is the current cavern #R64512(The Final Barrier)?
        jne  _37009                     ; JR NZ,37009       ; Jump if not
@@ -2176,10 +2174,12 @@ next_cavern:                               ; 36904
        cb   a,@bytes+7                 ; CP 7              ; Is cheat mode activated?
        jeq  _37008                     ; JR Z,37008        ; Jump if so
 * Willy has made it through #R64512(The Final Barrier) without cheating.
+won:
        sb   @c,@c                      ; LD C,0            ; {Draw Willy at (2,19) on the ground above the portal
        li   de,willyr3                 ; LD DE,33376       ; 
        li   hl,zx_screen+83            ; LD HL,16467       ; 
        .call @draw_sprite              ; CALL 36852        ; }
+       seto @caverns_0_6_bank_select
        li   de,swordfish               ; LD DE,45792       ; {Draw the swordfish graphic (see #R45792) over the
        li   hl,zx_screen+179           ; LD HL,16563       ; portal
        .call @draw_sprite              ; CALL 36852        ; }
@@ -2206,30 +2206,32 @@ next_cavern:                               ; 36904
        sb   *hl,*hl                    ; LD (HL),0         ; Willy's feet just below where the portal was)
        inc  hl                         ; INC HL            ; 
        sb   *hl,*hl                    ; LD (HL),0         ; }
+
+       bl   @upload_zx_screen
+
 * Now play a celebratory sound effect.
-* .
-* #AUDIO4(escape.wav)(36983,37008)
        li   bc,0                       ; LD BC,0           ; {Prepare #REGc and #REGd for the celebratory sound
        movb @bytes+50,d                ; LD D,50           ; effect}
        sb   a,a                        ; XOR A             ; #REGa=0 (black border)
 _36989:
-       ; OUT (254),A                   ; OUT (254),A       ; {Produce the celebratory sound effect: Willy has escaped
+;       ; OUT (254),A                   ; OUT (254),A       ; {Produce the celebratory sound effect: Willy has escaped
        li   r0,24*256                  ; XOR 24            ; from the mine
-       xor  r0,a                       ;                   
-       movb a,@e                       ; LD E,A            ; 
-       movb @c,a                       ; LD A,C            ; 
-       ab   d,a                        ; ADD A,D           ; 
-       ab   d,a                        ; ADD A,D           ; 
-       ab   d,a                        ; ADD A,D           ; 
-       movb a,b                        ; LD B,A            ; 
-       movb @e,a                       ; LD A,E            ; 
+       xor  r0,a                       ;
+       movb a,@e                       ; LD E,A            ;
+       movb @c,a                       ; LD A,C            ;
+       ab   d,a                        ; ADD A,D           ;
+       ab   d,a                        ; ADD A,D           ;
+       ab   d,a                        ; ADD A,D           ;
+       movb a,b                        ; LD B,A            ;
+       movb @e,a                       ; LD A,E            ;
 _37000:
-       sb   one,b                      ; DJNZ 37000        ; 
-       jne  _37000                     ;                   
-       sb   one,@c                     ; DEC C             ; 
-       jne  _36989                     ; JR NZ,36989       ; 
-       sb   one,d                      ; DEC D             ; 
+       sb   one,b                      ; DJNZ 37000        ;
+       jne  _37000                     ;
+       sb   one,@c                     ; DEC C             ;
+       jne  _36989                     ; JR NZ,36989       ;
+       sb   one,d                      ; DEC D             ;
        jne  _36989                     ; JR NZ,36989       ; }
+
 _37008:
        sb   a,a                        ; XOR A             ; #REGa=#b0 (the next cavern will be #R45056(Central
                                                            ; Cavern))
