@@ -25,7 +25,7 @@ begin:                                 ; 33792
 start:                                 ; 34252
        clr  af                         ; XOR A             ; #REGa=0
        movb a,@cavern                  ; LD (33799),A      ; Initialise the current cavern number at #R33799
-       movb @bytes+19,@cavern
+;      movb @bytes+19,@cavern
        movb a,@kemp                    ; LD (33881),A      ; Initialise the Kempston joystick indicator at #R33881
        movb a,@demo                    ; LD (33882),A      ; Initialise the game mode indicator at #R33882
        movb a,@noteindex               ; LD (33883),A      ; Initialise the in-game music note index at #R33883
