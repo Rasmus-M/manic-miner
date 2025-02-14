@@ -85,12 +85,12 @@ dmflags:                               ; 32874
 airborne:                              ; 32875
        byte 0
 
-* Address of Willy's location in the attribute buffer at #N23552
+* Address of Willy's location in the attribute buffer at #N23552 attr_buffer_2
 *
 * Initialised by the routine at #R34436, used by the routines at #R35515,
 * #R36805, #R37403, #R37434 and #R37503, and updated by the routine at #R35805.
 location:                              ; 32876
-       data 0
+       byte 0,0
 
 * Jumping animation counter
 *
@@ -106,7 +106,7 @@ convdir:                               ; 32879
        byte 0                                                        ; Direction (0=left, 1=right; used by the routines at
                                                                      ; #R35805 and #R37125)
 convloc:                               ; 32880
-       data 0                                                        ; Address of the conveyor's location in the screen buffer
+       byte 0,0                                                      ; Address of the conveyor's location in the screen buffer
                                                                      ; at #R28672 (used by the routine at #R37125)
 convlen:                               ; 32882
        byte 0                                                        ; Length (used by the routine at #R37125)
@@ -453,7 +453,7 @@ sbufaddrs_msb_byte:
 *
 * Initialised by the routine at #R34252, used by the routines at #R34436,
 * #R34574, #R35445 and #R36266, and updated by the routine at #R36904.
-sheet:                                 ; 33799
+cavern:                                 ; 33799
        byte 0
 
 * Left-right movement table
