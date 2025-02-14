@@ -335,12 +335,18 @@ upload_zx_screen:
        li   r14,zx_screen+>800
        li   r15,zx_attrs+>100
        bl   @upload_screen_part
+       mov  @upload_count,r0
+       andi r0,3
+       jne  !
        li   r0,>1000
        li   r14,zx_screen+>1000
        li   r15,zx_attrs+>200
        bl   @upload_screen_part
+!      inc  @upload_count
        lwpi wrksp
        rt
+upload_count:
+       data 0
 *// upload_zx_screen
 
 *********************************************************************************
