@@ -446,8 +446,10 @@ sbufaddrs:                             ; 33536
        byte scrn_buffer_2+3808%%256,scrn_buffer_2+3808//256                                       ; y=126
        byte scrn_buffer_2+4064%%256,scrn_buffer_2+4064//256                                       ; y=127
 
+sbufaddrs_msb:
+       equ  sbufaddrs//256
 sbufaddrs_msb_byte:
-       equ  bytes+(sbufaddrs//256)     ; Unsigned division
+       equ  bytes+sbufaddrs_msb
 
 * Current cavern number
 *
