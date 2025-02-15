@@ -1,4 +1,3 @@
-
 * Manic Miner disassembly
 * https://skoolkit.ca
 *
@@ -46,7 +45,7 @@ start:                                 ; 34252
        li   bc,4096                    ; LD BC,4096        ; 
        .ldir2                          ; LDIR              ; }
        li   hl,zx_screen+2109          ; LD HL,18493       ; {Draw Willy at (9,29)
-       li   de,willy_sprites_2                 ; LD DE,33344       ;
+       li   de,willy_sprites_2         ; LD DE,33344       ;
        sb   @c,@c                      ; LD C,0            ;
        .call @draw_sprite              ; CALL 36852        ; }
        seto @caverns_14_19_bank_select
@@ -102,26 +101,26 @@ _34365:
 ;      srl  a,1                        ; RRCA              ; value determines the animation frame to use for Willy
        sla  a,5                        ; RRCA              ; }
        movb a,@e                       ; LD E,A            ; {Point #REGde at the graphic data for Willy's sprite
-       movb @bytes+mandat_msb,d     ; LD D,130          ; (#R33280+#REGa)}
+       movb @bytes+mandat_msb,d        ; LD D,130          ; (#R33280+#REGa)}
        li   hl,zx_screen+2109          ; LD HL,18493       ; {Draw Willy at (9,29)
        sb   @c,@c                      ; LD C,0            ; 
        .call @draw_sprite              ; CALL 36852        ; }
 
-;       li   bc,100                     ; LD BC,100         ; {Pause for about 0.1s
+;       li   bc,100                    ; LD BC,100         ; {Pause for about 0.1s
 ;_34404:
-;       sb   one,b                      ; DJNZ 34404        ;
-;       jne  _34404                     ;
-;       sb   one,@c                     ; DEC C             ;
-;       jne  _34404                     ; JR NZ,34404       ; }
+;       sb   one,b                     ; DJNZ 34404        ;
+;       jne  _34404                    ;
+;       sb   one,@c                    ; DEC C             ;
+;       jne  _34404                    ; JR NZ,34404       ; }
 
        bl   @upload_middle_part
        bl   @upload_bottom_part
 
-;       li   bc,49150                   ; LD BC,49150       ; {Read keys H-J-K-L-ENTER
-;       ; IN A,(C)                      ; IN A,(C)          ; }
-;       andi a,1*256                    ; AND 1             ; Keep only bit 0 of the result (ENTER)
-;       cb   a,one                      ; CP 1              ; Is ENTER being pressed?
-;       jne  startgame                  ; JR NZ,34436       ; If so, start the game
+;      li   bc,49150                   ; LD BC,49150       ; {Read keys H-J-K-L-ENTER
+;      IN A,(C)                        ; IN A,(C)          ; }
+;      andi a,1*256                    ; AND 1             ; Keep only bit 0 of the result (ENTER)
+;      cb   a,one                      ; CP 1              ; Is ENTER being pressed?
+;      jne  startgame                  ; JR NZ,34436       ; If so, start the game
 
        li   r0,KEY_EN
        bl   @ti_check_key
@@ -154,7 +153,7 @@ start_game:                            ; 34436
 * This entry point is used by the routines at #R34574 (when teleporting into a
 * cavern or reinitialising the current cavern after Willy has lost a life) and
 * #R36904.
-new_cavern:                             ; 34449
+new_cavern:                            ; 34449
        clr  af
        movb @cavern,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+7
@@ -182,7 +181,7 @@ new_cavern:                             ; 34449
        li   bc,512                     ; LD BC,512         ; status buffer at #GBUF32768
        .ldir2                          ; LDIR              ; }
        bl   @upload_sprite_patterns
-       .call @draw_cavern                ; CALL 35445        ; Draw the current cavern to the screen buffer at #R28672
+       .call @draw_cavern              ; CALL 35445        ; Draw the current cavern to the screen buffer at #R28672
        li   hl,zx_screen+4096          ; LD HL,20480       ; {Clear the bottom third of the display file
        li   de,zx_screen+4097          ; LD DE,20481       ; 
        li   bc,2047                    ; LD BC,2047        ; 
@@ -226,6 +225,7 @@ _34519:
        ; movb @b254,@c                 ; LD C,254          ; {Set the border colour
        ; OUT (C),A                     ; OUT (C),A         ; }
        bl   @ti_set_border_color
+       seto @screen_update_flag
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
 ;      socb a,a                        ; OR A              ; Are we in demo mode?
        jeq  loop                       ; JR Z,34574        ; If not, enter the main loop now
@@ -240,6 +240,9 @@ _34519:
 * The first thing to do is check whether there are any remaining lives to draw
 * at the bottom of the screen.
 loop:                                  ; 34574
+       li   r0,sprite_attr_table       ; Prepare for drawing hardware sprites
+       mov  r0,@sprite_attr_table_addr
+
        movb @lives,a                   ; LD A,(33879)      ; Pick up the number of lives remaining from #R33879
        li   hl,zx_screen+4256          ; LD HL,20640       ; Set #REGhl to the display file address at which to draw
                                                            ; the first Willy sprite
@@ -289,49 +292,49 @@ _34623:
        li   bc,4096                    ; LD BC,4096        ; #R24576
        .ldir2                          ; LDIR              ; }
 
-       .call @movehg                   ; CALL 36111        ; Move the horizontal guardians in the current cavern
+       .call @move_hguardians          ; CALL 36111        ; Move the horizontal guardians in the current cavern
 
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
 ;      socb a,a                        ; OR A              ; Are we in demo mode?
        jne  !                          ; CALL Z,35515      ; If not, move Willy
-       .call @move_willy                ;
+       .call @move_willy               ;
 !
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
 ;      socb a,a                        ; OR A              ; Are we in demo mode?
        jne  !                          ; CALL Z,37434      ; If not, check and set the attribute bytes for Willy's
-       .call @willy_attrs               ;
+       .call @willy_attrs              ;
 !                                                          ; sprite in the buffer at #R23552, and draw Willy to the
                                                            ; screen buffer at #R24576
-       .call @drawhg                   ; CALL 36266        ; Draw the horizontal guardians in the current cavern
+       .call @draw_hguardians          ; CALL 36266        ; Draw the horizontal guardians in the current cavern
        .call @mvconveyor               ; CALL 37125        ; Move the conveyor in the current cavern
        .call @drawitems                ; CALL 36707        ; Draw the items in the current cavern and collect any
                                                            ; that Willy is touching
-       movb @cavern,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+4                 ; CP 4              ; Are we in #R49152(Eugene's Lair)?
        jne  !                          ; CALL Z,36344      ; If so, move and draw Eugene
        .call @eugene                   ;
 !
-       movb @cavern,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+13                ; CP 13             ; Are we in #R58368(Skylab Landing Bay)?
        jne  !                          ; JP Z,36469        ; If so, move and draw the Skylabs
        b    @skylabs                   ;
 !
-       movb @cavern,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+8                 ; CP 8              ; Are we in #R53248(Wacky Amoebatrons) or beyond?
        jl   !                          ; CALL NC,36593     ; If so, move and draw the vertical guardians
-       .call @vguardians               ;
+       .call @draw_vguardians               ;
 !
-       movb @cavern,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+7                 ; CP 7              ; Are we in #R52224(Miner Willy meets the Kong Beast)?
        jne  !                          ; CALL Z,37173      ; If so, move and draw the Kong Beast
-       .call @kong_beast                ;
+       .call @kong_beast               ;
 !
-       movb @cavern,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+11                ; CP 11             ; Are we in #R56320(Return of the Alien Kong Beast)?
        jne  !                          ; CALL Z,37173      ; If so, move and draw the Kong Beast
-       .call @kong_beast                ;
+       .call @kong_beast               ;
 !
-       movb @cavern,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+18                ; CP 18             ; Are we in #R63488(Solar Power Generator)?
        jne  !                          ; CALL Z,36211      ; If so, move and draw the light beam
        .call @lightbeam                ;
@@ -342,10 +345,10 @@ _34719:
                                                            ; entered it
 * This entry point is used by the routine at #R36101.
 _34722:
-;       li   hl,scrn_buffer_2           ; LD HL,24576       ; {Copy the contents of the screen buffer at #R24576 to
-;       li   de,zx_screen               ; LD DE,16384       ; the display file
-;       li   bc,4096                    ; LD BC,4096        ;
-;       .ldir2                          ; LDIR              ; }
+;      li   hl,scrn_buffer_2           ; LD HL,24576       ; {Copy the contents of the screen buffer at #R24576 to
+;      li   de,zx_screen               ; LD DE,16384       ; the display file
+;      li   bc,4096                    ; LD BC,4096        ;
+;      .ldir2                          ; LDIR              ; }
 
        movb @flash,a                   ; LD A,(33880)      ; Pick up the screen flash counter from #R33880
 ;      socb a,a                        ; OR A              ; Is it zero?
@@ -363,10 +366,10 @@ _34722:
        .fill                           ; LDIR              ; }
 
 _34760:
-;       li   hl,attr_buffer_2           ; LD HL,23552       ; {Copy the contents of the attribute buffer at #R23552 to
-;       li   de,zx_attrs                ; LD DE,22528       ; the attribute file
-;       li   bc,512                     ; LD BC,512         ;
-;       .ldir2                          ; LDIR              ; }
+;      li   hl,attr_buffer_2           ; LD HL,23552       ; {Copy the contents of the attribute buffer at #R23552 to
+;      li   de,zx_attrs                ; LD DE,22528       ; the attribute file
+;      li   bc,512                     ; LD BC,512         ;
+;      .ldir2                          ; LDIR              ; }
 
        li   ix,scorbuf                 ; LD IX,33833       ; {Print the score (see #R33833) at (19,26)
        li   de,zx_screen+4218          ; LD DE,20602       ; 
@@ -381,35 +384,39 @@ _34760:
        jne  !                          ; JP Z,35071        ; Jump if there's no air left
        b    @mandead                   ;
 !
+       mov  @screen_update_flag,r0
+       jeq  !
        bl   @upload_zx_screen
+       clr  @screen_update_flag
+!
 
 ;* Now check whether SHIFT and SPACE are being pressed.
-;       li   bc,65278                   ; LD BC,65278       ; {Read keys SHIFT-Z-X-C-V
-;       ; IN A,(C)                      ; IN A,(C)          ; }
-;       movb a,@e                       ; LD E,A            ; Save the result in #REGe
-;       movb @bytes+127,b               ; LD B,127          ; {Read keys B-N-M-SS-SPACE
-;       ; IN A,(C)                      ; IN A,(C)          ; }
-;       socb @e,a                       ; OR E              ; Combine the results
-;       andi a,1*256                    ; AND 1             ; Are SHIFT and SPACE being pressed?
-;       jne  !                          ; JP Z,34252        ; If so, quit the game
-;       b    @start                     ;
+;       li   bc,65278                  ; LD BC,65278       ; {Read keys SHIFT-Z-X-C-V
+;       IN A,(C)                       ; IN A,(C)          ; }
+;       movb a,@e                      ; LD E,A            ; Save the result in #REGe
+;       movb @bytes+127,b              ; LD B,127          ; {Read keys B-N-M-SS-SPACE
+;       IN A,(C)                       ; IN A,(C)          ; }
+;       socb @e,a                      ; OR E              ; Combine the results
+;       andi a,1*256                   ; AND 1             ; Are SHIFT and SPACE being pressed?
+;       jne  !                         ; JP Z,34252        ; If so, quit the game
+;       b    @start                    ;
 ;!
 ;* Now read the keys A, S, D, F and G (which pause the game).
-;       movb @bytes+253,b               ; LD B,253          ; {Read keys A-S-D-F-G
-;       ; IN A,(C)                      ; IN A,(C)          ; }
-;       andi a,31*256                   ; AND 31            ; {Are any of these keys being pressed?
-;       cb   a,@bytes+31                ; CP 31             ; }
+;       movb @bytes+253,b              ; LD B,253          ; {Read keys A-S-D-F-G
+;       ; IN A,(C)                     ; IN A,(C)          ; }
+;       andi a,31*256                  ; AND 31            ; {Are any of these keys being pressed?
+;       cb   a,@bytes+31               ; CP 31             ; }
        li   r0,KEY_P
        bl   @ti_check_key
-       jeq  _34837                      ; JR Z,34837        ; Jump if
+       jeq  _34837                     ; JR Z,34837        ; Jump if
 _34827:
-       li   r0,KEY_P                    ; Wait for release
+       li   r0,KEY_P                   ; Wait for release
        bl   @ti_check_key
-       jne  _34827                      ; JR Z,34827        ; Jump back if not (the game is still paused)
-;      movb @bytes+2,b                  ; LD B,2            ; {Read every half-row of keys except A-S-D-F-G
-;      IN A,(C)                         ; IN A,(C)          ; }
-;      andi a,31*256                    ; AND 31            ; {Are any of these keys being pressed?
-;      cb   a,@bytes+31                 ; CP 31             ; }
+       jne  _34827                     ; JR Z,34827       ; Jump back if not (the game is still paused)
+;      movb @bytes+2,b                 ; LD B,2           ; {Read every half-row of keys except A-S-D-F-G
+;      IN A,(C)                        ; IN A,(C)         ; }
+;      andi a,31*256                   ; AND 31           ; {Are any of these keys being pressed?
+;      cb   a,@bytes+31                ; CP 31            ; }
        li   r0,KEY_P
        bl   @ti_check_key
        jeq  _34827                     ; JR Z,34827        ; Jump back if not (the game is still paused)
@@ -424,27 +431,27 @@ _34837:
 !
 
 ;* Now read the keys H, J, K, L and ENTER (which toggle the in-game music).
-;       movb @bytes+191,b               ; LD B,191          ; Prepare #REGb for reading keys H-J-K-L-ENTER
-;       li   hl,musicflags              ; LD HL,33884       ; Point #REGhl at the music flags at #R33884
-;       ; IN A,(C)                      ; IN A,(C)          ; Read keys H-J-K-L-ENTER
-;       andi a,31*256                   ; AND 31            ; {Are any of these keys being pressed?
-;       cb   a,@bytes+31                ; CP 31             ; }
-;       jeq  _34868                     ; JR Z,34868        ; Jump if not
-;       movb *hl,r0                     ; BIT 0,(HL)        ; Were any of these keys being pressed the last time we
-;       andi r0,1*256                   ;
+;       movb @bytes+191,b              ; LD B,191          ; Prepare #REGb for reading keys H-J-K-L-ENTER
+;       li   hl,musicflags             ; LD HL,33884       ; Point #REGhl at the music flags at #R33884
+;       ; IN A,(C)                     ; IN A,(C)          ; Read keys H-J-K-L-ENTER
+;       andi a,31*256                  ; AND 31            ; {Are any of these keys being pressed?
+;       cb   a,@bytes+31               ; CP 31             ; }
+;       jeq  _34868                    ; JR Z,34868        ; Jump if not
+;       movb *hl,r0                    ; BIT 0,(HL)        ; Were any of these keys being pressed the last time we
+;       andi r0,1*256                  ;
 ;                                                           ; checked?
-;       jne  _34870                     ; JR NZ,34870       ; Jump if so
-;       movb *hl,a                      ; LD A,(HL)         ; {Set bit 0 (the keypress flag) and flip bit 1 (the
-;       li   r0,3*256                   ; XOR 3             ; in-game music flag) at #R33884
-;       xor  r0,a                       ;
-;       movb a,*hl                      ; LD (HL),A         ; }
-;       jmp  _34870                     ; JR 34870          ;
+;       jne  _34870                    ; JR NZ,34870       ; Jump if so
+;       movb *hl,a                     ; LD A,(HL)         ; {Set bit 0 (the keypress flag) and flip bit 1 (the
+;       li   r0,3*256                  ; XOR 3             ; in-game music flag) at #R33884
+;       xor  r0,a                      ;
+;       movb a,*hl                     ; LD (HL),A         ; }
+;       jmp  _34870                    ; JR 34870          ;
 ;_34868:
-;       szcb @bits+0,*hl                ; RES 0,(HL)        ; Reset bit 0 (the keypress flag) at #R33884
+;       szcb @bits+0,*hl               ; RES 0,(HL)        ; Reset bit 0 (the keypress flag) at #R33884
 ;_34870:
-;       movb *hl,r0                     ; BIT 1,(HL)        ; Has the in-game music been switched off?
-;       andi r0,2*256                   ;
-;       jne  nonote4                    ; JR NZ,34911       ; Jump if so
+;       movb *hl,r0                    ; BIT 1,(HL)        ; Has the in-game music been switched off?
+;       andi r0,2*256                  ;
+;       jne  nonote4                   ; JR NZ,34911       ; Jump if so
 
 * The next section of code plays a note of the in-game music.
 * .
@@ -501,19 +508,19 @@ nonote4:                               ; 34911
 !
        movb a,@demo                    ; LD (33882),A      ; Update the game mode indicator at #R33882
 
-;       li   bc,254                     ; LD BC,254         ; {Read every row of keys on the keyboard
-;       IN A,(C)                        ; IN A,(C)          ; }
-;       andi a,31*256                   ; AND 31            ; {Are any keys being pressed?
-;       cb   a,@bytes+31                ; CP 31             ; }
-;       jeq  !                          ; JP NZ,34252       ; If so, return to the title screen
-;       b    @start                     ;
+;      li   bc,254                     ; LD BC,254         ; {Read every row of keys on the keyboard
+;      IN A,(C)                        ; IN A,(C)          ; }
+;      andi a,31*256                   ; AND 31            ; {Are any keys being pressed?
+;      cb   a,@bytes+31                ; CP 31             ; }
+;      jeq  !                          ; JP NZ,34252       ; If so, return to the title screen
+;      b    @start                     ;
 ;!
-;       movb @kemp,a                    ; LD A,(33881)      ; Pick up the Kempston joystick indicator from #R33881
-;       socb a,a                        ; OR A              ; Is there a joystick connected?
-;       jeq  nodem1                     ; JR Z,34948        ; Jump if not
-;       ; IN A,(31)                     ; IN A,(31)         ; Collect input from the joystick
-;       socb a,a                        ; OR A              ; Is the joystick being moved or the fire button being
-;                                                           ; pressed?
+;      movb @kemp,a                    ; LD A,(33881)      ; Pick up the Kempston joystick indicator from #R33881
+;      socb a,a                        ; OR A              ; Is there a joystick connected?
+;      jeq  nodem1                     ; JR Z,34948        ; Jump if not
+;      ; IN A,(31)                     ; IN A,(31)         ; Collect input from the joystick
+;      socb a,a                        ; OR A              ; Is the joystick being moved or the fire button being
+;                                                          ; pressed?
        li   r0,KEY_EN
        bl   @ti_check_key
        jne  !
@@ -600,12 +607,20 @@ nodem1:                                 ; 34948
 ;       movb @cheat,a                   ; LD A,(33885)      ; {Increment the 6031769 key counter at #R33885 (the next
 ;       ab   one,a                      ; INC A             ; key in the sequence is being pressed)
 ;       movb a,@cheat                   ; LD (33885),A      ; }
+
+       mov  @sprite_attr_table_addr,r0 ; Write sprite attribute table terminator
+       bl   @vwad
+       li   r0,>d000
+       movb r0,@vdpwd
+
        b    @loop                      ; JP 34574          ; Jump back to the start of the main loop
+
 * The air in the cavern has run out, or Willy has had a fatal accident, or it's
 * demo mode and it's time to show the next cavern.
 mandead:                               ; 35071
        li   r0,>9f00                   ; Mute sound
        movb r0,@sound
+       clr  @sprite_attr_table_addr
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
 ;      socb a,a                        ; OR A              ; Is it demo mode?
        jeq  !                          ; JP NZ,36904       ; If so, move to the next cavern
@@ -629,29 +644,29 @@ lpdead1:                               ; 35080
        movb a,@e                       ; LD E,A            ; Save the attribute byte (#b64-#b71) in #REGe for later
                                                            ; retrieval
 
-;       inv  a                          ; CPL               ; {#REGd=63-8*(#REGe #S/AND/ 7); this value determines the
-;       andi a,7*256                    ; AND 7             ; pitch of the short note that will be played
-;       sla  a,1                        ; RLCA              ;
-;       sla  a,1                        ; RLCA              ;
-;       sla  a,1                        ; RLCA              ;
-;       socb @bytes+7,a                 ; OR 7              ;
-;       movb a,d                        ; LD D,A            ; }
-;       movb @e,@c                      ; LD C,E            ; {#REGc=8+32*(#REGe #S/AND/ 7); this value determines the
-;       ; RRC C                         ; RRC C             ; duration of the short note that will be played
-;       ; RRC C                         ; RRC C             ;
-;       ; RRC C                         ; RRC C             ; }
-;       socb @bytes+16,a                ; OR 16             ; Set bit 4 of #REGa (for no apparent reason)
-;       sb   a,a                        ; XOR A             ; Set #REGa=0 (this will make the border black)
+;      inv  a                          ; CPL               ; {#REGd=63-8*(#REGe #S/AND/ 7); this value determines the
+;      andi a,7*256                    ; AND 7             ; pitch of the short note that will be played
+;      sla  a,1                        ; RLCA              ;
+;      sla  a,1                        ; RLCA              ;
+;      sla  a,1                        ; RLCA              ;
+;      socb @bytes+7,a                 ; OR 7              ;
+;      movb a,d                        ; LD D,A            ; }
+;      movb @e,@c                      ; LD C,E            ; {#REGc=8+32*(#REGe #S/AND/ 7); this value determines the
+;      ; RRC C                         ; RRC C             ; duration of the short note that will be played
+;      ; RRC C                         ; RRC C             ;
+;      ; RRC C                         ; RRC C             ; }
+;      socb @bytes+16,a                ; OR 16             ; Set bit 4 of #REGa (for no apparent reason)
+;      sb   a,a                        ; XOR A             ; Set #REGa=0 (this will make the border black)
 ;tm21:                                  ; 35112
-;       ; OUT (254),A                   ; OUT (254),A       ; {Produce a short note whose pitch is determined by #REGd
-;       li   r0,24*256                  ; XOR 24            ; and whose duration is determined by #REGc
-;       xor  r0,a                       ;
-;       movb d,b                        ; LD B,D            ;
+;      ; OUT (254),A                   ; OUT (254),A       ; {Produce a short note whose pitch is determined by #REGd
+;      li   r0,24*256                  ; XOR 24            ; and whose duration is determined by #REGc
+;      xor  r0,a                       ;
+;      movb d,b                        ; LD B,D            ;
 ;tm22:                                  ; 35117
-;       sb   one,b                      ; DJNZ 35117        ;
-;       jne  tm22                       ;
-;       sb   one,@c                     ; DEC C             ;
-;       jne  tm21                       ; JR NZ,35112       ; }
+;      sb   one,b                      ; DJNZ 35117        ;
+;      jne  tm22                       ;
+;      sb   one,@c                     ; DEC C             ;
+;      jne  tm21                       ; JR NZ,35112       ; }
 
        movb @e,a                       ; LD A,E            ; Restore the attribute byte (originally #b71) to #REGa
        sb   one,a                      ; DEC A             ; Decrement it (effectively decrementing the INK colour)
@@ -666,7 +681,7 @@ lpdead1:                               ; 35080
        b    @endgam                    ;                   
 !
        sb   one,*hl                    ; DEC (HL)          ; Decrease the number of lives remaining by one
-       b    @new_cavern                    ; JP 34449          ; Jump back to reinitialise the current cavern
+       b    @new_cavern                    ; JP 34449      ; Jump back to reinitialise the current cavern
 
 * Display the game over sequence
 * 
@@ -737,23 +752,23 @@ loopft:                                ; 35210
                                                            ; place, and makes the boot appear as if it's at the end
                                                            ; of a long, extending trouser leg}
 
-;       movb @eughgt,a                  ; LD A,(32988)      ; Pick up the distance variable from #R32988
-;       inv  a                          ; CPL               ; #REGa=#b255-#REGa
-;       movb a,@e                       ; LD E,A            ; Store this value (#b63-#b255) in #REGe; it determines
-;                                                           ; the (rising) pitch of the sound effect that will be made
-;       sb   a,a                        ; XOR A             ; #REGa=0 (black border)
-;       li   bc,64                      ; LD BC,64          ; #REGc=#b64; this value determines the duration of the
-;                                                           ; sound effect
-;tm111:                                 ; 35242
-;       ; OUT (254),A                   ; OUT (254),A       ; {Produce a short note whose pitch is determined by #REGe
-;       li   r0,24*256                  ; XOR 24            ;
-;       xor  r0,a                       ;
-;       movb @e,b                       ; LD B,E            ;
+;      movb @eughgt,a                  ; LD A,(32988)      ; Pick up the distance variable from #R32988
+;      inv  a                          ; CPL               ; #REGa=#b255-#REGa
+;      movb a,@e                       ; LD E,A            ; Store this value (#b63-#b255) in #REGe; it determines
+;                                                          ; the (rising) pitch of the sound effect that will be made
+;      sb   a,a                        ; XOR A             ; #REGa=0 (black border)
+;      li   bc,64                      ; LD BC,64          ; #REGc=#b64; this value determines the duration of the
+;                                                          ; sound effect
+;tm111:                                ; 35242
+;      OUT (254),A                     ; OUT (254),A       ; {Produce a short note whose pitch is determined by #REGe
+;      li   r0,24*256                  ; XOR 24            ;
+;      xor  r0,a                       ;
+;      movb @e,b                       ; LD B,E            ;
 ;tm112:                                 ; 35247
-;       sb   one,b                      ; DJNZ 35247        ;
-;       jne  tm112                      ;
-;       sb   one,@c                     ; DEC C             ;
-;       jne  tm111                      ; JR NZ,35242       ; }
+;      sb   one,b                      ; DJNZ 35247        ;
+;      jne  tm112                      ;
+;      sb   one,@c                     ; DEC C             ;
+;      jne  tm111                      ; JR NZ,35242       ; }
 
        li   hl,zx_attrs                ; LD HL,22528       ; {Prepare #REGbc, #REGde and #REGhl for setting the
        li   de,zx_attrs+1              ; LD DE,22529       ; attribute bytes in the top two-thirds of the screen
@@ -830,8 +845,8 @@ tm91:                                  ; 35313
 
        sb   one,@c                     ; DEC C             ; Decrement the counter in #REGc
        jne  tm91                       ; JR NZ,35313       ; Jump back unless it's zero
-;       sb   one,d                      ; DEC D             ; Decrement the counter in #REGd (initially 6)
-;       jne  tm91                       ; JR NZ,35313       ; Jump back unless it's zero
+;      sb   one,d                      ; DEC D             ; Decrement the counter in #REGd (initially 6)
+;      jne  tm91                       ; JR NZ,35313       ; Jump back unless it's zero
 
        b    @start                     ; JP 34252          ; Display the title screen and play the theme tune
 
@@ -992,31 +1007,31 @@ move_willy:                            ; 35515
        ab   one,a                      ; INC A             ;
        movb a,@jumping                 ; LD (32878),A      ; }
 
-;       sb   @bytes+8,a                 ; SUB 8             ; #REGa=J-8, where J (1-18) is the new value of the
-;                                                           ; jumping animation counter
-;       jgt  _35563                     ; JP P,35563        ; Jump if J>=8
-;       jeq  _35563
-;       neg a                           ; NEG               ; #REGa=8-J (1<=J<=7, 1<=#REGa<=7)
+;      sb   @bytes+8,a                 ; SUB 8             ; #REGa=J-8, where J (1-18) is the new value of the
+;                                                          ; jumping animation counter
+;      jgt  _35563                     ; JP P,35563        ; Jump if J>=8
+;      jeq  _35563
+;      neg a                           ; NEG               ; #REGa=8-J (1<=J<=7, 1<=#REGa<=7)
 ;_35563:
-;       ab   one,a                      ; INC A             ; #REGa=1+ABS(J-8)
-;       sla  a,1                        ; RLCA              ; {#REGd=8*(1+ABS(J-8)); this value determines the pitch
-;       sla  a,1                        ; RLCA              ; of the jumping sound effect (rising as Willy rises,
-;       sla  a,1                        ; RLCA              ; falling as Willy falls)
-;       movb a,d                        ; LD D,A            ; }
-;       movb @bytes+32,@c               ; LD C,32           ; This value determines the duration of the jumping sound
-;                                                           ; effect
-;       movb @border,a                  ; LD A,(32883)      ; Pick up the border colour for the current cavern from
-;                                                           ; #R32883
+;      ab   one,a                      ; INC A             ; #REGa=1+ABS(J-8)
+;      sla  a,1                        ; RLCA              ; {#REGd=8*(1+ABS(J-8)); this value determines the pitch
+;      sla  a,1                        ; RLCA              ; of the jumping sound effect (rising as Willy rises,
+;      sla  a,1                        ; RLCA              ; falling as Willy falls)
+;      movb a,d                        ; LD D,A            ; }
+;      movb @bytes+32,@c               ; LD C,32           ; This value determines the duration of the jumping sound
+;                                                          ; effect
+;      movb @border,a                  ; LD A,(32883)      ; Pick up the border colour for the current cavern from
+;                                                          ; #R32883
 ;_35573:
-;       ; OUT (254),A                   ; OUT (254),A       ; {Make a jumping sound effect
-;       li   r0,24*256                  ; XOR 24            ;
-;       xor  r0,a                       ;
-;       movb d,b                        ; LD B,D            ;
+;      OUT (254),A                   ; OUT (254),A         ; {Make a jumping sound effect
+;      li   r0,24*256                  ; XOR 24            ;
+;      xor  r0,a                       ;
+;      movb d,b                        ; LD B,D            ;
 ;_35578:
-;       sb   one,b                      ; DJNZ 35578        ;
-;       jne  _35578                     ;
-;       sb   one,@c                     ; DEC C             ;
-;       jne  _35573                     ; JR NZ,35573       ; }
+;      sb   one,b                      ; DJNZ 35578        ;
+;      jne  _35578                     ;
+;      sb   one,@c                     ; DEC C             ;
+;      jne  _35573                     ; JR NZ,35573       ; }
 
        movb @jumping,a                 ; LD A,(32878)      ; Pick up the jumping animation counter (1-18) from
                                                            ; #R32878
@@ -1520,7 +1535,7 @@ kill_willy_3:
 * Move the horizontal guardians in the current cavern
 * 
 * Used by the routine at #R34574.
-movehg:                                ; 36111
+move_hguardians:                       ; 36111
        li   iy,hguards                 ; LD IY,32958       ; Point #REGiy at the first byte of the first horizontal
                                                            ; guardian definition at #R32958
        li   de,7                       ; LD DE,7           ; Prepare #REGde for addition (there are 7 bytes in a
@@ -1654,7 +1669,7 @@ _36261:
 * Draw the horizontal guardians in the current cavern
 * 
 * Used by the routine at #R34574.
-drawhg:                                ; 36266
+draw_hguardians:                          ; 36266
        li   iy,hguards                 ; LD IY,32958       ; Point #REGiy at the first byte of the first horizontal
                                                            ; guardian definition at #R32958
 * The guardian-drawing loop begins here.
@@ -1686,7 +1701,7 @@ _36270:
 ;      srl  a,1                        ; RRCA              ; }
        sla  a,5
        movb a,@e                       ; LD E,A            ; Copy the result to #REGe
-       movb @cavern,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+7                 ; CP 7              ; Are we in one of the first seven caverns?
        jl   _36323                     ; JR C,36323        ; Jump if so
        cb   a,@bytes+9                 ; CP 9              ; Are we in #R54272(The Endorian Forest)?
@@ -1696,7 +1711,7 @@ _36270:
        socb @bits+7,@e                 ; SET 7,E           ; Add #b128 to #REGe (the horizontal guardians in this
                                                            ; cavern use frames 4-7 only)
 _36323:
-       movb @bytes+ggdata_msb,d     ; LD D,129          ; Point #REGde at the graphic data for the appropriate
+       movb @bytes+ggdata_msb,d        ; LD D,129          ; Point #REGde at the graphic data for the appropriate
                                                            ; guardian sprite (at #R33024+#REGe)
        movb @1(iy),@l                  ; LD L,(IY+1)       ; {Point #REGhl at the address of the guardian's location
        movb @3(iy),h                   ; LD H,(IY+3)       ; in the screen buffer at #R24576}
@@ -1860,7 +1875,7 @@ _36527:
 ;      srl  a,1                        ; RRCA              ;
        sla  a,5                        ; RRCA              ; }
        movb a,@e                       ; LD E,A            ; {Point #REGde at the graphic data for the corresponding
-       movb @bytes+ggdata_msb,d     ; LD D,129          ; Skylab sprite (at #R33024+#REGa)}
+       movb @bytes+ggdata_msb,d        ; LD D,129          ; Skylab sprite (at #R33024+#REGa)}
        movb one,@c                     ; LD C,1            ; {Draw the Skylab to the screen buffer at #R24576
        .call @draw_sprite              ; CALL 36852        ; }
        jeq  !                          ; JP NZ,36103       ; Kill Willy if the Skylab collided with him
@@ -1892,7 +1907,7 @@ _36527:
 * Move and draw the vertical guardians in the current cavern
 * 
 * Used by the routine at #R34574.
-vguardians:                            ; 36593
+draw_vguardians:                       ; 36593
        li   iy,vguards                 ; LD IY,32989       ; Point #REGiy at the first byte of the first vertical
                                                            ; guardian definition at #R32989
 * The guardian-moving loop begins here.
@@ -1937,7 +1952,7 @@ _36639:
 ;      srl  a,1                        ; RRCA              ; }
        sla  a,5
        movb a,@e                       ; LD E,A            ; {Point #REGde at the graphic data for the appropriate
-       movb @bytes+ggdata_msb,d     ; LD D,129          ; guardian sprite (at #R33024+#REGa)}
+       movb @bytes+ggdata_msb,d        ; LD D,129          ; guardian sprite (at #R33024+#REGa)}
        movb one,@c                     ; LD C,1            ; {Draw the guardian to the screen buffer at #R24576
        .call @draw_sprite              ; CALL 36852        ; }
        jeq  !                          ; JP NZ,36102       ; Kill Willy if the guardian collided with him
@@ -1951,7 +1966,7 @@ _36639:
        andi a,64*256                   ; AND 64            ; {Point #REGhl at the address of the guardian's location
 ;      sla  a,1                        ; RLCA              ; in the attribute buffer at #R23552
        srl  a,6                        ; RLCA              ;
-       ab   @bytes+attr_buffer_2_msb,a                  ; ADD A,92       ;
+       ab   @bytes+attr_buffer_2_msb,a                     ; ADD A,92       ;
        movb a,h                        ; LD H,A            ; 
        movb @2(iy),a                   ; LD A,(IY+2)       ; 
 ;      sla  a,1                        ; RLCA              ;
@@ -2040,8 +2055,8 @@ _36794:
 * Used by the routine at #R34574. First check whether Willy has entered the
 * portal.
 chkportal:                             ; 36805
-       movb @portalloc1+1,h            ; LD HL,(32944)    ; Pick up the address of the portal's location in the
-       movb @portalloc1,@l                                 ; attribute buffer at #R23552 from #R32944
+       movb @portal_location_1+1,h            ; LD HL,(32944)    ; Pick up the address of the portal's location in the
+       movb @portal_location_1,@l                                 ; attribute buffer at #R23552 from #R32944
        movb @location,a                ; LD A,(32876)      ; Pick up the LSB of the address of Willy's location in
                                                            ; the attribute buffer at #R23552 from #R32876
        cb   a,@l                       ; CP L              ; Does it match that of the portal?
@@ -2057,6 +2072,7 @@ chkportal:                             ; 36805
        .pop hl                         ; POP HL            ; Drop the return address from the stack
        li   r0,>9f00                   ; Mute sound
        movb r0,@sound
+       clr  @sprite_attr_table_addr
        b    @next_cavern               ; JP 36904          ; Move Willy to the next cavern
 * Willy has not entered the portal, or it's not flashing, so just draw it.
 _36831:
@@ -2085,10 +2101,10 @@ _36831:
        movb a,*hl+                     ; LD (HL),A         ;
 ;      inc  hl                         ; INC HL            ;
        movb a,*hl                      ; LD (HL),A         ; }
-       li   de,portalg                 ; LD DE,32912       ; Point #REGde at the graphic data for the portal at
+       li   de,portal_sprites                 ; LD DE,32912       ; Point #REGde at the graphic data for the portal at
                                                            ; #R32912
-       movb @portalloc2+1,h            ; LD HL,(32946)     ; Pick up the address of the portal's location in the
-       movb @portalloc2,@l                                 ; screen buffer at #R24576 from #R32946
+       movb @portal_location_2+1,h            ; LD HL,(32946)     ; Pick up the address of the portal's location in the
+       movb @portal_location_2,@l                                 ; screen buffer at #R24576 from #R32946
        sb   @c,@c                      ; LD C,0            ; #REGc=0: overwrite mode
 * This routine continues into the one at #R36852.
 
@@ -2111,6 +2127,8 @@ _36831:
 * DE Address of sprite graphic data
 * HL Address to draw at
 draw_sprite:                           ; 36852
+       bl   @ti_draw_sprite
+       .ret_eq
        movb @bytes+16,b                ; LD B,16           ; There are 16 rows of pixels to draw
 _36854:
 *      Left byte
@@ -2270,12 +2288,12 @@ _37014:
 
        bl   @upload_zx_screen
 
-;       li   bc,4                       ; LD BC,4           ; {Pause for about 0.004s
+;      li   bc,4                       ; LD BC,4           ; {Pause for about 0.004s
 ;_37029:
-;       sb   one,b                      ; DJNZ 37029        ;
-;       jne  _37029                     ;
-;       sb   one,@c                     ; DEC C             ;
-;       jne  _37029                     ; JR NZ,37029       ; }
+;      sb   one,b                      ; DJNZ 37029        ;
+;      jne  _37029                     ;
+;      sb   one,@c                     ; DEC C             ;
+;      jne  _37029                     ; JR NZ,37029       ; }
 
        sb   one,a                      ; DEC A             ; Decrement the attribute value in #REGa
        jne  _37014                     ; JR NZ,37014       ; Jump back until we've gone through all attribute values
@@ -2371,7 +2389,7 @@ mvconveyor:                            ; 37125
 * The conveyor is moving left.
        movb *hl,r0                     ; LD A,(HL)         ; Copy the first pixel row of the conveyor tile to #REGa
        movb r0,@r0lb                   ; RLC A             ; {Rotate it left twice
-       src  r0,14                       ; RLC A             ; }
+       src  r0,14                       ; RLC A            ; }
        movb r0,a
 ;      ab   one,h                      ; INC H             ; {Point #REGhl at the third pixel row of the conveyor
        ab   @bytes+2,h                 ; INC H             ; tile}
@@ -2434,7 +2452,7 @@ _37202:
        jne  _37228                     ; JR NZ,37228       ; Jump if not
        sb   one,h                      ; DEC H             ; Point #REGhl at the next pixel row up
        movb h,a                        ; LD A,H            ; {Have we checked all 8 pixel rows yet?
-       cb   a,@bytes+screen_buffer_1_msb+7                ; CP 119            ; }
+       cb   a,@bytes+screen_buffer_1_msb+7                 ; CP 119            ; }
        jne  _37202                     ; JR NZ,37202       ; If not, jump back to check the next one
        movb @background,a              ; LD A,(32800)      ; Pick up the attribute byte of the background tile for
                                                            ; the current cavern from #R32800
@@ -2489,21 +2507,21 @@ _37277:
        ab   @bytes+4,a                 ; ADD A,4           ; {Add 4 to the Kong Beast's pixel y-coordinate at #R32988
        movb a,@eughgt                  ; LD (32988),A      ; (moving him downwards)}
 
-;       movb a,@c                       ; LD C,A            ; Copy the pixel y-coordinate to #REGc; this value
-;                                                           ; determines the pitch of the sound effect
-;       movb @bytes+16,d                ; LD D,16           ; This value determines the duration of the sound effect
-;       movb @border,a                  ; LD A,(32883)      ; Pick up the border colour for the current cavern from
-;                                                           ; #R32883
+;      movb a,@c                       ; LD C,A            ; Copy the pixel y-coordinate to #REGc; this value
+;                                                          ; determines the pitch of the sound effect
+;      movb @bytes+16,d                ; LD D,16           ; This value determines the duration of the sound effect
+;      movb @border,a                  ; LD A,(32883)      ; Pick up the border colour for the current cavern from
+;                                                          ; #R32883
 ;_37301:
-;       ; OUT (254),A                   ; OUT (254),A       ; {Make a falling sound effect
-;       li   r0,24*256                  ; XOR 24            ;
-;       xor  r0,a                       ;
-;       movb @c,b                       ; LD B,C            ;
+;      ; OUT (254),A                   ; OUT (254),A       ; {Make a falling sound effect
+;      li   r0,24*256                  ; XOR 24            ;
+;      xor  r0,a                       ;
+;      movb @c,b                       ; LD B,C            ;
 ;_37306:
-;       sb   one,b                      ; DJNZ 37306        ;
-;       jne  _37306                     ;
-;       sb   one,d                      ; DEC D             ;
-;       jne  _37301                     ; JR NZ,37301       ; }
+;      sb   one,b                      ; DJNZ 37306        ;
+;      jne  _37306                     ;
+;      sb   one,d                      ; DEC D             ;
+;      jne  _37301                     ; JR NZ,37301       ; }
 ;
        movb @c,a                       ; LD A,C            ; Copy the Kong Beast's pixel y-coordinate back into #REGa
        sla  a,1                        ; RLCA              ; {Point #REGde at the entry in the screen buffer address
@@ -2515,7 +2533,7 @@ _37277:
        inc  de                         ; INC DE            ; 
        movb *de,a                      ; LD A,(DE)         ; 
        movb a,h                        ; LD H,A            ; }
-       movb @bytes+ggdata_msb,d     ; LD D,129          ; {Use bit 5 of the value of the game clock at #R32957
+       movb @bytes+ggdata_msb,d        ; LD D,129          ; {Use bit 5 of the value of the game clock at #R32957
        movb @clock,a                   ; LD A,(32957)      ; (which is toggled once every eight passes through the
        andi a,32*256                   ; AND 32            ; main loop) to point #REGde at the graphic data for the
        socb @bytes+64,a                ; OR 64             ; appropriate Kong Beast sprite
@@ -2545,7 +2563,7 @@ _37369:
        movb @clock,a                   ; LD A,(32957)      ; Pick up the value of the game clock at #R32957
        andi a,32*256                   ; AND 32            ; {Use bit 5 of this value (which is toggled once every
        movb a,@e                       ; LD E,A            ; eight passes through the main loop) to point #REGde at
-       movb @bytes+ggdata_msb,d     ; LD D,129          ; the graphic data for the appropriate Kong Beast sprite}
+       movb @bytes+ggdata_msb,d        ; LD D,129          ; the graphic data for the appropriate Kong Beast sprite}
        li   hl,scrn_buffer_2+15        ; LD HL,24591       ; {Draw the Kong Beast at (0,15) in the screen buffer at
        movb one,@c                     ; LD C,1            ; #R24576
        .call @draw_sprite              ; CALL 36852        ; }
@@ -2587,7 +2605,7 @@ chkswitch:                             ; 37403
 !
        movb @extra+6,a                 ; LD A,(32869)      ; Pick up the sixth byte of the graphic data for the
                                                            ; switch tile from #R32863(#N32869)
-       movb @bytes+screen_buffer_1_msb+5,h                ; LD H,117          ; Point #REGhl at the sixth row of pixels of the switch
+       movb @bytes+screen_buffer_1_msb+5,h                 ; LD H,117          ; Point #REGhl at the sixth row of pixels of the switch
                                                            ; tile in the screen buffer at #R28672
        cb   a,*hl                      ; CP (HL)           ; Has the switch already been flipped?
        jeq  !                          ; RET NZ            ; Return (with the zero flag reset) if so
@@ -2635,7 +2653,7 @@ willy_attrs:                           ; 37434
 * 
 * C #b15 or Willy's y-coordinate
 * HL Address of the cell in the attribute buffer at #R23552
-willy_attr:                             ; 37471
+willy_attr:                            ; 37471
        movb @background,a              ; LD A,(32800)      ; Pick up the attribute byte of the background tile for
                                                            ; the current cavern from #R32800
        cb   a,*hl                      ; CP (HL)           ; Does this cell contain a background tile?
@@ -2677,7 +2695,7 @@ _37488:
 * Draw Willy to the screen buffer at #N24576
 * 
 * Used by the routine at #R37434.
-draw_willy:                             ; 37503
+draw_willy:                            ; 37503
        movb @willy_y,a                 ; LD A,(32872)      ; Pick up Willy's y-coordinate from #R32872
        movb @sbufaddrs_msb_byte,ix     ; LD IXH,131        ; {Point #REGix at the entry in the screen buffer address
        movb a,@ixl                     ; LD IXL,A          ; lookup table at #R33536 that corresponds to Willy's
@@ -2694,26 +2712,34 @@ draw_willy:                             ; 37503
        sla  a,5                        ; RRCA              ;
        socb @e,a                       ; OR E              ; 
        movb a,@e                       ; LD E,A            ; 
-       movb @bytes+mandat_msb,d     ; LD D,130          ; }
+       movb @bytes+mandat_msb,d        ; LD D,130          ; }
        movb @bytes+16,b                ; LD B,16           ; There are 16 rows of pixels to copy
        movb @location,a                ; LD A,(32876)      ; {Pick up Willy's screen x-coordinate (0-31) from #R32876
        andi a,31*256                   ; AND 31            ; }
        movb a,@c                       ; LD C,A            ; Copy it to #REGc
+
+       movb *ix+,h
+       socb a,h
+       swpb hl
+       movb *ix,h
+       dec  ix
+       bl   @ti_draw_sprite
+       .ret
 _37538:
-       movb *ix,a                      ; LD A,(IX+0)       ; {Set #REGhl to the address in the screen buffer at
-       movb @1(ix),h                   ; LD H,(IX+1)       ; #R24576 that corresponds to where we are going to draw
-       socb @c,a                       ; OR C              ; the next pixel row of the sprite graphic
-       movb a,@l                       ; LD L,A            ; }
-       movb *de+,a                     ; LD A,(DE)         ; Pick up a sprite graphic byte
-       socb *hl,a                      ; OR (HL)           ; Merge it with the background
-       movb a,*hl+                     ; LD (HL),A         ; Save the resultant byte to the screen buffer
+       movb *ix+,@l                    ; LD A,(IX+0)       ; {Set #REGhl to the address in the screen buffer at
+       movb *ix+,h                     ; LD H,(IX+1)       ; #R24576 that corresponds to where we are going to draw
+       socb @c,@l                      ; OR C              ; the next pixel row of the sprite graphic
+;      movb a,@l                       ; LD L,A            ; }
+;      movb *de+,a                     ; LD A,(DE)         ; Pick up a sprite graphic byte
+       socb *de+,*hl+                  ; OR (HL)           ; Merge it with the background
+;      movb a,*hl+                     ; LD (HL),A         ; Save the resultant byte to the screen buffer
 ;      inc  hl                         ; INC HL            ; Move #REGhl along to the next cell to the right
 ;      inc  de                         ; INC DE            ; Point #REGde at the next sprite graphic byte
-       movb *de+,a                     ; LD A,(DE)         ; Pick it up in #REGa
-       socb *hl,a                      ; OR (HL)           ; Merge it with the background
-       movb a,*hl                      ; LD (HL),A         ; Save the resultant byte to the screen buffer
+;      movb *de+,a                     ; LD A,(DE)         ; Pick it up in #REGa
+       socb *de+,*hl                   ; OR (HL)           ; Merge it with the background
+;      movb a,*hl                      ; LD (HL),A         ; Save the resultant byte to the screen buffer
 ;      inc  ix                         ; INC IX            ; {Point #REGix at the next entry in the screen buffer
-       inct ix                         ; INC IX            ; address lookup table at #R33536}
+;      inc  ix                         ; INC IX            ; address lookup table at #R33536}
 ;      inc  de                         ; INC DE            ; Point #REGde at the next sprite graphic byte
        sb   one,b                      ; DJNZ 37538        ; Jump back until all 16 rows of pixels have been drawn
        jne  _37538                     ;                   
@@ -2745,12 +2771,12 @@ pmess:                                 ; 37562
 * A ASCII code of the character
 * DE Display file address
 printchar:                             ; 37579
-;       movb @bytes+7,h                 ; LD H,7            ; {Point #REGhl at the bitmap for the character (in the
-;       movb a,@l                       ; LD L,A            ; ROM)
-;       socb @bits+7,@l                 ; SET 7,L           ;
-;       a    hl,hl                      ; ADD HL,HL         ;
-;       a    hl,hl                      ; ADD HL,HL         ;
-;       a    hl,hl                      ; ADD HL,HL         ; }
+;      movb @bytes+7,h                 ; LD H,7            ; {Point #REGhl at the bitmap for the character (in the
+;      movb a,@l                       ; LD L,A            ; ROM)
+;      socb @bits+7,@l                 ; SET 7,L           ;
+;      a    hl,hl                      ; ADD HL,HL         ;
+;      a    hl,hl                      ; ADD HL,HL         ;
+;      a    hl,hl                      ; ADD HL,HL         ; }
        sb   @bytes+32,a
        clr  hl
        movb a,h
@@ -2760,9 +2786,9 @@ printchar:                             ; 37579
 * This entry point is used by the routine at #R36707 to draw an item in the
 * current cavern.
 _37589:
-;       movb *hl,a                      ; LD A,(HL)         ; {Copy the character bitmap to the screen (or item
-;       movb a,*de                      ; LD (DE),A         ; graphic to the screen buffer)
-;       inc  hl                         ; INC HL            ;
+;      movb *hl,a                      ; LD A,(HL)         ; {Copy the character bitmap to the screen (or item
+;      movb a,*de                      ; LD (DE),A         ; graphic to the screen buffer)
+;      inc  hl                         ; INC HL            ;
        movb *hl+,*de
        ab   one,d                      ; INC D             ;
        sb   one,b                      ; DJNZ 37589        ; }
@@ -2830,27 +2856,27 @@ playtune:                              ; 37596
        sb   @bytes+25,@c
        jeq  !
 _37624:
-;       ; OUT (254),A                   ; OUT (254),A       ; {Produce a sound based on the frequency parameters in
-;       sb   one,d                      ; DEC D             ; the second and third bytes of data for this note (copied
-;       jne  _37634                     ; JR NZ,37634       ; into #REGd and #REGe)
-;       movb @1(iy),d                   ; LD D,(IY+1)       ;
-;       li   r0,24*256                  ; XOR 24            ;
-;       xor  r0,a                       ;
+;      OUT (254),A                   ; OUT (254),A         ; {Produce a sound based on the frequency parameters in
+;      sb   one,d                      ; DEC D             ; the second and third bytes of data for this note (copied
+;      jne  _37634                     ; JR NZ,37634       ; into #REGd and #REGe)
+;      movb @1(iy),d                   ; LD D,(IY+1)       ;
+;      li   r0,24*256                  ; XOR 24            ;
+;      xor  r0,a                       ;
 ;_37634:
-;       sb   one,@e                     ; DEC E             ;
-;       jne  _37642                     ; JR NZ,37642       ;
-;       movb @2(iy),@e                  ; LD E,(IY+2)       ;
-;       li   r0,24*256                  ; XOR 24            ;
-;       xor  r0,a                       ;
+;      sb   one,@e                     ; DEC E             ;
+;      jne  _37642                     ; JR NZ,37642       ;
+;      movb @2(iy),@e                  ; LD E,(IY+2)       ;
+;      li   r0,24*256                  ; XOR 24            ;
+;      xor  r0,a                       ;
 ;_37642:
        sb   one,b                      ; DJNZ 37624        ;
        jne  _37624                     ;
        sb   one,@c                     ; DEC C             ;
        jne  _37624                     ; JR NZ,37624       ; }
 
-;       .call @checkenter               ; CALL 37687        ; Check whether ENTER or the fire button is being pressed
-;       jeq  !                          ; RET NZ            ; Return (with the zero flag reset) if it is
-;       .ret                            ;
+;      .call @checkenter               ; CALL 37687        ; Check whether ENTER or the fire button is being pressed
+;      jeq  !                          ; RET NZ            ; Return (with the zero flag reset) if it is
+;      .ret                            ;
 ;!
 
 !      li   r0,JOY_FI

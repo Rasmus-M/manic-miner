@@ -50,8 +50,10 @@ b254:
        equ  b255+1
 vdp_status:
        equ  b254+1
-pad_max:
+screen_update_flag:
        equ  vdp_status+2
+pad_max:
+       equ  screen_update_flag+2
 kscan_device:
        equ  >8374
 kscan_key:
@@ -60,6 +62,10 @@ kscan_status:
        equ  >837c
 gplws:
        equ  >83e0
+
+**
+* ROM banks
+*
 caverns_0_6_bank_select:
        equ  >6008
 caverns_7_13_bank_select:

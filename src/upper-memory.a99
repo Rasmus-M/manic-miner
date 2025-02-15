@@ -10,7 +10,7 @@ init:
        bl   @ti_setup_environment
        b    @start
 
-       copy "ti-general-routines.a99"
+       copy "ti-routines.a99"
 
 upper_memory_max:
        equ  $

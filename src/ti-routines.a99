@@ -167,64 +167,6 @@ ti_display_on:
 
 *********************************************************************************
 *
-* Clear screen
-*
-ti_clear_screen:
-       .proc
-       bl   @ti_display_off
-;       bl   @module_player
-       li   r1,vdpwd
-       li   r0,pattern_table
-       bl   @vwad
-       bl   @ti_clear_screen_part
-       bl   @ti_clear_screen_part
-       bl   @ti_clear_screen_part
-       li   r0,color_table
-       bl   @vwad
-       bl   @ti_clear_screen_part
-       bl   @ti_clear_screen_part
-       bl   @ti_clear_screen_part
-       bl   @ti_display_on
-       .endproc
-*// ti_clear_screen
-
-ti_clear_screen_part:
-       .proc
-       li   r2,>800
-ti_clear_screen_part_1:
-       clr  *r1
-       dec  r2
-       jne  ti_clear_screen_part_1
-;       bl   @module_player
-       .endproc
-
-*********************************************************************************
-*
-* Set color of whole screen
-*
-* a: zx attribute
-*
-ti_set_screen_color:
-       .proc
-       bl   @ti_color
-       movb r0,r1
-       li   r0,color_table+(3*256)
-       li   r2,5*256
-       bl   @vsmw
-;       bl   @module_player
-       li   r0,color_table+(8*256)
-       li   r2,5*256
-       bl   @vsmw
-;       bl   @module_player
-       li   r0,color_table+(13*256)
-       li   r2,5*256
-       bl   @vsmw
-;       bl   @module_player
-       .endproc
-*// ti_set_screen_color
-
-*********************************************************************************
-*
 * Set border color
 *
 * a: zx color
@@ -451,19 +393,25 @@ upload_sprite_patterns:
        .proc
        li   r0,sprite_pattern_table
        bl   @vwad
-       li   r0,willy_sprites
+*
+       li   r0,extra_sprite
+       bl   @upload_sprite_pattern
+*
+       li   r0,guardian_sprites
        li   r1,8
 upload_sprite_patterns_1:
        bl   @upload_sprite_pattern
        dec  r1
        jne  upload_sprite_patterns_1
-       li   r0,guardian_sprites
+*
+       li   r0,willy_sprites
        li   r1,8
 upload_sprite_patterns_2:
        bl   @upload_sprite_pattern
        dec  r1
        jne  upload_sprite_patterns_2
-       li   r0,extra_sprite
+*
+       li   r0,portal_sprites
        bl   @upload_sprite_pattern
        .endproc
 *// upload_sprite_patterns
@@ -490,6 +438,80 @@ upload_sprite_pattern_2:
        rt
 *// upload_sprite_patterns
 
+*********************************************************************************
+*
+* Upload a hardware sprite to the TMS9918A sprite attribute table
+*
+* de: Address of sprite graphic data
+* hl: Address to draw at in the ZX Spectrum screen (xxxsslllrrrccccc)
+*
+ti_draw_sprite:
+       .proc
+       mov  @sprite_attr_table_addr,r0
+       jeq  ti_draw_sprite_3
+       bl   @vwad
+**
+* Y
+*
+       mov  hl,r1
+       andi r1,>1fe0
+       srl  r1,5
+       movb @sprite_y(r1),@vdpwd
+**
+* X
+*
+       mov  hl,r1
+       andi r1,>001f
+       sla  r1,3
+       swpb r1
+       movb r1,@vdpwd
+**
+* Pattern
+*
+       mov  de,r1
+       ai   r1,-sprite_patterns
+       jhe  ti_draw_sprite_4
+       li   r1,>4400
+       jmp  ti_draw_sprite_7
+ti_draw_sprite_4:
+       srl  r1,3
+       swpb r1
+ti_draw_sprite_7:
+       movb r1,@vdpwd
+**
+* Color
+*
+       ci   de,extra_sprite
+       jhe   ti_draw_sprite_6          ; If lower it's the portal
+       movb @portal,r1
+       jmp  ti_draw_sprite_5
+ti_draw_sprite_6:
+       ci   de,willy_sprites
+       jl   ti_draw_sprite_1
+       li   r1,>0e00                   ; Willy is a grey guy
+       jmp  ti_draw_sprite_2
+ti_draw_sprite_1:                      ; For other sprites we have to get their color from attributes
+       mov  hl,r1                      ; Start with screen address
+       andi r1,>00ff                   ; Row and column
+       mov  hl,r0                      ; Screen address again
+       andi r0,>1800                   ; 3rd of screen
+       srl  r0,3                       ; Shift down to a value of 256 bytes per 3rd
+       soc  r0,r1                      ; Now r1 holds the offset into the attribute table
+       movb @zx_attrs(r1),r1           ; Get attribute
+ti_draw_sprite_5:
+       srl  r1,8                       ; Shift into LSB
+       movb @ti_colors(r1),r1          ; Get TI color
+       srl  r1,4                       ; We need foreground color
+       jmp  ti_draw_sprite_2
+ti_draw_sprite_2:
+       movb r1,@vdpwd
+       inct  @sprite_attr_table_addr
+       inct  @sprite_attr_table_addr
+ti_draw_sprite_3:
+       .endproc
+sprite_attr_table_addr:
+       data 0
+*// ti_draw_sprite
 
 *********************************************************************
 *
@@ -839,21 +861,3 @@ ti_delay_1:
        jne  ti_delay_1
        .endproc
 *// ti_delay
-
-*********************************************************************
-*
-* For routines that set or reset the carry flag on return
-*
-return_with_carry:
-       .pop  r11
-return_with_carry_1:
-       seto r0
-       inc  r0
-       rt
-
-return_without_carry:
-       .pop  r11
-return_without_carry_1:
-       clr  r0
-       inc  r0
-       rt
