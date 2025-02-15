@@ -351,12 +351,42 @@ upload_count:
 
 *********************************************************************************
 *
+* Upload middle 3rd of main ZX screen buffer
+*
+upload_middle_part:
+       lwpi ti_wrksp
+       mov  @wrksp+20,r10
+       li   r0,>800
+       li   r14,zx_screen+>800
+       li   r15,zx_attrs+>100
+       bl   @upload_screen_part
+       lwpi wrksp
+       rt
+*// upload_middle_part
+
+*********************************************************************************
+*
+* Upload bottom 3rd of main ZX screen buffer
+*
+upload_bottom_part:
+       lwpi ti_wrksp
+       mov  @wrksp+20,r10
+       li   r0,>1000
+       li   r14,zx_screen+>1000
+       li   r15,zx_attrs+>200
+       bl   @upload_screen_part
+       lwpi wrksp
+       rt
+*// upload_bottom_part
+
+*********************************************************************************
+*
 * Upload screen part
 *
 * r0: VDP tabæe offset
 * r14: Screen address
 * r15: Attributes address
-
+*
 upload_screen_part:
        .proc
        li   r13,vdpwd
@@ -412,6 +442,14 @@ upload_screen_part_2:
        jne  upload_screen_part_2
        .endproc
 *// upload_screen_buffer
+
+*********************************************************************************
+*
+* Upload sprite patterns
+*
+upload_sprite_patterns:
+       rt
+*// upload_sprite_patterns
 
 *********************************************************************
 *

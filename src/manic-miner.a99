@@ -114,7 +114,8 @@ _34365:
 ;       sb   one,@c                     ; DEC C             ;
 ;       jne  _34404                     ; JR NZ,34404       ; }
 
-       bl   @upload_zx_screen
+       bl   @upload_middle_part
+       bl   @upload_bottom_part
 
 ;       li   bc,49150                   ; LD BC,49150       ; {Read keys H-J-K-L-ENTER
 ;       ; IN A,(C)                      ; IN A,(C)          ; }
@@ -2849,7 +2850,7 @@ _37624:
                                                            ; corresponding piano key
        movb @bytes+56,*hl              ; LD (HL),56        ; Set the attribute byte for the piano key back to #b56
                                                            ; (INK 0: PAPER 7: BRIGHT 0)
-       bl   @upload_zx_screen
+       bl   @upload_middle_part
 
        inc  iy                         ; INC IY            ; {Move #REGiy along to the data for the next note in the
        inc  iy                         ; INC IY            ; tune

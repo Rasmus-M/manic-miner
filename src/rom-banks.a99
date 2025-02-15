@@ -2,6 +2,7 @@
        copy "macros.a99"
        copy "lower-memory.a99"
        copy "upper-memory.a99"
+       copy "equates_2.a99"
 
        bank 0
        copy "caverns-0-6.a99"

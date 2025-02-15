@@ -11,3 +11,5 @@
 
        save >a000,
        copy "upper-memory.a99"
+
+       copy "equates_2.a99"

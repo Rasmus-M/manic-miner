@@ -134,19 +134,5 @@ scrn_buffer_2:
        equ  zx_screen
 attr_buffer_2:
        equ  zx_attrs
-screen_buffer_1_msb:
-       equ  scrn_buffer_1//256
-attr_buffer_2_msb:
-       equ  attr_buffer_2//256
-attr2_msb_div_4:
-       equ  attr_buffer_2_msb//4
-offset_s1_a2:
-       equ  (scrn_buffer_1-attr_buffer_2)//256
-offset_s2_s:
-       equ  (scrn_buffer_2-zx_screen)//256
-ggdata_msb:
-       equ  ggdata//256
-mandat_msb:
-       equ mandat//256
 
        copy "sound-defs.a99"
