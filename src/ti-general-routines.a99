@@ -448,8 +448,48 @@ upload_screen_part_2:
 * Upload sprite patterns
 *
 upload_sprite_patterns:
+       .proc
+       li   r0,sprite_pattern_table
+       bl   @vwad
+       li   r0,willy_sprites
+       li   r1,8
+upload_sprite_patterns_1:
+       bl   @upload_sprite_pattern
+       dec  r1
+       jne  upload_sprite_patterns_1
+       li   r0,guardian_sprites
+       li   r1,8
+upload_sprite_patterns_2:
+       bl   @upload_sprite_pattern
+       dec  r1
+       jne  upload_sprite_patterns_2
+       li   r0,extra_sprite
+       bl   @upload_sprite_pattern
+       .endproc
+*// upload_sprite_patterns
+
+*********************************************************************************
+*
+* Upload sprite pattern
+*
+upload_sprite_pattern:
+       li   r2,16
+upload_sprite_pattern_1:
+       movb *r0,@vdpwd
+       inct r0
+       dec  r2
+       jne  upload_sprite_pattern_1
+       ai   r0,-31
+       li   r2,16
+upload_sprite_pattern_2:
+       movb *r0,@vdpwd
+       inct r0
+       dec  r2
+       jne  upload_sprite_pattern_2
+       dec  r0
        rt
 *// upload_sprite_patterns
+
 
 *********************************************************************
 *

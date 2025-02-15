@@ -9,6 +9,6 @@ offset_s1_a2:
 offset_s2_s:
        equ  (scrn_buffer_2-zx_screen)//256
 ggdata_msb:
-       equ  ggdata//256
+       equ  guardian_sprites//256
 mandat_msb:
-       equ mandat//256
+       equ willy_sprites//256

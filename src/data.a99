@@ -272,12 +272,14 @@ vguards:                               ; 32989
        byte 0                                                        ; Terminator (set to #b255 in caverns that have four
                                                                      ; vertical guardians)
        bss 6                                                         ; Spare
+extra_sprite:
+       equ  vguards+3
 
 * Guardian graphic data
 *
 * The guardian graphic data is copied here by the routine at #R34436, and then
 * used by the routines at #R36266, #R36469, #R36593 and #R37173.
-ggdata:                                ; 33024
+guardian_sprites:                                ; 33024
        bss 256
 
 * Willy sprite graphic data
@@ -290,15 +292,15 @@ ggdata:                                ; 33024
 * { #FOR(4,7)//n/#UDGARRAY2,7,2,2;(33280+32*n)-(33297+32*n)-1-16(willyn*)/ | //
 * | #UDGARRAY*willy7;willy6;willy5;willy4(willy_l) }
 * TABLE#
-mandat:                                ; 33280
+willy_sprites:                                ; 33280
        byte 6,0,62,0,124,0,52,0,62,0,60,0,24,0,60,0
        byte 126,0,126,0,247,0,251,0,60,0,118,0,110,0,119,0
        byte 1,128,15,128,31,0,13,0,15,128,15,0,6,0,15,0
        byte 27,128,27,128,27,128,29,128,15,0,6,0,6,0,7,0
-willyr2:                               ; 33344
+willy_sprites_2:                               ; 33344
        byte 0,96,3,224,7,192,3,64,3,224,3,192,1,128,3,192
        byte 7,224,7,224,15,112,15,176,3,192,7,96,6,224,7,112
-willyr3:                               ; 33376
+willyr_sprites_3:                               ; 33376
        byte 0,24,0,248,1,240,0,208,0,248,0,240,0,96,0,240
        byte 1,248,3,252,7,254,6,246,0,248,1,218,3,14,3,132
        byte 24,0,31,0,15,128,11,0,31,0,15,0,6,0,15,0
@@ -723,6 +725,7 @@ themetune:                             ; 33902
 * In-game tune data (In the Hall of the Mountain King)
 *
 * Used by the routine at #R34574.
+       even
 gametune:                              ; 34188
        byte 128,114,102,96,86,102,86,86,81,96,81,81,86,102,86,86
        byte 128,114,102,96,86,102,86,86,81,96,81,81,86,86,86,86

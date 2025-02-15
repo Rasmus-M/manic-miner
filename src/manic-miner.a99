@@ -46,7 +46,7 @@ start:                                 ; 34252
        li   bc,4096                    ; LD BC,4096        ; 
        .ldir2                          ; LDIR              ; }
        li   hl,zx_screen+2109          ; LD HL,18493       ; {Draw Willy at (9,29)
-       li   de,willyr2                 ; LD DE,33344       ;
+       li   de,willy_sprites_2                 ; LD DE,33344       ;
        sb   @c,@c                      ; LD C,0            ;
        .call @draw_sprite              ; CALL 36852        ; }
        seto @caverns_14_19_bank_select
@@ -181,6 +181,7 @@ new_cavern:                             ; 34449
        li   de,cavernname              ; LD DE,32768       ; {Copy the rest of the cavern definition into the game
        li   bc,512                     ; LD BC,512         ; status buffer at #GBUF32768
        .ldir2                          ; LDIR              ; }
+       bl   @upload_sprite_patterns
        .call @draw_cavern                ; CALL 35445        ; Draw the current cavern to the screen buffer at #R28672
        li   hl,zx_screen+4096          ; LD HL,20480       ; {Clear the bottom third of the display file
        li   de,zx_screen+4097          ; LD DE,20481       ; 
@@ -258,7 +259,7 @@ _34584:
        sla  a,3                        ; RLCA              ; .
        andi a,96*256                   ; AND 96            ; }
        movb a,@e                       ; LD E,A            ; {Point #REGde at the corresponding Willy sprite (at
-       movb @bytes+mandat_msb,d     ; LD D,130          ; #R33280+#REGa)}
+       movb @bytes+mandat_msb,d        ; LD D,130          ; #R33280+#REGa)}
        .call @draw_sprite              ; CALL 36852        ; Draw the Willy sprite on the screen
        .pop bc                         ; POP BC            ; {Restore #REGhl and #REGbc
        .pop hl                         ; POP HL            ; }
@@ -271,6 +272,7 @@ _34608:
        movb @cheat,a                   ; LD A,(33885)      ; Pick up the 6031769 key counter from #R33885
        cb   a,@bytes+7                 ; CP 7              ; Has 6031769 been keyed in yet?
        jne  _34623                     ; JR NZ,34623       ; Jump if not
+       seto @caverns_0_6_bank_select
        li   de,boot                    ; LD DE,47840       ; Point #REGde at the graphic data for the boot (at
                                                            ; #R47840)
        sb   @c,@c                      ; LD C,0            ; #REGc=0 (overwrite mode)
@@ -397,13 +399,20 @@ _34760:
 ;       ; IN A,(C)                      ; IN A,(C)          ; }
 ;       andi a,31*256                   ; AND 31            ; {Are any of these keys being pressed?
 ;       cb   a,@bytes+31                ; CP 31             ; }
-;       jeq  _34837                     ; JR Z,34837        ; Jump if not
-;_34827:
-;       movb @bytes+2,b                 ; LD B,2            ; {Read every half-row of keys except A-S-D-F-G
-;       ; IN A,(C)                      ; IN A,(C)          ; }
-;       andi a,31*256                   ; AND 31            ; {Are any of these keys being pressed?
-;       cb   a,@bytes+31                ; CP 31             ; }
-;       jeq  _34827                     ; JR Z,34827        ; Jump back if not (the game is still paused)
+       li   r0,KEY_P
+       bl   @ti_check_key
+       jeq  _34837                      ; JR Z,34837        ; Jump if
+_34827:
+       li   r0,KEY_P                    ; Wait for release
+       bl   @ti_check_key
+       jne  _34827                      ; JR Z,34827        ; Jump back if not (the game is still paused)
+;      movb @bytes+2,b                  ; LD B,2            ; {Read every half-row of keys except A-S-D-F-G
+;      IN A,(C)                         ; IN A,(C)          ; }
+;      andi a,31*256                    ; AND 31            ; {Are any of these keys being pressed?
+;      cb   a,@bytes+31                 ; CP 31             ; }
+       li   r0,KEY_P
+       bl   @ti_check_key
+       jeq  _34827                     ; JR Z,34827        ; Jump back if not (the game is still paused)
 
 * Here we check whether Willy has had a fatal accident.
 _34837:
@@ -443,19 +452,31 @@ _34837:
        movb @noteindex,a               ; LD A,(33883)      ; {Increment the in-game music note index at #R33883
        ab   one,a                      ; INC A             ;
        movb a,@noteindex               ; LD (33883),A      ; }
-;       andi a,126*256                  ; AND 126           ; {Point #REGhl at the appropriate entry in the tune data
-;       srl  a,1                        ; RRCA              ; table at #R34188
-;       movb a,@e                       ; LD E,A            ;
-;       sb   d,d                        ; LD D,0            ;
-;       li   hl,gametune                ; LD HL,34188       ;
-;       a    de,hl                      ; ADD HL,DE         ; }
+       andi a,126*256                  ; AND 126           ; {Point #REGhl at the appropriate entry in the tune data
+       srl  a,1                        ; RRCA              ; table at #R34188
+       movb a,@e                       ; LD E,A            ;
+       sb   d,d                        ; LD D,0            ;
+       li   hl,gametune                ; LD HL,34188       ;
+       a    de,hl                      ; ADD HL,DE         ; }
+
+       li   r0,>9800
+       movb r0,@sound
+       movb *hl,r0
+       andi r0,>0700
+       sla  r0,1
+       ori  r0,>8000
+       movb r0,@sound
+       movb *hl,r0
+       srl  r0,3
+       movb r0,@sound
+
 ;       movb @border,a                  ; LD A,(32883)      ; Pick up the border colour for the current cavern from
 ;                                                           ; #R32883
 ;       movb *hl,@e                     ; LD E,(HL)         ; Initialise the pitch delay counter in #REGe
 ;       li   bc,3                       ; LD BC,3           ; Initialise the duration delay counters in #REGb (0) and
 ;                                                           ; #REGc (3)
 ;tm51:                                  ; 34898
-;       ; OUT (254),A                   ; OUT (254),A       ; {Produce a note of the in-game music
+;       OUT (254),A                     ; OUT (254),A       ; {Produce a note of the in-game music
 ;see37708:                              ; 34900
 ;       sb   one,@e                     ; DEC E             ;
 ;       jne  noflp6                     ; JR NZ,34906       ;
@@ -481,7 +502,7 @@ nonote4:                               ; 34911
        movb a,@demo                    ; LD (33882),A      ; Update the game mode indicator at #R33882
 
 ;       li   bc,254                     ; LD BC,254         ; {Read every row of keys on the keyboard
-;       ; IN A,(C)                      ; IN A,(C)          ; }
+;       IN A,(C)                        ; IN A,(C)          ; }
 ;       andi a,31*256                   ; AND 31            ; {Are any keys being pressed?
 ;       cb   a,@bytes+31                ; CP 31             ; }
 ;       jeq  !                          ; JP NZ,34252       ; If so, return to the title screen
@@ -583,6 +604,8 @@ nodem1:                                 ; 34948
 * The air in the cavern has run out, or Willy has had a fatal accident, or it's
 * demo mode and it's time to show the next cavern.
 mandead:                               ; 35071
+       li   r0,>9f00                   ; Mute sound
+       movb r0,@sound
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
 ;      socb a,a                        ; OR A              ; Is it demo mode?
        jeq  !                          ; JP NZ,36904       ; If so, move to the next cavern
@@ -683,7 +706,7 @@ feet:                                  ; 35171
        sb   a,a                        ; XOR A             ; {Initialise the game status buffer variable at #R32988;
        movb a,@eughgt                  ; LD (32988),A      ; this variable will determine the distance of the boot
                                                            ; from the top of the screen}
-       li   de,willyr2                 ; LD DE,33344       ; {Draw Willy at (12,15)
+       li   de,willy_sprites_2         ; LD DE,33344       ; {Draw Willy at (12,15)
        li   hl,zx_screen+2191          ; LD HL,18575       ; 
        sb   @c,@c                      ; LD C,0            ; 
        .call @draw_sprite              ; CALL 36852        ; }
@@ -1732,7 +1755,7 @@ _36388:
 ;      inc  de                         ; INC DE            ;
        movb *de,a                      ; LD A,(DE)         ; 
        movb a,h                        ; LD H,A            ; }
-       li   de,vguards+3               ; LD DE,32992       ; {Draw Eugene to the screen buffer at #R24576
+       li   de,extra_sprite            ; LD DE,32992       ; {Draw Eugene to the screen buffer at #R24576
        movb one,@c                     ; LD C,1            ; 
        .call @draw_sprite              ; CALL 36852        ; }
        jeq  !                          ; JP NZ,36102       ; Kill Willy if Eugene collided with him
@@ -2032,6 +2055,8 @@ chkportal:                             ; 36805
        andi r0,128*256                 ;                   
        jeq  _36831                     ; JR Z,36831        ; Jump if not
        .pop hl                         ; POP HL            ; Drop the return address from the stack
+       li   r0,>9f00                   ; Mute sound
+       movb r0,@sound
        b    @next_cavern               ; JP 36904          ; Move Willy to the next cavern
 * Willy has not entered the portal, or it's not flashing, so just draw it.
 _36831:
@@ -2172,7 +2197,7 @@ next_cavern:                           ; 36904
 
 * Willy has made it through #R64512(The Final Barrier) without cheating.
        sb   @c,@c                      ; LD C,0            ; {Draw Willy at (2,19) on the ground above the portal
-       li   de,willyr3                 ; LD DE,33376       ; 
+       li   de,willyr_sprites_3                 ; LD DE,33376       ;
        li   hl,zx_screen+83            ; LD HL,16467       ; 
        .call @draw_sprite              ; CALL 36852        ; }
        seto @caverns_0_6_bank_select
@@ -2275,9 +2300,9 @@ _37044:
        .call @pmess                    ; CALL 37562        ; }
 
        movb @clock,a
-       andi a,>3f00
+       andi a,>1f00
        jne  !
-       bl   @upload_zx_screen
+       bl   @upload_bottom_part
 !
 ;       movb @bytes+4,@c                ; LD C,4            ; This value determines the duration of the sound effect
 ;       movb @air,a                     ; LD A,(32956)      ; Pick up the remaining air supply (S) from #R32956
