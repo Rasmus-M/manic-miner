@@ -55,3 +55,6 @@ sprite_y:
        byte >c1,>c9,>d1,>d9,>e1,>e9,>f1,>f9,>c2,>ca,>d2,>da,>e2,>ea,>f2,>fa
        byte >c3,>cb,>d3,>db,>e3,>eb,>f3,>fb,>c4,>cc,>d4,>dc,>e4,>ec,>f4,>fc
        byte >c5,>cd,>d5,>dd,>e5,>ed,>f5,>fd,>c6,>ce,>d6,>de,>e6,>ee,>f6,>fe
+
+crumble_updates:
+       bss 12

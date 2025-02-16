@@ -387,7 +387,7 @@ upload_screen_part_2:
 *
 upload_pattern:
        seto r0
-       li   r1,1
+       li   r2,1
        jmp  upload_characters_0
 *// upload_pattern
 
@@ -566,7 +566,8 @@ ti_draw_sprite:
 *
        mov  de,r1
        ai   r1,-sprite_patterns
-       jhe  ti_draw_sprite_4
+       jgt  ti_draw_sprite_4
+       jeq  ti_draw_sprite_4
        li   r1,>4400
        jmp  ti_draw_sprite_7
 ti_draw_sprite_4:
@@ -578,7 +579,7 @@ ti_draw_sprite_7:
 * Color
 *
        ci   de,extra_sprite
-       jhe   ti_draw_sprite_6          ; If lower it's the portal
+       jhe  ti_draw_sprite_6           ; If lower it's the portal
        movb @portal,r1
        jmp  ti_draw_sprite_5
 ti_draw_sprite_6:
@@ -957,3 +958,27 @@ ti_delay_1:
        jne  ti_delay_1
        .endproc
 *// ti_delay
+
+*********************************************************************
+*
+* Add crumble tile to the list of updated tiles
+*
+add_crumble_update:
+       li   r0,crumble_updates
+add_crumble_update_0:
+       mov  *r0,r1                     ; Address
+       jeq  add_crumble_update_3
+       c    *r0,@crumble_addr
+       jne  add_crumble_update_1
+add_crumble_update_3:
+       mov  @crumble_addr,*r0+
+       li   r1,2                       ; Counter
+       mov  r1,*r0
+       jmp  add_crumble_update_2
+add_crumble_update_1:
+       ai   r0,4
+       ci   r0,crumble_updates+12
+       jne  add_crumble_update_0
+add_crumble_update_2:
+       rt
+*// add_crumble_update

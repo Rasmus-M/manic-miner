@@ -240,8 +240,11 @@ _34519:
 * at the bottom of the screen.
 before_loop:
        seto @screen_update_flag
-       clr  @crumble_addr_1            ; Address of crumbling tile 1 in scrn_buffer_1
-       clr  @crumble_addr_2            ; Address of crumbling tile 2 in scrn_buffer_1
+       li   r0,crumble_updates
+       li   r2,6
+!      clr  *r0+
+       dec  r2
+       jne  -!
 loop:                                  ; 34574
        li   r0,sprite_attr_table       ; Prepare for drawing hardware sprites
        mov  r0,@sprite_attr_table_addr
@@ -294,6 +297,7 @@ _34623:
        li   bc,4096                    ; LD BC,4096        ; #R24576 scrn_buffer_2
        .ldir2                          ; LDIR              ; }
 
+       .call @draw_portal              ; CALL 36805      ; Draw the portal, or move to the next cavern if Willy has
        .call @move_hguardians          ; CALL 36111        ; Move the horizontal guardians in the current cavern
 
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
@@ -343,8 +347,8 @@ _34623:
 !
 * This entry point is used by the routine at #R36469.
 _34719:
-       .call @chkportal                ; CALL 36805        ; Draw the portal, or move to the next cavern if Willy has
-                                                           ; entered it
+;      .call @draw_portal                ; CALL 36805      ; Draw the portal, or move to the next cavern if Willy has
+       nop                                                        ; entered it
 * This entry point is used by the routine at #R36101.
 _34722:
 ;      li   hl,scrn_buffer_2           ; LD HL,24576       ; {Copy the contents of the screen buffer at #R24576 scrn_buffer_2 to
@@ -402,18 +406,37 @@ _34760:
        srl  r2,8
        bl   @upload_patterns
 *      Upload crumbling tiles
-       mov  @crumble_addr_1,r1
-       jeq  !
+       li   r0,crumble_updates
+       mov  r0,@crumble_update_ptr
+update_crumbles:
+       mov  @crumble_update_ptr,r0
+       ci   r0,crumble_updates+12
+       jeq  upload_score
+       mov  *r0+,r1                    ; Address
+       jeq  update_crumbles_2
+       mov  *r0,r2                     ; Counter
+       jeq  update_crumbles_2
+       dec  *r0
+       jne  update_crumbles_1
+       dect r0
+       clr  *r0
+update_crumbles_1:
        ai   r1,scrn_buffer_2-scrn_buffer_1
        bl   @upload_character
-!      mov  @crumble_addr_2,r1
-       jeq  !
-       ai   r1,scrn_buffer_2-scrn_buffer_1
-       bl   @upload_character
+update_crumbles_2:
+       inct @crumble_update_ptr
+       inct @crumble_update_ptr
+       jmp  update_crumbles
 *      Upload score
-!      li   r1,zx_screen+4218
+upload_score:
+       li   r1,zx_screen+4218
        li   r2,6
        bl   @upload_patterns
+;*      Upload high score
+;upload_hiscore:
+;       li   r1,zx_screen+4203
+;       li   r2,6
+;       bl   @upload_patterns
 after_screen_update:
 
 ;* Now check whether SHIFT and SPACE are being pressed.
@@ -922,7 +945,12 @@ _35438:
        movb @e,*hl                     ; LD (HL),E         ; {Draw the four rows of pixels at the right end of the
        ab   one,h                      ; INC H             ; air bar
        sb   one,b                      ; DJNZ 35438        ; }
-       jne  _35438                     ;                   
+       jne  _35438                     ;
+
+       mov  hl,r1
+       andi r1,>f8ff
+       bl   @upload_pattern
+
 ;      sb   a,a                        ; XOR A             ; {Reset the zero flag to indicate that there is still
 ;      ab   one,a                      ; INC A             ; some air remaining; these instructions are redundant,
                                                            ; since the zero flag is already reset at this point}
@@ -1090,7 +1118,7 @@ _35600:
                                                            ; crumbling floor tile?
        jne  !                          ; CALL Z,35770      ; If so, make it crumble
        .call @crumble                  ;
-       mov  @crumble_addr_1,@crumble_addr_2
+       bl   @add_crumble_update
 !
        movb @nasty1,a                  ; LD A,(32845)      ; Pick up the attribute byte of the first nasty tile for
                                                            ; the current cavern from #R32845
@@ -1109,6 +1137,7 @@ _35600:
                                                            ; crumbling floor tile?
        jne  !                          ; CALL Z,35770      ; If so, make it crumble
        .call @crumble                  ;                   
+       bl   @add_crumble_update
 !
        movb @nasty1,a                  ; LD A,(32845)      ; Pick up the attribute byte of the first nasty tile for
                                                            ; the current cavern from #R32845
@@ -1251,7 +1280,7 @@ _35777:
        movb b,a                        ; LD A,B            ; {Have we dealt with the bottom seven pixel rows of the
        andi a,7*256                    ; AND 7             ; crumbling floor tile yet?}
        jne  _35777                     ; JR NZ,35777       ; If not, jump back to deal with the next one up
-       mov  bc,@crumble_addr_1
+       mov  bc,@crumble_addr
        sb   a,a                        ; XOR A             ; {Clear the top row of pixels in the crumbling floor tile
        movb a,*bc                      ; LD (BC),A         ; }
        movb b,a                        ; LD A,B            ; {Point #REGbc at the bottom row of pixels in the
@@ -2087,7 +2116,7 @@ _36794:
 * 
 * Used by the routine at #R34574. First check whether Willy has entered the
 * portal.
-chkportal:                             ; 36805
+draw_portal:                           ; 36805
        movb @portal_location_1+1,h     ; LD HL,(32944)     ; Pick up the address of the portal's location in the
        movb @portal_location_1,@l                          ; attribute buffer at #R23552 attr_buffer_2 from #R32944
        movb @location,a                ; LD A,(32876)      ; Pick up the LSB of the address of Willy's location in
@@ -2350,11 +2379,10 @@ _37044:
        li   de,zx_screen+4218          ; LD DE,20602       ; 
        .call @pmess                    ; CALL 37562        ; }
 
-       movb @clock,a
-       andi a,>1f00
-       jne  !
-       bl   @upload_bottom_part
-!
+       li   r1,zx_screen+4218
+       li   r2,6
+       bl   @upload_patterns
+
 ;       movb @bytes+4,@c                ; LD C,4            ; This value determines the duration of the sound effect
 ;       movb @air,a                     ; LD A,(32956)      ; Pick up the remaining air supply (S) from #R32956
 ;       inv  a                          ; CPL               ; {#REGd=2*(63-S); this value determines the pitch of the
