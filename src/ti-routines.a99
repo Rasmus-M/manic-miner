@@ -277,18 +277,12 @@ upload_zx_screen:
        li   r14,zx_screen+>800
        li   r15,zx_attrs+>100
        bl   @upload_screen_part
-       mov  @upload_count,r0
-       andi r0,3
-       jne  !
        li   r0,>1000
        li   r14,zx_screen+>1000
        li   r15,zx_attrs+>200
        bl   @upload_screen_part
-!      inc  @upload_count
        lwpi wrksp
        rt
-upload_count:
-       data 0
 *// upload_zx_screen
 
 *********************************************************************************
@@ -325,7 +319,7 @@ upload_bottom_part:
 *
 * Upload screen part
 *
-* r0: VDP tabæe offset
+* r0: VDP table offset
 * r14: Screen address
 * r15: Attributes address
 *
@@ -384,6 +378,108 @@ upload_screen_part_2:
        jne  upload_screen_part_2
        .endproc
 *// upload_screen_buffer
+
+*********************************************************************************
+*
+* Upload a single pattern
+*
+* r1 (r14): Address in the ZX screen buffer (xxxsslllrrrccccc)
+*
+upload_pattern:
+       seto r0
+       li   r1,1
+       jmp  upload_characters_0
+*// upload_pattern
+
+*********************************************************************************
+*
+* Upload patterns
+*
+* r1 (r14): Address in the ZX screen buffer (xxxsslllrrrccccc)
+* r2 (r15): Number of characters
+*
+upload_patterns:
+       seto r0
+       jmp  upload_characters_0
+*// upload_patterns
+
+*********************************************************************************
+*
+* Upload a single character
+*
+* r1 (r14): Address in the ZX screen buffer (xxxsslllrrrccccc)
+*
+upload_character:
+       li   r2,1
+*      Continue into upload_characters
+*// upload_character
+
+*********************************************************************************
+*
+* Upload characters
+*
+* r1 (r14): Address in the ZX screen buffer (xxxsslllrrrccccc)
+* r2 (r15): Number of characters
+*
+* xxxs slll rrrc cccc -> 000ssrrrccccc000
+*
+upload_characters:
+       clr  r0                         ; If not zero, only patterns are uploaded.
+upload_characters_0:
+       lwpi ti_wrksp
+       mov  r14,r0                     ; Screen address
+       andi r0,>1800                   ; Keep only s bits
+       mov  r14,r1                     ; Screen address again
+       andi r1,>00ff                   ; Keep only r and c bits
+       sla  r1,3                       ; Shift into place
+       soc  r1,r0                      ; And combine
+       mov  r0,r1                      ; Copy it back
+       srl  r1,3                       ; This is the attribute offset
+       bl   @vwad
+       li   r3,vdpwd
+       li   r4,256
+       mov  r15,r2                     ; Number of characters
+upload_characters_1:
+       movb *r14,*r3
+       a    r4,r14
+       movb *r14,*r3
+       a    r4,r14
+       movb *r14,*r3
+       a    r4,r14
+       movb *r14,*r3
+       a    r4,r14
+       movb *r14,*r3
+       a    r4,r14
+       movb *r14,*r3
+       a    r4,r14
+       movb *r14,*r3
+       a    r4,r14
+       movb *r14,*r3
+       ai   r14,-(7*256)+1
+       dec  r2
+       jne  upload_characters_1
+       abs  r13
+       jne  upload_characters_3
+       ai   r0,>2000                   ; Change VDP address to colors
+       bl   @vwad
+       movb @zx_attrs(r1),r1           ; Get attribute
+       srl  r1,8                       ; Shift into LSB
+       movb @ti_colors(r1),r1          ; Get TI color
+upload_characters_2:
+       movb r1,*r3
+       movb r1,*r3
+       movb r1,*r3
+       movb r1,*r3
+       movb r1,*r3
+       movb r1,*r3
+       movb r1,*r3
+       movb r1,*r3
+       dec  r15
+       jne upload_characters_2
+upload_characters_3:
+       lwpi wrksp
+       rt
+*// upload_characters
 
 *********************************************************************************
 *
