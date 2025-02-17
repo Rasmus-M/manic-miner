@@ -1,5 +1,5 @@
 can_die:
-       equ  0
+       equ  1
 
 **
 * Memory mapped addresses

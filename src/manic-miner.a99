@@ -34,11 +34,14 @@ start:                                 ; 34252
        li   hl,musicflags              ; LD HL,33884       ; {Initialise the keypress flag in bit 0 at #R33884
        socb @bits+0,*hl                ; SET 0,(HL)        ; }
 * Next, prepare the screen.
-       li   hl,zx_screen               ; LD HL,16384       ; {Clear the entire display file
-       li   de,zx_screen+1             ; LD DE,16385       ; 
-       li   bc,6143                    ; LD BC,6143        ; 
-       sb   *hl,*hl                    ; LD (HL),0         ; 
-       .clear                          ; LDIR              ; }
+;       li   hl,zx_screen               ; LD HL,16384       ; {Clear the entire display file
+;       li   de,zx_screen+1             ; LD DE,16385       ;
+;       li   bc,6143                    ; LD BC,6143        ;
+;       sb   *hl,*hl                    ; LD (HL),0         ;
+;       .ldir                          ; LDIR              ; }
+       li   de,zx_screen
+       li   bc,6144
+       bl   @clear
        seto @title_screen_bank_select
        li   hl,titlescr1               ; LD HL,40960       ; {Copy the graphic data at #R40960 to the top two-thirds
        li   de,zx_screen               ; LD DE,16384       ; of the display file
@@ -85,7 +88,7 @@ _34351:
 !
        sb   a,a                        ; XOR A             ; {Initialise the game status buffer variable at #R32988;
        movb a,@eughgt                  ; LD (32988),A      ; this will be used as an index for the message scrolled; across the screen}
-_34365:
+scroller_loop:
        movb @eughgt,a                  ; LD A,(32988)      ; Pick up the message index from #R32988
        li   ix,messintro               ; LD IX,40192       ; {Point #REGix at the corresponding location in the
 ;      movb a,@ixl                     ; LD IXL,A          ; message at #R40192}
@@ -134,7 +137,7 @@ _34365:
        movb a,@eughgt                  ; LD (32988),A      ; Store the new message index at #R32988
        cb   a,@bytes+224               ; CP 224            ; Set the zero flag if we've reached the end of the
                                                            ; message
-       jne  _34365                     ; JR NZ,34365       ; Jump back unless we've finished scrolling the message
+       jne  scroller_loop                     ; JR NZ,34365       ; Jump back unless we've finished scrolling the message
                                                            ; across the screen
 start_demo:
        movb @bytes+64,a                ; LD A,64           ; {Initialise the game mode indicator at #R33882 to #b64:
@@ -183,11 +186,15 @@ new_cavern:                            ; 34449
        bl   @copy                      ; LDIR              ; }
        bl   @upload_sprite_patterns
        .call @draw_cavern              ; CALL 35445        ; Draw the current cavern to the screen buffer at #R28672 scrn_buffer_1
-       li   hl,zx_screen+4096          ; LD HL,20480       ; {Clear the bottom third of the display file
-       li   de,zx_screen+4097          ; LD DE,20481       ; 
-       li   bc,2047                    ; LD BC,2047        ; 
-       sb   *hl,*hl                    ; LD (HL),0         ; 
-       .clear                          ; LDIR              ; }
+;      li   hl,zx_screen+4096          ; LD HL,20480       ; {Clear the bottom third of the display file
+;      li   de,zx_screen+4097          ; LD DE,20481       ;
+;      li   bc,2047                    ; LD BC,2047        ;
+;      sb   *hl,*hl                    ; LD (HL),0         ;
+;      .ldir                           ; LDIR              ; }
+       li   de,zx_screen+4096
+       li   bc,2048
+       bl   @clear
+
        li   ix,cavernname              ; LD IX,32768       ; {Print the cavern name (see #R32768) at (16,0)
        movb @bytes+32,@c               ; LD C,32           ; 
        li   de,zx_screen+4096          ; LD DE,20480       ; 
@@ -199,7 +206,7 @@ new_cavern:                            ; 34449
        movb @bytes+zx_screen_msb+18,a  ; LD A,82           ; Initialise #REGa to #b82; this is the MSB of the display
                                                            ; file address at which to start drawing the bar that
                                                            ; represents the air supply
-_34519:
+init_air_bar_loop:
        movb a,h                        ; LD H,A            ; {Prepare #REGhl and #REGde for drawing a row of pixels
        movb a,d                        ; LD D,A            ; in the air bar
        movb @bytes+36,@l               ; LD L,36           ;
@@ -217,7 +224,7 @@ _34519:
                                                            ; down to the next row of pixels)
        cb   a,@bytes+zx_screen_msb+22  ; CP 86             ; Have we drawn all four rows of pixels in the air bar
                                                            ; yet?
-       jne  _34519                     ; JR NZ,34519       ; If not, jump back to draw the next one
+       jne  init_air_bar_loop                     ; JR NZ,34519       ; If not, jump back to draw the next one
        li   ix,messhssc                ; LD IX,33839       ; {Print 'High Score 000000#SPACE(3)Score 000000' (see
        li   de,zx_screen+4192          ; LD DE,20576       ; #R33839) at (19,0)
        movb @bytes+32,@c               ; LD C,32           ; 
@@ -245,16 +252,15 @@ before_loop:
        li   r0,light_beam_attr_addrs
        clr  *r0
 loop:                                  ; 34574
-       li   r0,sprite_attr_table       ; Prepare for drawing hardware sprites
-       mov  r0,@sprite_attr_table_addr
+       bl   @init_sprite_attr_table
        movb @lives,a                   ; LD A,(33879)      ; Pick up the number of lives remaining from #R33879
        li   hl,zx_screen+4256          ; LD HL,20640       ; Set #REGhl to the display file address at which to draw
                                                            ; the first Willy sprite
        socb a,a                        ; OR A              ; Are there any lives remaining?
-       jeq  _34608                     ; JR Z,34608        ; Jump if not
+       jeq  skip_draw_lives            ; JR Z,34608        ; Jump if not
        movb a,b                        ; LD B,A            ; Initialise #REGb to the number of lives remaining
 * The following loop draws the remaining lives at the bottom of the screen.
-_34584:
+draw_lives_loop:
        sb   @c,@c                      ; LD C,0            ; #REGc=0; this tells the sprite-drawing routine at
                                                            ; #R36852 to overwrite any existing graphics
        .push hl                        ; PUSH HL           ; {Save #REGhl and #REGbc briefly
@@ -273,12 +279,12 @@ _34584:
 ;      inc  hl                         ; INC HL            ; {Move #REGhl along to the location at which to draw the
        inct hl                         ; INC HL            ; next Willy sprite}
        sb   one,b                      ; DJNZ 34584        ; Jump back to draw any remaining sprites
-       jne  _34584                     ;                   
+       jne  draw_lives_loop                     ;
 * Now draw a boot if cheat mode has been activated.
-_34608:
+skip_draw_lives:
        movb @cheat,a                   ; LD A,(33885)      ; Pick up the 6031769 key counter from #R33885
        cb   a,@bytes+7                 ; CP 7              ; Has 6031769 been keyed in yet?
-       jne  _34623                     ; JR NZ,34623       ; Jump if not
+       jne  copy_buffer_1_to_2         ; JR NZ,34623       ; Jump if not
        seto @caverns_0_6_bank_select
        li   de,boot                    ; LD DE,47840       ; Point #REGde at the graphic data for the boot (at
                                                            ; #R47840)
@@ -286,7 +292,7 @@ _34608:
        .call @draw_sprite              ; CALL 36852        ; Draw the boot at the bottom of the screen next to the
                                                            ; remaining lives
 * Next, prepare the screen and attribute buffers for drawing to the screen.
-_34623:
+copy_buffer_1_to_2:
        li   hl,attr_buffer_1           ; LD HL,24064       ; {Copy the contents of the attribute buffer at #R24064 attr_buffer_1
        li   de,attr_buffer_2           ; LD DE,23552       ; (the attributes for the empty cavern) into the attribute
        li   bc,512                     ; LD BC,512         ; buffer at #R23552 attr_buffer_2
@@ -344,10 +350,10 @@ _34623:
        .call @lightbeam                ;
 !
 * This entry point is used by the routine at #R36469.
-_34719:
+return_from_skylab:
       .call @draw_portal                ; CALL 36805      ; Draw the portal, or move to the next cavern if Willy has
 * This entry point is used by the routine at #R36101.
-_34722:
+return_from_kill_willy:
 ;      li   hl,scrn_buffer_2           ; LD HL,24576       ; {Copy the contents of the screen buffer at #R24576 scrn_buffer_2 to
 ;      li   de,zx_screen               ; LD DE,16384       ; the display file
 ;      li   bc,4096                    ; LD BC,4096        ;
@@ -355,21 +361,23 @@ _34722:
 
        movb @flash,a                   ; LD A,(33880)      ; Pick up the screen flash counter from #R33880
 ;      socb a,a                        ; OR A              ; Is it zero?
-       jeq  _34760                     ; JR Z,34760        ; Jump if so
+       jeq  no_flash                     ; JR Z,34760        ; Jump if so
        sb   one,a                      ; DEC A             ; {Decrement the screen flash counter at #R33880
        movb a,@flash                   ; LD (33880),A      ; }
 ;      sla  a,1                        ; RLCA              ; {Move bits 0-2 into bits 3-5 and clear all the other
 ;      sla  a,1                        ; RLCA              ; bits
        sla  a,3                        ; RLCA              ;
        andi a,56*256                   ; AND 56            ; }
-       li   hl,attr_buffer_2           ; LD HL,23552       ; {Set every attribute byte in the buffer at #R23552 attr_buffer_2 to
-       li   de,attr_buffer_2+1         ; LD DE,23553       ; this value
-       li   bc,511                     ; LD BC,511         ; 
-       movb a,*hl                      ; LD (HL),A         ; 
-       .fill                           ; LDIR              ; }
+;       li   hl,attr_buffer_2           ; LD HL,23552       ; {Set every attribute byte in the buffer at #R23552 attr_buffer_2 to
+;       li   de,attr_buffer_2+1         ; LD DE,23553       ; this value
+;       li   bc,511                     ; LD BC,511         ;
+;       movb a,*hl                      ; LD (HL),A         ;
+;       .ldir                           ; LDIR              ; }
+       li   de,attr_buffer_2
+       li   bc,512
+       bl   @fill
        bl   @upload_top_middle_attributes
-
-_34760:
+no_flash:
 ;      li   hl,attr_buffer_2           ; LD HL,23552       ; {Copy the contents of the attribute buffer at #R23552 attr_buffer_2 to
 ;      li   de,zx_attrs                ; LD DE,22528       ; the attribute file
 ;      li   bc,512                     ; LD BC,512         ;
@@ -384,9 +392,9 @@ _34760:
        movb @bytes+6,@c                ; LD C,6            ; 
        .call @pmess                    ; CALL 37562        ; }
 
-       .call @decair                   ; CALL 35388        ; Decrease the air remaining in the current cavern
+       .call @dec_air                   ; CALL 35388        ; Decrease the air remaining in the current cavern
        jne  !                          ; JP Z,35071        ; Jump if there's no air left
-       b    @mandead                   ;
+       b    @willy_dead                   ;
 !
 *      Full or partial screen update
        mov  @screen_update_flag,r0
@@ -466,7 +474,7 @@ after_screen_update:
 ;       cb   a,@bytes+31               ; CP 31             ; }
        li   r0,KEY_P
        bl   @ti_check_key
-       jeq  _34837                     ; JR Z,34837        ; Jump if
+       jeq  check_dead                     ; JR Z,34837        ; Jump if
 _34827:
        li   r0,KEY_P                   ; Wait for release
        bl   @ti_check_key
@@ -480,12 +488,12 @@ _34827:
        jeq  _34827                     ; JR Z,34827        ; Jump back if not (the game is still paused)
 
 * Here we check whether Willy has had a fatal accident.
-_34837:
+check_dead:
        movb @airborne,a                ; LD A,(32875)      ; Pick up the airborne status indicator from #R32875
        cb   a,@b255                    ; CP 255            ; Has Willy landed after falling from too great a height,
                                                            ; or collided with a nasty or a guardian?
        jne  !                          ; JP Z,35071        ; Jump if so
-       b    @mandead                   ;
+       b    @willy_dead                   ;
 !
 
 ;* Now read the keys H, J, K, L and ENTER (which toggle the in-game music).
@@ -562,7 +570,7 @@ nonote4:                               ; 34911
        jeq  nodem1                     ; JR Z,34948        ; Jump if not
        sb   one,a                      ; DEC A             ; We're in demo mode; is it time to show the next cavern?
        jne  !                          ; JP Z,35071        ; Jump if so
-       b    @mandead                   ;                   
+       b    @willy_dead                   ;
 !
        movb a,@demo                    ; LD (33882),A      ; Update the game mode indicator at #R33882
 
@@ -666,38 +674,33 @@ nodem1:                                 ; 34948
 ;       ab   one,a                      ; INC A             ; key in the sequence is being pressed)
 ;       movb a,@cheat                   ; LD (33885),A      ; }
 
-       mov  @sprite_attr_table_addr,r0 ; Write sprite attribute table terminator
-       bl   @vwad
-       li   r0,>d000
-       movb r0,@vdpwd
+       bl   @close_sprite_attr_table
 
        b    @loop                      ; JP 34574          ; Jump back to the start of the main loop
 
 * The air in the cavern has run out, or Willy has had a fatal accident, or it's
 * demo mode and it's time to show the next cavern.
-mandead:                               ; 35071
-       li   r0,>9f00                   ; Mute sound
-       movb r0,@sound
-       clr  @sprite_attr_table_addr
+willy_dead:                            ; 35071
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
 ;      socb a,a                        ; OR A              ; Is it demo mode?
        jeq  !                          ; JP NZ,36904       ; If so, move to the next cavern
-       b    @next_cavern                   ;
+       b    @next_cavern               ;
 !
-       movb @bytes+71,a                ; LD A,71           ; #REGa=#b71 (INK 7: PAPER 0: BRIGHT 1)
+       bl   @mute_sound
+       bl   @reset_sprite_attr_table
 * The following loop fills the top two thirds of the attribute file with a
 * single value (#b71, #b70, #b69, #b68, #b67, #b66, #b65 or #b64) and makes a
 * sound effect.
-* .
-* #AUDIO(die.wav)(#FOR(7,63,8,7)(d,[13*d+33]*(259-4*d),13*d+10895))
-lpdead1:                               ; 35080
+*
+       movb @bytes+71,a                ; LD A,71           ; #REGa=#b71 (INK 7: PAPER 0: BRIGHT 1)
+dead_loop:                             ; 35080
        li   hl,zx_attrs                ; LD HL,22528       ; {Fill the top two thirds of the attribute file with the
        li   de,zx_attrs+1              ; LD DE,22529       ; value in #REGa
        li   bc,511                     ; LD BC,511         ; 
        movb a,*hl                      ; LD (HL),A         ; 
        .ldir                           ; LDIR              ; }
 
-       bl   @upload_zx_screen
+       bl   @upload_top_middle_attributes
 
        movb a,@e                       ; LD E,A            ; Save the attribute byte (#b64-#b71) in #REGe for later
                                                            ; retrieval
@@ -715,12 +718,12 @@ lpdead1:                               ; 35080
 ;      ; RRC C                         ; RRC C             ; }
 ;      socb @bytes+16,a                ; OR 16             ; Set bit 4 of #REGa (for no apparent reason)
 ;      sb   a,a                        ; XOR A             ; Set #REGa=0 (this will make the border black)
-;tm21:                                  ; 35112
+;tm21:                                 ; 35112
 ;      ; OUT (254),A                   ; OUT (254),A       ; {Produce a short note whose pitch is determined by #REGd
 ;      li   r0,24*256                  ; XOR 24            ; and whose duration is determined by #REGc
 ;      xor  r0,a                       ;
 ;      movb d,b                        ; LD B,D            ;
-;tm22:                                  ; 35117
+;tm22:                                 ; 35117
 ;      sb   one,b                      ; DJNZ 35117        ;
 ;      jne  tm22                       ;
 ;      sb   one,@c                     ; DEC C             ;
@@ -729,14 +732,14 @@ lpdead1:                               ; 35080
        movb @e,a                       ; LD A,E            ; Restore the attribute byte (originally #b71) to #REGa
        sb   one,a                      ; DEC A             ; Decrement it (effectively decrementing the INK colour)
        cb   a,@bytes+63                ; CP 63             ; Have we used attribute value #b64 (INK 0) yet?
-       jne  lpdead1                    ; JR NZ,35080       ; If not, jump back to update the INK colour in the top
+       jne  dead_loop                    ; JR NZ,35080       ; If not, jump back to update the INK colour in the top
                                                            ; two thirds of the screen and make another sound effect
 * Finally, check whether any lives remain.
        li   hl,lives                   ; LD HL,33879       ; {Pick up the number of lives remaining from #R33879
        movb *hl,a                      ; LD A,(HL)         ; }
 ;      socb a,a                        ; OR A              ; Are there any lives remaining?
        jne  !                          ; JP Z,35140        ; If not, display the game over sequence
-       b    @endgam                    ;                   
+       b    @game_over                    ;
 !
        sb   one,*hl                    ; DEC (HL)          ; Decrease the number of lives remaining by one
        b    @new_cavern                    ; JP 34449      ; Jump back to reinitialise the current cavern
@@ -744,33 +747,33 @@ lpdead1:                               ; 35080
 * Display the game over sequence
 * 
 * Used by the routine at #R34574. First check whether we have a new high score.
-endgam:                                ; 35140
+game_over:                             ; 35140
        li   hl,hghscor                 ; LD HL,33823       ; Point #REGhl at the high score at #R33823
        li   de,scorbuf                 ; LD DE,33833       ; Point #REGde at the current score at #R33833
        movb @bytes+6,b                 ; LD B,6            ; There are 6 digits to compare
-lphgh:                                 ; 35148
+check_highscore_loop:                  ; 35148
        movb *de,a                      ; LD A,(DE)         ; Pick up a digit of the current score
        cb   a,*hl                      ; CP (HL)           ; Compare it with the corresponding digit of the high
                                                            ; score
        jhe  !                          ; JP C,35171        ; Jump if it's less than the corresponding digit of the
-       b    @feet                      ;                   
+       b    @boot_sequence             ;
 !
                                                            ; high score
        jeq  !                          ; JP NZ,35160       ; Jump if it's greater than the corresponding digit of the
-       b    @newhgh                    ;                   
+       b    @new_highscore             ;
 !
                                                            ; high score
        inc  hl                         ; INC HL            ; Point #REGhl at the next digit of the high score
        inc  de                         ; INC DE            ; Point #REGde at the next digit of the current score
        sb   one,b                      ; DJNZ 35148        ; Jump back to compare the next pair of digits
-       jne  lphgh                      ;                   
-newhgh:                                ; 35160
+       jne  check_highscore_loop       ;
+new_highscore:                         ; 35160
        li   hl,scorbuf                 ; LD HL,33833       ; {Replace the high score with the current score
        li   de,hghscor                 ; LD DE,33823       ; 
        li   bc,6                       ; LD BC,6           ; 
        .ldir                           ; LDIR              ; }
 * Now prepare the screen for the game over sequence.
-feet:                                  ; 35171
+boot_sequence:                         ; 35171
        li   hl,zx_screen               ; LD HL,16384       ; {Clear the top two-thirds of the display file
        li   de,zx_screen+1             ; LD DE,16385       ; 
        li   bc,4095                    ; LD BC,4095        ; 
@@ -792,7 +795,7 @@ feet:                                  ; 35171
 
 * The following loop draws the boot's descent onto the plinth that supports
 * Willy while producing a sound effect.
-loopft:                                ; 35210
+boot_loop:                             ; 35210
        movb @eughgt,a                  ; LD A,(32988)      ; Pick up the distance variable from #R32988
        movb a,@c                       ; LD C,A            ; {Point #REGbc at the corresponding entry in the screen
        movb @sbufaddrs_msb_byte,b      ; LD B,131          ; buffer address lookup table at #R33536}
@@ -828,24 +831,27 @@ loopft:                                ; 35210
 ;      sb   one,@c                     ; DEC C             ;
 ;      jne  tm111                      ; JR NZ,35242       ; }
 
-       li   hl,zx_attrs                ; LD HL,22528       ; {Prepare #REGbc, #REGde and #REGhl for setting the
-       li   de,zx_attrs+1              ; LD DE,22529       ; attribute bytes in the top two-thirds of the screen
-       li   bc,511                     ; LD BC,511         ; }
+;      li   hl,zx_attrs                ; LD HL,22528       ; {Prepare #REGbc, #REGde and #REGhl for setting the
+;      li   de,zx_attrs+1              ; LD DE,22529       ; attribute bytes in the top two-thirds of the screen
+;      li   bc,511                     ; LD BC,511         ; }
        movb @eughgt,a                  ; LD A,(32988)      ; Pick up the distance variable from #R32988
        andi a,12*256                   ; AND 12            ; Keep only bits 2 and 3
        sla  a,1                        ; RLCA              ; Shift bits 2 and 3 into bits 3 and 4; these bits
                                                            ; determine the PAPER colour: 0, 1, 2 or 3
        socb @bytes+71,a                ; OR 71             ; Set bits 0-2 (INK 7) and 6 (BRIGHT 1)
-       movb a,*hl                      ; LD (HL),A         ; {Copy this attribute value into the top two-thirds of
-       .fill                           ; LDIR              ; the screen}
-
-       bl   @upload_zx_screen
+;      movb a,*hl                      ; LD (HL),A         ; {Copy this attribute value into the top two-thirds of
+;      .ldir                           ; LDIR              ; the screen}
+       li   de,zx_attrs
+       li   bc,512
+       bl   @fill
+       bl   @upload_top_part
+       bl   @upload_middle_part
 
        movb @eughgt,a                  ; LD A,(32988)      ; {Add 4 to the distance variable at #R32988; this will
        ab   @bytes+4,a                 ; ADD A,4           ; move the boot sprite down two pixel rows
        movb a,@eughgt                  ; LD (32988),A      ; }
        cb   a,@bytes+196               ; CP 196            ; Has the boot met the plinth yet?
-       jne  loopft                     ; JR NZ,35210       ; Jump back if not
+       jne  boot_loop                  ; JR NZ,35210       ; Jump back if not
 
 * Now print the "Game Over" message, just to drive the point home.
        li   ix,messg                   ; LD IX,33871       ; {Print "Game" (see #R33871) at (6,10)
@@ -859,13 +865,13 @@ loopft:                                ; 35210
        li   bc,0                       ; LD BC,0           ; {Prepare the delay counters for the following loop; the
        movb @bytes+6,d                 ; LD D,6            ; counter in #REGc will also determine the INK colours to
                                                            ; use for the "Game Over" message}
-       bl   @upload_zx_screen
+       bl   @upload_top_part
 
 * The following loop makes the "Game Over" message glisten for about 1.57s.
        movb @bytes+64,@c
-tm91:                                  ; 35313
-;       sb   one,b                      ; DJNZ 35313        ; Delay for about a millisecond
-;       jne  tm91                       ;
+flash_game_over_loop:                  ; 35313
+;      sb   one,b                      ; DJNZ 35313        ; Delay for about a millisecond
+;      jne  tm91                       ;
        movb @c,a                       ; LD A,C            ; {Change the INK colour of the "G" in "Game" at (6,10)
        andi a,7*256                    ; AND 7             ; 
        socb @bytes+64,a                ; OR 64             ; 
@@ -902,7 +908,7 @@ tm91:                                  ; 35313
        bl   @upload_zx_screen
 
        sb   one,@c                     ; DEC C             ; Decrement the counter in #REGc
-       jne  tm91                       ; JR NZ,35313       ; Jump back unless it's zero
+       jne  flash_game_over_loop       ; JR NZ,35313       ; Jump back unless it's zero
 ;      sb   one,d                      ; DEC D             ; Decrement the counter in #REGd (initially 6)
 ;      jne  tm91                       ; JR NZ,35313       ; Jump back unless it's zero
 
@@ -912,7 +918,7 @@ tm91:                                  ; 35313
 * 
 * Used by the routines at #R34574, #R36211 and #R36904. Returns with the zero
 * flag set if there is no air remaining.
-decair:                                ; 35388
+dec_air:                                ; 35388
        movb @clock,a                   ; LD A,(32957)      ; {Update the game clock at #R32957
        sb   @bytes+4,a                 ; SUB 4             ; 
        movb a,@clock                   ; LD (32957),A      ; }
@@ -1597,7 +1603,7 @@ kill_willy_2:
 kill_willy_3:
        movb @b255,a                    ; LD A,255          ; {Set the airborne status indicator at #R32875 to #b255
        movb a,@airborne                ; LD (32875),A      ; (meaning Willy has had a fatal accident)}
-       b    @_34722                    ; JP 34722          ; Jump back into the main loop
+       b    @return_from_kill_willy    ; JP 34722          ; Jump back into the main loop
 
 * Move the horizontal guardians in the current cavern
 * 
@@ -1698,7 +1704,7 @@ lightbeam_2:
        li   de,32                      ; LD DE,32          ; Prepare #REGde for addition (the beam travels vertically
                                                            ; downwards to start with)
 * The beam-drawing loop begins here.
-_36217:
+lightbean_loop:
 ;      movb @floor,a                   ; LD A,(32809)      ; Pick up the attribute byte of the floor tile for the
                                                            ; cavern from #R32809
        cb   @floor,*hl                 ; CP (HL)           ; Does #REGhl point at a floor tile?
@@ -1712,10 +1718,10 @@ _36217:
        jne  _36248                     ; JR NZ,36248       ; Jump if not (the light beam is not touching Willy)
        .exx                            ; EXX               ; Switch to the shadow registers briefly (to preserve
                                                            ; #REGde and #REGhl)
-       .call @decair                   ; CALL 35388        ; {Decrease the air supply by four units
-       .call @decair                   ; CALL 35388        ; 
-       .call @decair                   ; CALL 35388        ; 
-       .call @decair                   ; CALL 35388        ; }
+       .call @dec_air                   ; CALL 35388        ; {Decrease the air supply by four units
+       .call @dec_air                   ; CALL 35388        ;
+       .call @dec_air                   ; CALL 35388        ;
+       .call @dec_air                   ; CALL 35388        ; }
        .exx                            ; EXX               ; Switch back to the normal registers (restoring #REGde
                                                            ; and #REGhl)
        jmp  _36261                     ; JR 36261          ; Jump forward to draw the light beam over Willy
@@ -1744,7 +1750,7 @@ _36261:
 
        a    de,hl                      ; ADD HL,DE         ; Point #REGhl at the cell where the next portion of the
                                                            ; light beam will be drawn
-       jmp  _36217                     ; JR 36217          ; Jump back to draw the next portion of the light beam
+       jmp  lightbean_loop             ; JR 36217          ; Jump back to draw the next portion of the light beam
 lightbeam_3:
        mov  @light_beam_attr_addrs_ptr,r0
        clr  *r0
@@ -1757,7 +1763,7 @@ draw_hguardians:                       ; 36266
        li   iy,hguards                 ; LD IY,32958       ; Point #REGiy at the first byte of the first horizontal
                                                            ; guardian definition at #R32958
 * The guardian-drawing loop begins here.
-_36270:
+hguardians_loop:
        movb *iy,a                      ; LD A,(IY+0)       ; Pick up the first byte of the guardian definition
        cb   a,@b255                    ; CP 255            ; Have we dealt with all the guardians yet?
        jne  !                          ; RET Z             ; Return if so
@@ -1811,7 +1817,7 @@ _36323:
 _36337:
 ;      li   de,7                       ; LD DE,7           ; {Point #REGiy at the first byte of the next horizontal
        ai    iy,7                      ; ADD IY,DE         ; guardian definition}
-       jmp  _36270                     ; JR 36270          ; Jump back to deal with the next horizontal guardian
+       jmp  hguardians_loop                     ; JR 36270          ; Jump back to deal with the next horizontal guardian
 
 * Move and draw Eugene in Eugene's Lair
 * 
@@ -1926,11 +1932,11 @@ skylabs:                               ; 36469
        li   iy,vguards                 ; LD IY,32989       ; Point #REGiy at the first byte of the first vertical
                                                            ; guardian definition at #R32989
 * The Skylab-moving loop begins here.
-_36473:
+skylab_loop:
        movb *iy,a                      ; LD A,(IY+0)       ; Pick up the first byte of the guardian definition
        cb   a,@b255                    ; CP 255            ; Have we dealt with all the Skylabs yet?
        jne  !                          ; JP Z,34719        ; If so, re-enter the main loop
-       b    @_34719                    ;                   
+       b    @return_from_skylab                    ;
 !
        movb @2(iy),a                   ; LD A,(IY+2)       ; Pick up the Skylab's pixel y-coordinate
        cb   a,@6(iy)                   ; CP (IY+6)         ; Has it reached its crash site yet?
@@ -2000,7 +2006,7 @@ _36527:
 * The current guardian definition has been dealt with. Time for the next one.
        li   de,7                       ; LD DE,7           ; {Point #REGiy at the first byte of the next vertical
        a    de,iy                      ; ADD IY,DE         ; guardian definition}
-       jmp  _36473                     ; JR 36473          ; Jump back to deal with the next Skylab
+       jmp  skylab_loop                     ; JR 36473          ; Jump back to deal with the next Skylab
 
 * Move and draw the vertical guardians in the current cavern
 * 
@@ -2009,7 +2015,7 @@ draw_vguardians:                       ; 36593
        li   iy,vguards                 ; LD IY,32989       ; Point #REGiy at the first byte of the first vertical
                                                            ; guardian definition at #R32989
 * The guardian-moving loop begins here.
-_36597:
+vguardians_loop:
        movb *iy,a                      ; LD A,(IY+0)       ; Pick up the first byte of the guardian definition
        cb   a,@b255                    ; CP 255            ; Have we dealt with all the guardians yet?
        jne  !                          ; RET Z             ; Return if so
@@ -2081,7 +2087,7 @@ _36639:
 * The current guardian definition has been dealt with. Time for the next one.
 ;      li   de,7                       ; LD DE,7           ; {Point #REGiy at the first byte of the next vertical
        ai   iy,7                       ; ADD IY,DE         ; guardian definition}
-       jmp  _36597                     ; JR 36597          ; Jump back to deal with the next vertical guardian
+       jmp  vguardians_loop                     ; JR 36597          ; Jump back to deal with the next vertical guardian
 *
 * Draw the items in the current cavern and collect any that Willy is touching
 * 
@@ -2177,9 +2183,6 @@ draw_portal:                           ; 36805
        andi r0,128*256                 ;                   
        jeq  _36831                     ; JR Z,36831        ; Jump if not
        .pop hl                         ; POP HL            ; Drop the return address from the stack
-       li   r0,>9f00                   ; Mute sound
-       movb r0,@sound
-       clr  @sprite_attr_table_addr
        b    @next_cavern               ; JP 36904          ; Move Willy to the next cavern
 * Willy has not entered the portal, or it's not flashing, so just draw it.
 _36831:
@@ -2235,11 +2238,13 @@ _36831:
 * DE Address of sprite graphic data
 * HL Address to draw at
 draw_sprite:                           ; 36852
+       mov  @sprite_attr_table_addr,r0
+       jeq  draw_sprite_1
        bl   @ti_draw_sprite
        .ret_eq
 draw_sprite_1:
        movb @bytes+16,b                ; LD B,16           ; There are 16 rows of pixels to draw
-_36854:
+draw_sprite_loop:
 *      Left byte
        movb *de+,a                     ; LD A,(DE)         ; Pick up a sprite graphic byte
        movb @c,r0                      ; BIT 0,C           ; Set the zero flag if we're in overwrite mode
@@ -2301,7 +2306,7 @@ _36875:
 _36900:
 *      Loop
        sb   one,b                      ; DJNZ 36854        ; Jump back until all 16 rows of pixels have been drawn
-       jne  _36854                     ;                   
+       jne  draw_sprite_loop                     ;
        sb   a,a                        ; XOR A             ; Set the zero flag (to indicate no collision)
        .ret_eq                         ; RET               ;
 
@@ -2309,6 +2314,8 @@ _36900:
 * 
 * Used by the routines at #R34574 and #R36805.
 next_cavern:                           ; 36904
+       bl   @mute_sound
+       bl   @reset_sprite_attr_table
        movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        ab   one,a                      ; INC A             ; Increment the cavern number
        cb   a,@bytes+20                ; CP 20             ; Is the current cavern #R64512(The Final Barrier)?
@@ -2389,12 +2396,14 @@ _37009:
 * cavern.
        movb @bytes+16,a                ; LD A,63           ; Initialise #REGa to #b63 (INK 7: PAPER 7)
 _37014:
-       li   hl,zx_attrs                ; LD HL,22528       ; {Set the attributes for the top two-thirds of the screen
-       li   de,zx_attrs+1              ; LD DE,22529       ; to the value in #REGa
-       li   bc,511                     ; LD BC,511         ; 
-       movb a,*hl                      ; LD (HL),A         ; 
-       .fill                           ; LDIR              ; }
-
+;      li   hl,zx_attrs                ; LD HL,22528       ; {Set the attributes for the top two-thirds of the screen
+;      li   de,zx_attrs+1              ; LD DE,22529       ; to the value in #REGa
+;      li   bc,511                     ; LD BC,511         ;
+;      movb a,*hl                      ; LD (HL),A         ;
+;      .ldir                           ; LDIR              ; }
+       li   de,zx_attrs
+       li   bc,512
+       bl   @fill
        bl   @upload_top_middle_attributes
 
 ;      li   bc,4                       ; LD BC,4           ; {Pause for about 0.004s
@@ -2415,7 +2424,7 @@ _37014:
 * The following loop increases the score and decreases the air supply until it
 * runs out, while playing a sound effect.
 _37044:
-       .call @decair                   ; CALL 35388        ; Decrease the air remaining in the current cavern
+       .call @dec_air                   ; CALL 35388        ; Decrease the air remaining in the current cavern
        jne  !                          ; JP Z,34449        ; Move to the next cavern if the air supply is now gone
        b    @new_cavern                ;
 !
@@ -2940,10 +2949,7 @@ playtune:                              ; 37596
                                                            ; #R33902
        cb   a,@b255                    ; CP 255            ; Has the tune finished?
        jne  !                          ; RET Z             ; Return (with the zero flag set) if so
-       li   r0,>9fbf
-       movb r0,@sound
-       swpb r0
-       movb r0,@sound
+       bl   @mute_sound
        .ret_eq                         ;
 !
        movb a,@c                       ; LD C,A            ; Copy the first byte of data for this note (which
@@ -3019,10 +3025,7 @@ _37624:
        li   r0,KEY_EN
        bl   @ti_check_key
        jeq  !!
-!      li   r0,>9fbf
-       movb r0,@sound
-       swpb r0
-       movb r0,@sound
+!      bl   @mute_sound
       .ret
 
 !      movb @1(iy),a                   ; LD A,(IY+1)       ; Pick up the second byte of data for this note

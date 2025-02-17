@@ -550,6 +550,16 @@ upload_sprite_pattern_2:
 
 *********************************************************************************
 *
+* Prepare for drawing hardware sprites
+*
+init_sprite_attr_table:
+       li   r0,sprite_attr_table       ; Prepare for drawing hardware sprites
+       mov  r0,@sprite_attr_table_addr
+       rt
+*// init_sprite_attr_table
+
+*********************************************************************************
+*
 * Upload a hardware sprite to the TMS9918A sprite attribute table
 *
 * de: Address of sprite graphic data
@@ -611,6 +621,34 @@ ti_draw_sprite_3:
 sprite_attr_table_addr:
        data 0
 *// ti_draw_sprite
+
+
+*********************************************************************
+*
+* Close hardware sprite table
+*
+close_sprite_attr_table:
+       .proc
+       mov  @sprite_attr_table_addr,r0
+       bl   @vwad
+       li   r0,>d000                    ; Write sprite attribute table terminator
+       movb r0,@vdpwd
+       .endproc
+*// close_sprite_attr_table
+
+*********************************************************************
+*
+* Reset hardware sprite table
+*
+reset_sprite_attr_table:
+       .proc
+       li   r0,sprite_attr_table
+       bl   @vwad
+       li   r0,>d000
+       movb r0,@vdpwd
+       clr  @sprite_attr_table_addr
+       .endproc
+*// reset_sprite_attr_table
 
 *********************************************************************
 *
@@ -758,6 +796,18 @@ vmbr_1:
        jne  vmbr_1                     ; Check if finished
        rt
 *// vmbr
+
+*********************************************************************
+*
+* Mute sound
+*
+mute_sound:
+       li   r0,>9fbf
+       movb r0,@sound
+       swpb r0
+       movb r0,@sound
+       rt
+*// mute_sound
 
 *********************************************************************
 *
@@ -957,6 +1007,42 @@ copy_1:
        dec  bc
        jne  copy_1
        rt
+*// copy
+
+*********************************************************************
+*
+* CPU space fill
+*
+fill:
+       movb a,r0
+       swpb r0
+       movb a,r0
+       srl  bc,3
+fill_1:
+       mov  r0,*de+
+       mov  r0,*de+
+       mov  r0,*de+
+       mov  r0,*de+
+       dec  bc
+       jne  fill_1
+       rt
+*// fill
+
+*********************************************************************
+*
+* CPU space clear
+*
+clear:
+       srl  bc,3
+clear_1:
+       clr  *de+
+       clr  *de+
+       clr  *de+
+       clr  *de+
+       dec  bc
+       jne  clear_1
+       rt
+*// clear
 
 *********************************************************************
 *
