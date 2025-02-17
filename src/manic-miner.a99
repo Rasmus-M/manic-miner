@@ -809,12 +809,27 @@ boot_loop:                             ; 35210
        movb *bc,a                      ; LD A,(BC)         ;
        sb   @bytes+offset_s2_s,a       ; SUB 32            ;
        movb a,h                        ; LD H,A            ; }
+       .push hl
        seto @caverns_0_6_bank_select
        li   de,boot                    ; LD DE,47840       ; {Draw the boot (see #R47840) at this location, without
        sb   @c,@c                      ; LD C,0            ; erasing the boot at the previous location; this leaves
        .call @draw_sprite              ; CALL 36852        ; the portion of the boot sprite that's above the ankle in
                                                            ; place, and makes the boot appear as if it's at the end
                                                            ; of a long, extending trouser leg}
+       .pop r1
+       andi r1,>f8ff
+       .push r1
+       li   r2,2
+       bl   @upload_characters
+       .pop r1
+       bl   @next_row
+       .push r1
+       li   r2,2
+       bl   @upload_characters
+       .pop r1
+       bl   @next_row
+       li   r2,2
+       bl   @upload_characters
 
 ;      movb @eughgt,a                  ; LD A,(32988)      ; Pick up the distance variable from #R32988
 ;      inv  a                          ; CPL               ; #REGa=#b255-#REGa
@@ -847,8 +862,7 @@ boot_loop:                             ; 35210
        li   de,zx_attrs
        li   bc,512
        bl   @fill
-       bl   @upload_top_part
-       bl   @upload_middle_part
+       bl   @upload_top_middle_attributes
 
        movb @eughgt,a                  ; LD A,(32988)      ; {Add 4 to the distance variable at #R32988; this will
        ab   @bytes+4,a                 ; ADD A,4           ; move the boot sprite down two pixel rows
@@ -871,10 +885,9 @@ boot_loop:                             ; 35210
        bl   @upload_top_part
 
 * The following loop makes the "Game Over" message glisten for about 1.57s.
-       movb @bytes+64,@c
 flash_game_over_loop:                  ; 35313
-;      sb   one,b                      ; DJNZ 35313        ; Delay for about a millisecond
-;      jne  tm91                       ;
+       sb   one,b                      ; DJNZ 35313        ; Delay for about a millisecond
+       jne  flash_game_over_loop       ;
        movb @c,a                       ; LD A,C            ; {Change the INK colour of the "G" in "Game" at (6,10)
        andi a,7*256                    ; AND 7             ; 
        socb @bytes+64,a                ; OR 64             ; 
@@ -908,7 +921,9 @@ flash_game_over_loop:                  ; 35313
        socb @bytes+64,a                ; OR 64             ; 
        movb a,@zx_attrs+213            ; LD (22741),A      ; }
 
-       bl   @upload_zx_screen
+       li   r1,zx_attrs+202
+       li   r2,12
+       bl   @upload_attributes
 
        sb   one,@c                     ; DEC C             ; Decrement the counter in #REGc
        jne  flash_game_over_loop       ; JR NZ,35313       ; Jump back unless it's zero

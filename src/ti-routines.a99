@@ -497,6 +497,25 @@ upload_attributes_1:
 
 *********************************************************************************
 *
+* Next row in ZX screen buffer (xxxsslllrrrccccc)
+*
+* r1: Current row address
+*
+next_row:
+       li   r0,>00e0
+       coc  r0,r1
+       jeq  next_row_1
+       ai   r1,32
+       jmp  next_row_2
+next_row_1:
+       szc  r0,r1
+       ai   r1,>0800
+next_row_2:
+       rt
+*// next_row
+
+*********************************************************************************
+*
 * Upload sprite patterns
 *
 upload_sprite_patterns:
