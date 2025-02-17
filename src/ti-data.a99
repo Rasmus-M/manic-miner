@@ -41,28 +41,3 @@ ti_colors:
        byte >81,>85,>88,>8d,>82,>87,>8b,>8f,>d1,>d5,>d8,>dd,>d2,>d7,>db,>df
        byte >21,>25,>28,>2d,>22,>27,>2b,>2f,>71,>75,>78,>7d,>72,>77,>7b,>7f
        byte >b1,>b5,>b8,>bd,>b2,>b7,>bb,>bf,>f1,>f5,>f8,>fd,>f2,>f7,>fb,>ff
-
-*
-* Given the row data sslllrrr of a ZX-Spectrum screen address xxxsslllrrrccccc as index,
-* this table contains the TMS9918A sprite y coordinate (ssrrrlll - 1) & 0xff.
-*
-sprite_y:
-       byte >ff,>07,>0f,>17,>1f,>27,>2f,>37,>00,>08,>10,>18,>20,>28,>30,>38
-       byte >01,>09,>11,>19,>21,>29,>31,>39,>02,>0a,>12,>1a,>22,>2a,>32,>3a
-       byte >03,>0b,>13,>1b,>23,>2b,>33,>3b,>04,>0c,>14,>1c,>24,>2c,>34,>3c
-       byte >05,>0d,>15,>1d,>25,>2d,>35,>3d,>06,>0e,>16,>1e,>26,>2e,>36,>3e
-       byte >3f,>47,>4f,>57,>5f,>67,>6f,>77,>40,>48,>50,>58,>60,>68,>70,>78
-       byte >41,>49,>51,>59,>61,>69,>71,>79,>42,>4a,>52,>5a,>62,>6a,>72,>7a
-       byte >43,>4b,>53,>5b,>63,>6b,>73,>7b,>44,>4c,>54,>5c,>64,>6c,>74,>7c
-       byte >45,>4d,>55,>5d,>65,>6d,>75,>7d,>46,>4e,>56,>5e,>66,>6e,>76,>7e
-       byte >7f,>87,>8f,>97,>9f,>a7,>af,>b7,>80,>88,>90,>98,>a0,>a8,>b0,>b8
-       byte >81,>89,>91,>99,>a1,>a9,>b1,>b9,>82,>8a,>92,>9a,>a2,>aa,>b2,>ba
-       byte >83,>8b,>93,>9b,>a3,>ab,>b3,>bb,>84,>8c,>94,>9c,>a4,>ac,>b4,>bc
-       byte >85,>8d,>95,>9d,>a5,>ad,>b5,>bd,>86,>8e,>96,>9e,>a6,>ae,>b6,>be
-       byte >bf,>c7,>cf,>d7,>df,>e7,>ef,>f7,>c0,>c8,>d0,>d8,>e0,>e8,>f0,>f8
-       byte >c1,>c9,>d1,>d9,>e1,>e9,>f1,>f9,>c2,>ca,>d2,>da,>e2,>ea,>f2,>fa
-       byte >c3,>cb,>d3,>db,>e3,>eb,>f3,>fb,>c4,>cc,>d4,>dc,>e4,>ec,>f4,>fc
-       byte >c5,>cd,>d5,>dd,>e5,>ed,>f5,>fd,>c6,>ce,>d6,>de,>e6,>ee,>f6,>fe
-
-crumble_updates:
-       bss 12

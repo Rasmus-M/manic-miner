@@ -56,8 +56,10 @@ crumble_addr:
        equ  screen_update_flag+2
 crumble_update_ptr:
        equ  crumble_addr+2
-pad_max:
+light_beam_attr_addrs_ptr:
        equ  crumble_update_ptr+2
+pad_max:
+       equ  light_beam_attr_addrs_ptr+2
 kscan_device:
        equ  >8374
 kscan_key:

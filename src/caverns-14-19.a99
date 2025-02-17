@@ -1164,7 +1164,7 @@ cavern18:                              ; 63488
        byte 240                                                      ; Game clock
 * The next 28 bytes are copied to #R32958 and define the horizontal guardians.
        byte 38                                                       ; {Horizontal guardian 1: y=3,
-       byte (zx_frames)%%256,(zx_frames)//256                        ; initial x=24, 23<=x<=29,
+       byte (attr_buffer_2+120)%%256,(attr_buffer_2+120)//256        ; initial x=24, 23<=x<=29,
        byte scrn_buffer_2//256                                       ; speed=normal
        byte 0                                                        ;
        byte 119                                                      ;
@@ -1207,11 +1207,11 @@ cavern18:                              ; 63488
        byte 102                                                      ; }
        byte 33                                                       ; {Vertical guardian 3: x=16,
        byte 2                                                        ; initial y=80, 4<=y<80, initial
-       byte 80                                                       ; y-increment=1
-       byte 16                                                       ;
+       byte 78                                                       ; y-increment=1
+       byte 16                                                       ; RM: Changed from 80 to prevent drawing attribute into floor
        byte 1                                                        ;
-       byte 4                                                        ;
-       byte 80                                                       ; }
+       byte 4                                                        ; RM: Changed from 80
+       byte 78                                                       ; }
        byte 255,0,0,0,0,0,0                                          ; Vertical guardian 4 (unused)
 * The next 7 bytes are unused.
        byte 0,0,0,0,0,0,0                                            ; Unused

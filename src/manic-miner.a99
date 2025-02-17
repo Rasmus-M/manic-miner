@@ -24,7 +24,7 @@
 start:                                 ; 34252
        clr  af                         ; XOR A             ; #REGa=0
        movb a,@cavern                  ; LD (33799),A      ; Initialise the current cavern number at #R33799
-;      movb @bytes+4,@cavern
+      movb @bytes+18,@cavern
        movb a,@kemp                    ; LD (33881),A      ; Initialise the Kempston joystick indicator at #R33881
        movb a,@demo                    ; LD (33882),A      ; Initialise the game mode indicator at #R33882
        movb a,@noteindex               ; LD (33883),A      ; Initialise the in-game music note index at #R33883
@@ -246,6 +246,8 @@ before_loop:
 !      clr  *r0+
        dec  r2
        jne  -!
+       li   r0,light_beam_attr_addrs
+       clr  *r0
 loop:                                  ; 34574
        li   r0,sprite_attr_table       ; Prepare for drawing hardware sprites
        mov  r0,@sprite_attr_table_addr
@@ -411,7 +413,7 @@ _34760:
        mov  r0,@crumble_update_ptr
 update_crumbles:
        mov  @crumble_update_ptr,r0
-       ci   r0,crumble_updates+12
+       ci   r0,crumble_updates+crumble_updates_size
        jeq  upload_score
        mov  *r0+,r1                    ; Address
        jeq  update_crumbles_2
@@ -1681,6 +1683,16 @@ _36207:
 * 
 * Used by the routine at #R34574.
 lightbeam:                             ; 36211
+*      Undraw the old light beam
+       li   r0,light_beam_attr_addrs
+       mov  r0,@light_beam_attr_addrs_ptr
+lightbeam_1:
+       mov  *r0+,r1
+       jeq  lightbeam_2
+       bl   @upload_attribute
+       jmp  lightbeam_1
+*      Draw the new beam
+lightbeam_2:
        li   hl,attr_buffer_2+23        ; LD HL,23575       ; Point #REGhl at the cell at (0,23) in the attribute
                                                            ; buffer at #R23552 attr_buffer_2 (the source of the light beam)
        li   de,32                      ; LD DE,32          ; Prepare #REGde for addition (the beam travels vertically
@@ -1690,15 +1702,11 @@ _36217:
 ;      movb @floor,a                   ; LD A,(32809)      ; Pick up the attribute byte of the floor tile for the
                                                            ; cavern from #R32809
        cb   @floor,*hl                 ; CP (HL)           ; Does #REGhl point at a floor tile?
-       jne  !                          ; RET Z             ; Return if so (the light beam stops here)
-       .ret                            ;                   
-!
+       jeq  lightbeam_3                ; RET Z             ; Return if so (the light beam stops here)
 ;      movb @wall,a                    ; LD A,(32827)      ; Pick up the attribute byte of the wall tile for the
                                                            ; cavern from #R32827
        cb   @wall,*hl                  ; CP (HL)           ; Does #REGhl point at a wall tile?
-       jne  !                          ; RET Z             ; Return if so (the light beam stops here)
-       .ret                            ;                   
-!
+       jeq  lightbeam_3                ; RET Z             ; Return if so (the light beam stops here)
 ;      movb @bytes+39,a                ; LD A,39           ; #REGa=#b39 (INK 7: PAPER 4)
        cb   @bytes+39,*hl              ; CP (HL)           ; Does #REGhl point at a tile with this attribute value?
        jne  _36248                     ; JR NZ,36248       ; Jump if not (the light beam is not touching Willy)
@@ -1727,14 +1735,25 @@ _36248:
 _36261:
        movb @bytes+119,*hl             ; LD (HL),119       ; Draw a portion of the light beam with attribute value
                                                            ; #b119 (INK 7: PAPER 6: BRIGHT 1)
+*      Draw attribute to TI and record it for later undrawing
+       mov  hl,r1
+       bl   @upload_attribute
+       mov  @light_beam_attr_addrs_ptr,r0
+       mov  hl,*r0+
+       mov  r0,@light_beam_attr_addrs_ptr
+
        a    de,hl                      ; ADD HL,DE         ; Point #REGhl at the cell where the next portion of the
                                                            ; light beam will be drawn
        jmp  _36217                     ; JR 36217          ; Jump back to draw the next portion of the light beam
+lightbeam_3:
+       mov  @light_beam_attr_addrs_ptr,r0
+       clr  *r0
+       .ret
 
 * Draw the horizontal guardians in the current cavern
 * 
 * Used by the routine at #R34574.
-draw_hguardians:                          ; 36266
+draw_hguardians:                       ; 36266
        li   iy,hguards                 ; LD IY,32958       ; Point #REGiy at the first byte of the first horizontal
                                                            ; guardian definition at #R32958
 * The guardian-drawing loop begins here.
