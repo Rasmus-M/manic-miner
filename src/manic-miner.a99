@@ -24,7 +24,7 @@
 start:                                 ; 34252
        clr  af                         ; XOR A             ; #REGa=0
        movb a,@cavern                  ; LD (33799),A      ; Initialise the current cavern number at #R33799
-;      movb @bytes+1,@cavern
+;      movb @bytes+4,@cavern
        movb a,@kemp                    ; LD (33881),A      ; Initialise the Kempston joystick indicator at #R33881
        movb a,@demo                    ; LD (33882),A      ; Initialise the game mode indicator at #R33882
        movb a,@noteindex               ; LD (33883),A      ; Initialise the in-game music note index at #R33883
@@ -73,6 +73,8 @@ start:                                 ; 34252
 ;       jne  _34351                     ; JR NZ,34351       ; Jump if not
 ;       movb one,a                      ; LD A,1            ; {Set the Kempston joystick indicator at #R33881 to 1
 ;       movb a,@kemp                    ; LD (33881),A      ; }
+
+       b    @start_demo
 
 * And finally, play the theme tune and check for keypresses.
 * .
@@ -154,6 +156,7 @@ start_game:                            ; 34436
 * cavern or reinitialising the current cavern after Willy has lost a life) and
 * #R36904.
 new_cavern:                            ; 34449
+       bl   @ti_display_off
        clr  af
        movb @cavern,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+7
@@ -239,6 +242,7 @@ _34519:
 * The first thing to do is check whether there are any remaining lives to draw
 * at the bottom of the screen.
 before_loop:
+       bl   @ti_display_on
        seto @screen_update_flag
        li   r0,crumble_updates
        li   r2,6
@@ -368,6 +372,7 @@ _34722:
        li   bc,511                     ; LD BC,511         ; 
        movb a,*hl                      ; LD (HL),A         ; 
        .fill                           ; LDIR              ; }
+       bl   @upload_top_middle_attributes
 
 _34760:
 ;      li   hl,attr_buffer_2           ; LD HL,23552       ; {Copy the contents of the attribute buffer at #R23552 attr_buffer_2 to
@@ -1821,6 +1826,36 @@ _36380:
        movb a,@eugdir                  ; LD (32987),A      ; }
 * Now that Eugene's movement has been dealt with, it's time to draw him.
 _36388:
+*      RM: Swapping order of attributes and sprites
+*      to make the attributes available to the hardware sprite drawing routine
+*      Attributes
+       movb @eughgt,a                  ; LD A,(32988)      ; Pick up Eugene's pixel y-coordinate from #R32988
+       andi a,120*256                  ; AND 120           ; {Point #REGhl at the address of Eugene's location in the
+       sla  a,1                        ; RLCA              ; attribute buffer at #R23552 attr_buffer_2
+       socb @bytes+7,a                 ; OR 7              ; 
+       ; SCF                           ; SCF               ; Set carry flag, which will be rolled into bit 0
+       clr  r0
+       sla  a,1                        ; RL A              ;
+       jnc  !
+       mov  one,r0
+!      socb one,a                      ; Carry from SCF
+       movb a,@l                       ; LD L,A            ; 
+       sb   a,a                        ; LD A,0            ; 
+       ab   @bytes+attr_buffer_2_msb,a ; ADC A,92          ;
+       ab   r0,a                       ; Carry from RL A
+       movb a,h                        ; LD H,A            ; }
+       movb @itemattr,r0               ; LD A,(32884)      ; Pick up the attribute of the last item drawn from
+                                                           ; #R32884
+;      socb a,a                        ; OR A              ; Set the zero flag if all the items have been collected
+       movb @bytes+7,a                 ; LD A,7            ; Assume we will draw Eugene with white INK
+       movb r0,r0
+       jne  !                          ; JR NZ,36447       ; Jump if there are items remaining to be collected
+       movb @clock,a                   ; LD A,(32957)      ; Pick up the value of the game clock at #R32957
+;      srl  a,1                        ; RRCA              ; {Move bits 2-4 into bits 0-2 and clear the other bits;
+       srl  a,2                        ; RRCA              ; this value (which decreases by one on each pass through
+       andi a,7*256                    ; AND 7             ; the main loop) will be Eugene's INK colour}
+!       .call @draw_sprite_attributes
+*      Sprite
        movb @eughgt,a                  ; LD A,(32988)      ; Pick up Eugene's pixel y-coordinate from #R32988
        andi a,127*256                  ; AND 127           ; {Point #REGde at the entry in the screen buffer address
        sla  a,1                        ; RLCA              ; lookup table at #R33536 that corresponds to Eugene's
@@ -1828,12 +1863,12 @@ _36388:
        movb @sbufaddrs_msb_byte,d      ; LD D,131          ; }
        movb *de+,a                     ; LD A,(DE)         ; {Point #REGhl at the address of Eugene's location in the
        socb @bytes+15,a                ; OR 15             ; screen buffer at #R24576 scrn_buffer_2
-       movb a,@l                       ; LD L,A            ; 
+       movb a,@l                       ; LD L,A            ;
 ;      inc  de                         ; INC DE            ;
-       movb *de,a                      ; LD A,(DE)         ; 
+       movb *de,a                      ; LD A,(DE)         ;
        movb a,h                        ; LD H,A            ; }
        li   de,extra_sprite            ; LD DE,32992       ; {Draw Eugene to the screen buffer at #R24576 scrn_buffer_2
-       movb one,@c                     ; LD C,1            ; 
+       movb one,@c                     ; LD C,1            ;
        .call @draw_sprite              ; CALL 36852        ; }
        jeq  !                          ; JP NZ,36102       ; Kill Willy if Eugene collided with him
        .ifeq can_die,1
@@ -1841,27 +1876,7 @@ _36388:
        .else
        nop
        .endif
-!
-       movb @eughgt,a                  ; LD A,(32988)      ; Pick up Eugene's pixel y-coordinate from #R32988
-       andi a,120*256                  ; AND 120           ; {Point #REGhl at the address of Eugene's location in the
-       sla  a,1                        ; RLCA              ; attribute buffer at #R23552 attr_buffer_2
-       socb @bytes+7,a                 ; OR 7              ; 
-       ; SCF                           ; SCF               ; Set carry flag, which will be rolled into bit 0
-       sla  a,1                        ; RL A              ; TODO: Can this generate a carry?
-       socb one,a                      ; Carry
-       movb a,@l                       ; LD L,A            ; 
-       sb   a,a                        ; LD A,0            ; 
-       ab   @bytes+attr_buffer_2_msb,a ; ADC A,92          ; TODO: Should it add one more because of carry?
-       movb a,h                        ; LD H,A            ; }
-       movb @itemattr,a                ; LD A,(32884)      ; Pick up the attribute of the last item drawn from
-                                                           ; #R32884
-;      socb a,a                        ; OR A              ; Set the zero flag if all the items have been collected
-       movb @bytes+7,a                 ; LD A,7            ; Assume we will draw Eugene with white INK
-       jne  draw_sprite_attributes     ; JR NZ,36447       ; Jump if there are items remaining to be collected
-       movb @clock,a                   ; LD A,(32957)      ; Pick up the value of the game clock at #R32957
-;      srl  a,1                        ; RRCA              ; {Move bits 2-4 into bits 0-2 and clear the other bits;
-       srl  a,2                        ; RRCA              ; this value (which decreases by one on each pass through
-       andi a,7*256                    ; AND 7             ; the main loop) will be Eugene's INK colour}
+!      .ret
 
 * This entry point is used by the routines at #R36469 (to set the attributes
 * for a Skylab), #R36593 (to set the attributes for a vertical guardian) and
@@ -1921,6 +1936,24 @@ _36497:
        sb   @1(iy),@1(iy)              ; LD (IY+1),0       ; Reset the animation frame to 0
 * Now that the Skylab's movement has been dealt with, time to draw it.
 _36527:
+*      RM: Swapping order of attributes and sprites
+*      to make the attributes available to the hardware sprite drawing routine
+*      Attributes
+       movb @2(iy),a                   ; LD A,(IY+2)       ; {Point #REGhl at the address of the Skylab's location in
+       andi a,64*256                   ; AND 64            ; the attribute buffer at #R23552 attr_buffer_2
+;      sla  a,1                        ; RLCA              ;
+       srl  a,6                        ; RLCA              ;
+       ab   @bytes+attr_buffer_2_msb,a                  ; ADD A,92          ;
+       movb a,h                        ; LD H,A            ;
+       movb @2(iy),a                   ; LD A,(IY+2)       ;
+;      sla  a,1                        ; RLCA              ;
+       sla  a,2                        ; RLCA              ;
+       andi a,224*256                  ; AND 224           ;
+       socb @3(iy),a                   ; OR (IY+3)         ;
+       movb a,@l                       ; LD L,A            ; }
+       movb *iy,a                      ; LD A,(IY+0)       ; Pick up the Skylab's attribute byte
+       .call @draw_sprite_attributes   ; CALL 36447        ; Set the attribute bytes for the Skylab
+*      Sprite
        movb @2(iy),a                   ; LD E,(IY+2)       ; Pick up the Skylab's pixel y-coordinate in #REGe
        sla  a,1                        ; RLC E             ; {Point #REGde at the entry in the screen buffer address
        movb a,@e
@@ -1947,20 +1980,6 @@ _36527:
        nop
        .endif
 !
-       movb @2(iy),a                   ; LD A,(IY+2)       ; {Point #REGhl at the address of the Skylab's location in
-       andi a,64*256                   ; AND 64            ; the attribute buffer at #R23552 attr_buffer_2
-;      sla  a,1                        ; RLCA              ;
-       srl  a,6                        ; RLCA              ;
-       ab   @bytes+attr_buffer_2_msb,a                  ; ADD A,92          ;
-       movb a,h                        ; LD H,A            ; 
-       movb @2(iy),a                   ; LD A,(IY+2)       ; 
-;      sla  a,1                        ; RLCA              ;
-       sla  a,2                        ; RLCA              ;
-       andi a,224*256                  ; AND 224           ; 
-       socb @3(iy),a                   ; OR (IY+3)         ; 
-       movb a,@l                       ; LD L,A            ; }
-       movb *iy,a                      ; LD A,(IY+0)       ; Pick up the Skylab's attribute byte
-       .call @draw_sprite_attributes   ; CALL 36447        ; Set the attribute bytes for the Skylab
 * The current guardian definition has been dealt with. Time for the next one.
        li   de,7                       ; LD DE,7           ; {Point #REGiy at the first byte of the next vertical
        a    de,iy                      ; ADD IY,DE         ; guardian definition}
@@ -1997,6 +2016,24 @@ _36631:
        movb a,@4(iy)                   ; LD (IY+4),A       ; }
 * Now that the guardian's movement has been dealt with, time to draw it.
 _36639:
+*      RM: Swapping order of attributes and sprites
+*      to make the attributes available to the hardware sprite drawing routine
+*      Attributes
+       movb @2(iy),a                   ; LD A,(IY+2)       ; Pick up the guardian's pixel y-coordinate
+       andi a,64*256                   ; AND 64            ; {Point #REGhl at the address of the guardian's location
+;      sla  a,1                        ; RLCA              ; in the attribute buffer at #R23552 attr_buffer_2
+       srl  a,6                        ; RLCA              ;
+       ab   @bytes+attr_buffer_2_msb,a                     ; ADD A,92       ;
+       movb a,h                        ; LD H,A            ;
+       movb @2(iy),a                   ; LD A,(IY+2)       ;
+;      sla  a,1                        ; RLCA              ;
+       sla  a,2                        ; RLCA              ;
+       andi a,224*256                  ; AND 224           ;
+       socb @3(iy),a                   ; OR (IY+3)         ;
+       movb a,@l                       ; LD L,A            ; }
+       movb *iy,a                      ; LD A,(IY+0)       ; Pick up the guardian's attribute byte
+       .call @draw_sprite_attributes   ; CALL 36447        ; Set the attribute bytes for the guardian
+*      Sprite
        movb @2(iy),a                   ; LD A,(IY+2)       ; Pick up the guardian's pixel y-coordinate
        andi a,127*256                  ; AND 127           ; {Point #REGde at the entry in the screen buffer address
        sla  a,1                        ; RLCA              ; lookup table at #R33536 that corresponds to the
@@ -2024,20 +2061,6 @@ _36639:
        nop
        .endif
 !
-       movb @2(iy),a                   ; LD A,(IY+2)       ; Pick up the guardian's pixel y-coordinate
-       andi a,64*256                   ; AND 64            ; {Point #REGhl at the address of the guardian's location
-;      sla  a,1                        ; RLCA              ; in the attribute buffer at #R23552 attr_buffer_2
-       srl  a,6                        ; RLCA              ;
-       ab   @bytes+attr_buffer_2_msb,a                     ; ADD A,92       ;
-       movb a,h                        ; LD H,A            ; 
-       movb @2(iy),a                   ; LD A,(IY+2)       ; 
-;      sla  a,1                        ; RLCA              ;
-       sla  a,2                        ; RLCA              ;
-       andi a,224*256                  ; AND 224           ; 
-       socb @3(iy),a                   ; OR (IY+3)         ; 
-       movb a,@l                       ; LD L,A            ; }
-       movb *iy,a                      ; LD A,(IY+0)       ; Pick up the guardian's attribute byte
-       .call @draw_sprite_attributes   ; CALL 36447        ; Set the attribute bytes for the guardian
 * The current guardian definition has been dealt with. Time for the next one.
 ;      li   de,7                       ; LD DE,7           ; {Point #REGiy at the first byte of the next vertical
        ai   iy,7                       ; ADD IY,DE         ; guardian definition}
@@ -2355,8 +2378,7 @@ _37014:
        movb a,*hl                      ; LD (HL),A         ; 
        .fill                           ; LDIR              ; }
 
-       bl   @upload_top_part
-       bl   @upload_middle_part
+       bl   @upload_top_middle_attributes
 
 ;      li   bc,4                       ; LD BC,4           ; {Pause for about 0.004s
 ;_37029:
@@ -2552,6 +2574,7 @@ _37238:
        movb a,@eugdir                  ; LD (32987),A      ; falling}
        movb @background,a              ; LD A,(32800)      ; Pick up the attribute byte of the background tile for
                                                            ; the current cavern from #R32800
+*      TODO: Draw on TI
        movb a,@attr_buffer_1+79        ; LD (24143),A      ; {Change the attributes of the floor beneath the Kong
        movb a,@attr_buffer_1+80        ; LD (24144),A      ; Beast in the buffer at #R24064 attr_buffer_1 to match that of the
                                                            ; background tile}
@@ -2592,6 +2615,21 @@ _37277:
 ;      sb   one,d                      ; DEC D             ;
 ;      jne  _37301                     ; JR NZ,37301       ; }
 ;
+*      RM: Swapping order of attributes and sprites
+*      to make the attributes available to the hardware sprite drawing routine
+*      Attributes
+       movb @eughgt,a                  ; LD A,(32988)      ; Pick up the Kong Beast's pixel y-coordinate from #R32988
+       andi a,120*256                  ; AND 120 >78       ; {Point #REGhl at the address of the Kong Beast's
+       movb a,@l                       ; LD L,A            ; location in the attribute buffer at #R23552 attr_buffer_2
+       movb @bytes+attr2_msb_div_4,h   ; LD H,23
+       a    hl,hl                      ; ADD HL,HL         ; x2
+       a    hl,hl                      ; ADD HL,HL         ; x4
+       movb @l,a                       ; LD A,L            ;
+       socb @bytes+15,a                ; OR 15             ;
+       movb a,@l                       ; LD L,A            ; }
+       movb @bytes+6,a                 ; LD A,6            ; The Kong Beast is drawn with yellow INK
+       .call @draw_sprite_attributes   ; JP 36447          ; Set the attribute bytes for the Kong Beast
+*      Sprite
        movb @c,a                       ; LD A,C            ; Copy the Kong Beast's pixel y-coordinate back into #REGa
        sla  a,1                        ; RLCA              ; {Point #REGde at the entry in the screen buffer address
        movb a,@e                       ; LD E,A            ; lookup table at #R33536 that corresponds to the Kong
@@ -2609,19 +2647,10 @@ _37277:
        movb a,@e                       ; LD E,A            ; }
        sb   @c,@c                      ; LD C,0            ; {Draw the Kong Beast to the screen buffer at #R24576 scrn_buffer_2
        .call @draw_sprite              ; CALL 36852        ; }
+
        li   hl,scorbuf+3               ; LD HL,33836       ; {Add 100 to the score
        .call @incscore_1               ; CALL 37118        ; }
-       movb @eughgt,a                  ; LD A,(32988)      ; Pick up the Kong Beast's pixel y-coordinate from #R32988
-       andi a,120*256                  ; AND 120 >78       ; {Point #REGhl at the address of the Kong Beast's
-       movb a,@l                       ; LD L,A            ; location in the attribute buffer at #R23552 attr_buffer_2
-       movb @bytes+attr2_msb_div_4,h   ; LD H,23
-       a    hl,hl                      ; ADD HL,HL         ; x2
-       a    hl,hl                      ; ADD HL,HL         ; x4
-       movb @l,a                       ; LD A,L            ; 
-       socb @bytes+15,a                ; OR 15             ; 
-       movb a,@l                       ; LD L,A            ; }
-       movb @bytes+6,a                 ; LD A,6            ; The Kong Beast is drawn with yellow INK
-       b    @draw_sprite_attributes                    ; JP 36447          ; Set the attribute bytes for the Kong Beast
+       .ret
 * The Kong Beast has fallen into the portal.
 _37363:
        movb @bytes+2,a                 ; LD A,2            ; {Set the Kong Beast's status at #R32987 to 2: he is dead
@@ -2629,6 +2658,15 @@ _37363:
        .ret                            ; RET               ; 
 * The Kong Beast is still on the ledge.
 _37369:
+*      RM: Swapping order of attributes and sprites
+*      to make the attributes available to the hardware sprite drawing routine
+*      Attributes
+       movb @bytes+68,a                ; LD A,68           ; #REGa=#b68 (INK 4: PAPER 0: BRIGHT 1)
+       movb a,@attr_buffer_2+47        ; LD (23599),A      ; {Set the attribute bytes for the Kong Beast in the
+       movb a,@attr_buffer_2+48        ; LD (23600),A      ; buffer at #R23552 attr_buffer_2
+       movb a,@attr_buffer_2+15        ; LD (23567),A      ;
+       movb a,@attr_buffer_2+16        ; LD (23568),A      ; }
+*      Sprite
        movb @clock,a                   ; LD A,(32957)      ; Pick up the value of the game clock at #R32957
        andi a,32*256                   ; AND 32            ; {Use bit 5 of this value (which is toggled once every
        movb a,@e                       ; LD E,A            ; eight passes through the main loop) to point #REGde at
@@ -2643,12 +2681,7 @@ _37369:
        nop
        .endif
 !
-       movb @bytes+68,a                ; LD A,68           ; #REGa=#b68 (INK 4: PAPER 0: BRIGHT 1)
-       movb a,@attr_buffer_2+47        ; LD (23599),A      ; {Set the attribute bytes for the Kong Beast in the
-       movb a,@attr_buffer_2+48        ; LD (23600),A      ; buffer at #R23552 attr_buffer_2
-       movb a,@attr_buffer_2+15        ; LD (23567),A      ; 
-       movb a,@attr_buffer_2+16        ; LD (23568),A      ; }
-       .ret                            ; RET               ; 
+       .ret                            ; RET               ;
 
 * Flip a switch in a Kong Beast cavern if Willy is touching it
 * 

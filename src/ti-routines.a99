@@ -119,30 +119,6 @@ ti_init_name_table_1:
 
 *********************************************************************************
 *
-* Select name table 1
-*
-ti_select_name_table_1:
-       lwpi ti_wrksp
-       li   r0,>020e
-       bl   @vwtr
-       lwpi wrksp
-       rt
-*// ti_select_name_table_1
-
-*********************************************************************************
-*
-* Select name table 2
-*
-ti_select_name_table_2:
-       lwpi ti_wrksp
-       li   r0,>020f
-       bl   @vwtr
-       lwpi wrksp
-       rt
-*// ti_select_name_table_2
-
-*********************************************************************************
-*
 * Display off
 *
 ti_display_off:
@@ -179,38 +155,6 @@ ti_set_border_color:
        bl   @vwtr
        .endproc
 *// ti_set_border_color
-
-*********************************************************************************
-*
-* Draw attribute
-*
-* a: zx attribute
-* r1: address in zx attribute file
-*
-ti_draw_attribute:
-*      VDP write address
-       ai   r1,-zx_attrs
-       sla  r1,3
-       ai   r1,color_table+>4000
-*      Set VDP write address
-       movb @r1lb,@vdpwa               ; Send low byte of VDP RAM write address
-       movb r1,@vdpwa                ; Send high byte of VDP RAM write address
-*      Color
-       swpb a
-       movb @ti_colors(a),r0
-       swpb a
-*      Draw
-       li   r2,vdpwd
-       movb r0,*r2
-       movb r0,*r2
-       movb r0,*r2
-       movb r0,*r2
-       movb r0,*r2
-       movb r0,*r2
-       movb r0,*r2
-       movb r0,*r2
-       rt
-*// ti_draw_attribute
 
 *********************************************************************************
 *
@@ -477,10 +421,12 @@ upload_characters_1:
        jne  upload_characters_3
        ai   r0,>2000                   ; Change VDP address to colors
        bl   @vwad
-       movb @zx_attrs(r1),r1           ; Get attribute
+       mov  r1,r4
+       ai   r4,zx_attrs
+upload_characters_2:
+       movb *r4+,r1                    ; Get attribute
        srl  r1,8                       ; Shift into LSB
        movb @ti_colors(r1),r1          ; Get TI color
-upload_characters_2:
        movb r1,*r3
        movb r1,*r3
        movb r1,*r3
@@ -495,6 +441,49 @@ upload_characters_3:
        lwpi wrksp
        rt
 *// upload_characters
+
+*********************************************************************************
+*
+* Upload top and middle attributes
+*
+upload_top_middle_attributes:
+       li   r1,zx_attrs
+       li   r2,512
+*      Continue into upload_attributes
+*// upload_top_middle_attributes
+
+*********************************************************************************
+*
+* Upload color attributes
+*
+* r1 (r14): Address in the ZX attribute buffer
+* r2 (r15): Number of attributes
+*
+upload_attributes:
+       lwpi ti_wrksp
+       mov  r14,r0                     ; Attribute address
+       ai   r0,-zx_attrs               ; Offset
+       sla  r0,3                       ; TI colors offset
+       ai   r0,color_table
+       bl   @vwad
+upload_attributes_1:
+       movb *r14+,r1                   ; Get attribute
+       srl  r1,8                       ; Shift into LSB
+       movb @ti_colors(r1),r1          ; Get TI color
+       li   r3,vdpwd
+       movb r1,*r3
+       movb r1,*r3
+       movb r1,*r3
+       movb r1,*r3
+       movb r1,*r3
+       movb r1,*r3
+       movb r1,*r3
+       movb r1,*r3
+       dec  r15
+       jne upload_attributes_1
+       lwpi wrksp
+       rt
+*// upload_attributes
 
 *********************************************************************************
 *
@@ -581,23 +570,12 @@ ti_draw_sprite:
 *
        mov  de,r1
        ai   r1,-sprite_patterns
-       jgt  ti_draw_sprite_4
-       jeq  ti_draw_sprite_4
-       li   r1,>4400
-       jmp  ti_draw_sprite_7
-ti_draw_sprite_4:
        srl  r1,3
        swpb r1
-ti_draw_sprite_7:
        movb r1,@vdpwd
 **
 * Color
 *
-       ci   de,extra_sprite
-       jhe  ti_draw_sprite_6           ; If lower it's the portal
-       movb @portal,r1
-       jmp  ti_draw_sprite_5
-ti_draw_sprite_6:
        ci   de,willy_sprites
        jl   ti_draw_sprite_1
        li   r1,>0e00                   ; Willy is a grey guy
@@ -610,7 +588,6 @@ ti_draw_sprite_1:                      ; For other sprites we have to get their 
        srl  r0,3                       ; Shift down to a value of 256 bytes per 3rd
        soc  r0,r1                      ; Now r1 holds the offset into the attribute table
        movb @zx_attrs(r1),r1           ; Get attribute
-ti_draw_sprite_5:
        srl  r1,8                       ; Shift into LSB
        movb @ti_colors(r1),r1          ; Get TI color
        srl  r1,4                       ; We need foreground color
