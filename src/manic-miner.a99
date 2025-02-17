@@ -43,7 +43,7 @@ start:                                 ; 34252
        li   hl,titlescr1               ; LD HL,40960       ; {Copy the graphic data at #R40960 to the top two-thirds
        li   de,zx_screen               ; LD DE,16384       ; of the display file
        li   bc,4096                    ; LD BC,4096        ; 
-       .ldir2                          ; LDIR              ; }
+       bl   @copy                      ; LDIR              ; }
        li   hl,zx_screen+2109          ; LD HL,18493       ; {Draw Willy at (9,29)
        li   de,willy_sprites_2         ; LD DE,33344       ;
        sb   @c,@c                      ; LD C,0            ;
@@ -52,11 +52,11 @@ start:                                 ; 34252
        li   hl,cavern19                ; LD HL,64512       ; {Copy the attribute bytes from #R64512 to the top third
        li   de,zx_attrs                ; LD DE,22528       ; of the attribute file
        li   bc,256                     ; LD BC,256         ;
-       .ldir2                          ; LDIR              ; }
+       bl   @copy                      ; LDIR              ; }
        seto @title_screen_bank_select
        li   hl,lowerattrs              ; LD HL,40448       ; {Copy the attribute bytes from #R40448 to the bottom
        li   bc,512                     ; LD BC,512         ; two-thirds of the attribute file
-       .ldir2                          ; LDIR              ; }
+       bl   @copy                      ; LDIR              ; }
 
        bl   @upload_zx_screen
 
@@ -73,8 +73,6 @@ start:                                 ; 34252
 ;       jne  _34351                     ; JR NZ,34351       ; Jump if not
 ;       movb one,a                      ; LD A,1            ; {Set the Kempston joystick indicator at #R33881 to 1
 ;       movb a,@kemp                    ; LD (33881),A      ; }
-
-       b    @start_demo
 
 * And finally, play the theme tune and check for keypresses.
 * .
@@ -179,10 +177,10 @@ new_cavern:                            ; 34449
        ai   hl,cavern0
        li   de,attr_buffer_1           ; LD DE,24064       ; {Copy the cavern's attribute bytes into the buffer at
        li   bc,512                     ; LD BC,512         ; #R24064 attr_buffer_1
-       .ldir2                          ; LDIR              ; }
+       bl   @copy                      ; LDIR              ; }
        li   de,cavernname              ; LD DE,32768       ; {Copy the rest of the cavern definition into the game
        li   bc,512                     ; LD BC,512         ; status buffer at #GBUF32768
-       .ldir2                          ; LDIR              ; }
+       bl   @copy                      ; LDIR              ; }
        bl   @upload_sprite_patterns
        .call @draw_cavern              ; CALL 35445        ; Draw the current cavern to the screen buffer at #R28672 scrn_buffer_1
        li   hl,zx_screen+4096          ; LD HL,20480       ; {Clear the bottom third of the display file
@@ -242,7 +240,6 @@ _34519:
 * The first thing to do is check whether there are any remaining lives to draw
 * at the bottom of the screen.
 before_loop:
-       bl   @ti_display_on
        seto @screen_update_flag
        li   r0,crumble_updates
        li   r2,6
@@ -295,11 +292,11 @@ _34623:
        li   hl,attr_buffer_1           ; LD HL,24064       ; {Copy the contents of the attribute buffer at #R24064 attr_buffer_1
        li   de,attr_buffer_2           ; LD DE,23552       ; (the attributes for the empty cavern) into the attribute
        li   bc,512                     ; LD BC,512         ; buffer at #R23552 attr_buffer_2
-       .ldir2                          ; LDIR              ; }
+       bl   @copy                      ; LDIR              ; }
        li   hl,scrn_buffer_1           ; LD HL,28672       ; {Copy the contents of the screen buffer at #R28672 scrn_buffer_1 (the
        li   de,scrn_buffer_2           ; LD DE,24576       ; tiles for the empty cavern) into the screen buffer at
        li   bc,4096                    ; LD BC,4096        ; #R24576 scrn_buffer_2
-       .ldir2                          ; LDIR              ; }
+       bl   @copy                      ; LDIR              ; }
 
        .call @move_hguardians          ; CALL 36111        ; Move the horizontal guardians in the current cavern
 
@@ -356,7 +353,7 @@ _34722:
 ;      li   hl,scrn_buffer_2           ; LD HL,24576       ; {Copy the contents of the screen buffer at #R24576 scrn_buffer_2 to
 ;      li   de,zx_screen               ; LD DE,16384       ; the display file
 ;      li   bc,4096                    ; LD BC,4096        ;
-;      .ldir2                          ; LDIR              ; }
+;      bl   @copy                      ; LDIR              ; }
 
        movb @flash,a                   ; LD A,(33880)      ; Pick up the screen flash counter from #R33880
 ;      socb a,a                        ; OR A              ; Is it zero?
@@ -378,7 +375,7 @@ _34760:
 ;      li   hl,attr_buffer_2           ; LD HL,23552       ; {Copy the contents of the attribute buffer at #R23552 attr_buffer_2 to
 ;      li   de,zx_attrs                ; LD DE,22528       ; the attribute file
 ;      li   bc,512                     ; LD BC,512         ;
-;      .ldir2                          ; LDIR              ; }
+;      bl   @copy                      ; LDIR              ; }
 
        li   ix,scorbuf                 ; LD IX,33833       ; {Print the score (see #R33833) at (19,26)
        li   de,zx_screen+4218          ; LD DE,20602       ; 
@@ -397,6 +394,7 @@ _34760:
        mov  @screen_update_flag,r0
        jeq  !
        bl   @upload_zx_screen
+       bl   @ti_display_on
        clr  @screen_update_flag
        jmp  after_screen_update
 !

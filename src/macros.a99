@@ -70,12 +70,6 @@
        jne  -!
        .endm
 
-       .defm ldir2
-!      mov  *hl+,*de+
-       dect bc
-       jne  -!
-       .endm
-
        .defm lddr
 !      movb *hl,*de
        dec  hl

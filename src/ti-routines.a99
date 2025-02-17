@@ -3,7 +3,6 @@
 * Setup environment
 *
 ti_setup_environment:
-       mov  @rndsd,@rnd_seed
        li   one,>0100
        li   r0,>fffe
        mov  r0,@b255
@@ -852,64 +851,6 @@ ti_quit:
        blwp @>0000
 *// ti_check_quit
 
-*********************************************************************
-*
-* Scan keyboard
-*
-ti_keyscan:
-       .proc
-       lwpi gplws
-       movb @zero,@kscan_device
-       bl   @kscan
-       lwpi wrksp
-       movb @kscan_status,a
-       andi a,>2000
-       jeq  !
-       movb @kscan_key,a
-!      .endproc
-*// ti_keyscan
-
-*********************************************************************
-*
-* Generate a pseudo random number within the given limit
-*
-* a: Maximum number (0 - 255) exclusive
-*
-* On return a contains the number [0; a[
-*
-ti_rnd_range:
-       .proc                           ; Push return address onto the stack
-       bl   @ti_rnd                    ; Generate a random number in r0
-       andi r0,>00ff                 ; Clear MSB: [0-255]
-       mov  af,r1                    ; range in MSB
-       srl  r1,8                     ; range in LSB
-       mpy  r1,r0                  ; range * [0-255]
-       srl  r1,8                     ; (range * [0-255]) / 256
-       mov  r1,a                     ; Copy result back
-       swpb a                          ; to MSB
-       .endproc                        ; Pop return address off the stack
-*// ti_rnd_range
-
-*********************************************************************
-*
-* Generate a pseudo random number
-*
-* On return r0 contains the number, which is also stored at @rnd_seed
-*
-* r1 and r2 are modified
-*
-ti_rnd:
-       li   r1,28643                 ; A prime number to multiply by
-       mpy  @rnd_seed,r1             ; Multiply by last random number
-       ai   r2,31873                 ; Add a prime number
-       src  r2,7                     ; Mix up the number to break odd/even pattern
-       mov  r2,@rnd_seed             ; Save this number for next time
-       mov  r2,r0
-       rt
-rnd_seed:
-       data 0
-*// ti_rnd
-
 ***************************************************************************
 *
 * Wait for fire key
@@ -974,3 +915,18 @@ add_crumble_update_1:
 add_crumble_update_2:
        rt
 *// add_crumble_update
+
+*********************************************************************
+*
+* CPU space copy
+*
+copy:
+       srl  bc,3
+copy_1:
+       mov  *hl+,*de+
+       mov  *hl+,*de+
+       mov  *hl+,*de+
+       mov  *hl+,*de+
+       dec  bc
+       jne  copy_1
+       rt
