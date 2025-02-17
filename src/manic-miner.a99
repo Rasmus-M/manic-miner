@@ -358,7 +358,7 @@ return_from_kill_willy:
 ;      li   de,zx_screen               ; LD DE,16384       ; the display file
 ;      li   bc,4096                    ; LD BC,4096        ;
 ;      bl   @copy                      ; LDIR              ; }
-
+*      Flash after extra life
        movb @flash,a                   ; LD A,(33880)      ; Pick up the screen flash counter from #R33880
 ;      socb a,a                        ; OR A              ; Is it zero?
        jeq  no_flash                     ; JR Z,34760        ; Jump if so
@@ -382,7 +382,7 @@ no_flash:
 ;      li   de,zx_attrs                ; LD DE,22528       ; the attribute file
 ;      li   bc,512                     ; LD BC,512         ;
 ;      bl   @copy                      ; LDIR              ; }
-
+*      Print score
        li   ix,scorbuf                 ; LD IX,33833       ; {Print the score (see #R33833) at (19,26)
        li   de,zx_screen+4218          ; LD DE,20602       ; 
        movb @bytes+6,@c                ; LD C,6            ; 
@@ -392,9 +392,9 @@ no_flash:
        movb @bytes+6,@c                ; LD C,6            ; 
        .call @pmess                    ; CALL 37562        ; }
 
-       .call @dec_air                   ; CALL 35388        ; Decrease the air remaining in the current cavern
+       .call @dec_air                  ; CALL 35388        ; Decrease the air remaining in the current cavern
        jne  !                          ; JP Z,35071        ; Jump if there's no air left
-       b    @willy_dead                   ;
+       b    @willy_dead                ;
 !
 *      Full or partial screen update
        mov  @screen_update_flag,r0
@@ -489,11 +489,14 @@ _34827:
 
 * Here we check whether Willy has had a fatal accident.
 check_dead:
+       movb @vdpsta,r0                 ; Check hardware sprite coincidence flag
+       andi r0,>2000
+       jne  !
        movb @airborne,a                ; LD A,(32875)      ; Pick up the airborne status indicator from #R32875
        cb   a,@b255                    ; CP 255            ; Has Willy landed after falling from too great a height,
                                                            ; or collided with a nasty or a guardian?
-       jne  !                          ; JP Z,35071        ; Jump if so
-       b    @willy_dead                   ;
+       jne  !!                         ; JP Z,35071        ; Jump if so
+!      b    @willy_dead                ;
 !
 
 ;* Now read the keys H, J, K, L and ENTER (which toggle the in-game music).

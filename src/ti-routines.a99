@@ -555,6 +555,7 @@ upload_sprite_pattern_2:
 init_sprite_attr_table:
        li   r0,sprite_attr_table       ; Prepare for drawing hardware sprites
        mov  r0,@sprite_attr_table_addr
+       movb @vdpsta,r0
        rt
 *// init_sprite_attr_table
 
