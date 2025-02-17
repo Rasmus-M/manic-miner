@@ -23,8 +23,8 @@
 * variables in preparation for the next game.
 start:                                 ; 34252
        clr  af                         ; XOR A             ; #REGa=0
-       movb a,@cavern                  ; LD (33799),A      ; Initialise the current cavern number at #R33799
-      movb @bytes+18,@cavern
+;      movb a,@cavern                  ; LD (33799),A      ; Initialise the current cavern number at #R33799
+       movb @bytes+0,@cavern
        movb a,@kemp                    ; LD (33881),A      ; Initialise the Kempston joystick indicator at #R33881
        movb a,@demo                    ; LD (33882),A      ; Initialise the game mode indicator at #R33882
        movb a,@noteindex               ; LD (33883),A      ; Initialise the in-game music note index at #R33883
@@ -241,11 +241,7 @@ _34519:
 * at the bottom of the screen.
 before_loop:
        seto @screen_update_flag
-       li   r0,crumble_updates
-       li   r2,6
-!      clr  *r0+
-       dec  r2
-       jne  -!
+       bl   @init_tile_updates
        li   r0,light_beam_attr_addrs
        clr  *r0
 loop:                                  ; 34574
@@ -317,33 +313,33 @@ _34623:
        .call @move_conveyor            ; CALL 37125        ; Move the conveyor in the current cavern
        .call @draw_items               ; CALL 36707        ; Draw the items in the current cavern and collect any
                                                            ; that Willy is touching
-       movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-       cb   a,@bytes+4                 ; CP 4              ; Are we in #R49152(Eugene's Lair)?
+;      movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       cb   @cavern,@bytes+4           ; CP 4              ; Are we in #R49152(Eugene's Lair)?
        jne  !                          ; CALL Z,36344      ; If so, move and draw Eugene
        .call @eugene                   ;
 !
-       movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-       cb   a,@bytes+13                ; CP 13             ; Are we in #R58368(Skylab Landing Bay)?
+;      movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       cb   @cavern,@bytes+13          ; CP 13             ; Are we in #R58368(Skylab Landing Bay)?
        jne  !                          ; JP Z,36469        ; If so, move and draw the Skylabs
        b    @skylabs                   ;
 !
-       movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-       cb   a,@bytes+8                 ; CP 8              ; Are we in #R53248(Wacky Amoebatrons) or beyond?
+;      movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       cb   @cavern,@bytes+8           ; CP 8              ; Are we in #R53248(Wacky Amoebatrons) or beyond?
        jl   !                          ; CALL NC,36593     ; If so, move and draw the vertical guardians
        .call @draw_vguardians          ;
 !
-       movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-       cb   a,@bytes+7                 ; CP 7              ; Are we in #R52224(Miner Willy meets the Kong Beast)?
+;      movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       cb   @cavern,@bytes+7           ; CP 7              ; Are we in #R52224(Miner Willy meets the Kong Beast)?
        jne  !                          ; CALL Z,37173      ; If so, move and draw the Kong Beast
        .call @kong_beast               ;
 !
-       movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-       cb   a,@bytes+11                ; CP 11             ; Are we in #R56320(Return of the Alien Kong Beast)?
+;      movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       cb   @cavern,@bytes+11          ; CP 11             ; Are we in #R56320(Return of the Alien Kong Beast)?
        jne  !                          ; CALL Z,37173      ; If so, move and draw the Kong Beast
        .call @kong_beast               ;
 !
-       movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
-       cb   a,@bytes+18                ; CP 18             ; Are we in #R63488(Solar Power Generator)?
+;      movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
+       cb   @cavern,@bytes+18          ; CP 18             ; Are we in #R63488(Solar Power Generator)?
        jne  !                          ; CALL Z,36211      ; If so, move and draw the light beam
        .call @lightbeam                ;
 !
@@ -408,28 +404,28 @@ _34760:
        movb @convlen,r2
        srl  r2,8
        bl   @upload_patterns
-*      Upload crumbling tiles
-       li   r0,crumble_updates
-       mov  r0,@crumble_update_ptr
-update_crumbles:
-       mov  @crumble_update_ptr,r0
-       ci   r0,crumble_updates+crumble_updates_size
+*      Upload misc tiles, e.g. crumbling
+       li   r0,tiles_updates
+       mov  r0,@tile_updates_ptr
+update_tiles:
+       mov  @tile_updates_ptr,r0
+       ci   r0,tiles_updates+tile_updates_size
        jeq  upload_score
        mov  *r0+,r1                    ; Address
-       jeq  update_crumbles_2
+       jeq  update_tiles_2
        mov  *r0,r2                     ; Counter
-       jeq  update_crumbles_2
-       dec  *r0
-       jne  update_crumbles_1
-       dect r0
-       clr  *r0
-update_crumbles_1:
+       jeq  update_tiles_2
+       dec  *r0                        ; Decrement counter
+       jne  update_tiles_1
+       dect r0                         ; Back to address
+       clr  *r0                        ; Clear address
+update_tiles_1:
        ai   r1,scrn_buffer_2-scrn_buffer_1
        bl   @upload_character
-update_crumbles_2:
-       inct @crumble_update_ptr
-       inct @crumble_update_ptr
-       jmp  update_crumbles
+update_tiles_2:
+       inct @tile_updates_ptr
+       inct @tile_updates_ptr
+       jmp  update_tiles
 *      Upload score
 upload_score:
        li   r1,zx_screen+4218
@@ -439,14 +435,17 @@ upload_score:
        movb @portal,r0
        andi r0,128*256                 ; Is it flashing?
        jeq  after_screen_update
-       movb @portal_location_2,r1
+       movb @portal_location_1,r1
        swpb r1
-       movb @portal_location_2+1,r1
+       movb @portal_location_1+1,r1
        li   r2,2
-       bl   @upload_characters         ; TODO: Only need the colors
-       ai   r1,30
+       bl   @upload_attributes
+       movb @portal_location_1,r1
+       swpb r1
+       movb @portal_location_1+1,r1
+       ai   r1,32
        li   r2,2
-       bl   @upload_characters
+       bl   @upload_attributes
 after_screen_update:
 
 ;* Now check whether SHIFT and SPACE are being pressed.
@@ -974,7 +973,7 @@ draw_cavern:                           ; 35445
                                                            ; at #R24064 attr_buffer_1
 ;       movb @bytes+112,a               ; LD A,112         ; {Set the operand of the '#S/LD D/,n' instruction at
 ;       movb a,@sbmsb+1                 ; LD (35484),A     ; #R35483 (below) to #n112}
-       li   r0,bytes+screen_buffer_1_msb
+       li   r0,bytes+scrn_buffer_1_msb
        mov  r0,@sbmsb+2
        .call @_35466                   ; CALL 35466        ; Draw the tiles for the top half of the cavern to the
                                                            ; screen buffer at #R28672 scrn_buffer_1
@@ -984,7 +983,7 @@ draw_cavern:                           ; 35445
                                                            ; already holds #N24320
 ;       movb @bytes+120,a               ; LD A,120         ; {Set the operand of the '#S/LD D/,n' instruction at
 ;       movb a,@sbmsb+1                 ; LD (35484),A     ; #R35483 (below) to #n120}
-       li   r0,bytes+screen_buffer_1_msb+8
+       li   r0,bytes+scrn_buffer_1_msb+8
        mov  r0,@sbmsb+2
 _35466:
        sb   @c,@c                      ; LD C,0            ; #REGc will count 256 tiles
@@ -1128,7 +1127,7 @@ _35600:
                                                            ; crumbling floor tile?
        jne  !                          ; CALL Z,35770      ; If so, make it crumble
        .call @crumble                  ;
-       bl   @add_crumble_update
+       bl   @add_tile_update
 !
        movb @nasty1,a                  ; LD A,(32845)      ; Pick up the attribute byte of the first nasty tile for
                                                            ; the current cavern from #R32845
@@ -1147,7 +1146,7 @@ _35600:
                                                            ; crumbling floor tile?
        jne  !                          ; CALL Z,35770      ; If so, make it crumble
        .call @crumble                  ;                   
-       bl   @add_crumble_update
+       bl   @add_tile_update
 !
        movb @nasty1,a                  ; LD A,(32845)      ; Pick up the attribute byte of the first nasty tile for
                                                            ; the current cavern from #R32845
@@ -1290,7 +1289,8 @@ _35777:
        movb b,a                        ; LD A,B            ; {Have we dealt with the bottom seven pixel rows of the
        andi a,7*256                    ; AND 7             ; crumbling floor tile yet?}
        jne  _35777                     ; JR NZ,35777       ; If not, jump back to deal with the next one up
-       mov  bc,@crumble_addr
+       mov  bc,r1
+       bl   @add_tile_update
        sb   a,a                        ; XOR A             ; {Clear the top row of pixels in the crumbling floor tile
        movb a,*bc                      ; LD (BC),A         ; }
        movb b,a                        ; LD A,B            ; {Point #REGbc at the bottom row of pixels in the
@@ -2554,13 +2554,19 @@ kong_beast:                             ; 37173
        jeq  _37238                     ; JR Z,37238        ; Jump if so
        li   hl,scrn_buffer_1+3953      ; LD HL,32625       ; Point #REGhl at the bottom row of pixels of the wall
                                                            ; tile at (11,17) in the screen buffer at #R28672 scrn_buffer_1
+       mov  hl,r1
+       andi r1,>f8ff
+       bl   @add_tile_update
+       ai   r1,32
+       bl   @add_tile_update
+
 _37202:
        movb *hl,a                      ; LD A,(HL)         ; Pick up a pixel row
 ;      socb a,a                        ; OR A              ; Is it blank yet?
        jne  _37228                     ; JR NZ,37228       ; Jump if not
        sb   one,h                      ; DEC H             ; Point #REGhl at the next pixel row up
        movb h,a                        ; LD A,H            ; {Have we checked all 8 pixel rows yet?
-       cb   a,@bytes+screen_buffer_1_msb+7                 ; CP 119            ; }
+       cb   a,@bytes+scrn_buffer_1_msb+7                   ; CP 119            ; }
        jne  _37202                     ; JR NZ,37202       ; If not, jump back to check the next one
        movb @background,a              ; LD A,(32800)      ; Pick up the attribute byte of the background tile for
                                                            ; the current cavern from #R32800
@@ -2591,11 +2597,16 @@ _37238:
        movb a,@eugdir                  ; LD (32987),A      ; falling}
        movb @background,a              ; LD A,(32800)      ; Pick up the attribute byte of the background tile for
                                                            ; the current cavern from #R32800
-*      TODO: Draw on TI
        movb a,@attr_buffer_1+79        ; LD (24143),A      ; {Change the attributes of the floor beneath the Kong
        movb a,@attr_buffer_1+80        ; LD (24144),A      ; Beast in the buffer at #R24064 attr_buffer_1 to match that of the
                                                            ; background tile}
        li   hl,scrn_buffer_1+79        ; LD HL,28751       ; Point #REGhl at (2,15) in the screen buffer at #R28672 scrn_buffer_1
+
+       mov  hl,r1
+       bl   @add_tile_update
+       inc  r1
+       bl   @add_tile_update
+
        movb @bytes+8,b                 ; LD B,8            ; {Clear the cells at (2,15) and (2,16), removing the
 _37268:
        sb   *hl,*hl                    ; LD (HL),0         ; floor beneath the Kong Beast
@@ -2632,6 +2643,7 @@ _37277:
 ;      sb   one,d                      ; DEC D             ;
 ;      jne  _37301                     ; JR NZ,37301       ; }
 ;
+
 *      RM: Swapping order of attributes and sprites
 *      to make the attributes available to the hardware sprite drawing routine
 *      Attributes
@@ -2647,7 +2659,7 @@ _37277:
        movb @bytes+6,a                 ; LD A,6            ; The Kong Beast is drawn with yellow INK
        .call @draw_sprite_attributes   ; JP 36447          ; Set the attribute bytes for the Kong Beast
 *      Sprite
-       movb @c,a                       ; LD A,C            ; Copy the Kong Beast's pixel y-coordinate back into #REGa
+       movb @eughgt,a                  ; LD A,C            ; Copy the Kong Beast's pixel y-coordinate back into #REGa
        sla  a,1                        ; RLCA              ; {Point #REGde at the entry in the screen buffer address
        movb a,@e                       ; LD E,A            ; lookup table at #R33536 that corresponds to the Kong
        movb @sbufaddrs_msb_byte,d      ; LD D,131          ; Beast's pixel y-coordinate}
@@ -2724,7 +2736,7 @@ chkswitch:                             ; 37403
 !
        movb @extra+6,a                 ; LD A,(32869)      ; Pick up the sixth byte of the graphic data for the
                                                            ; switch tile from #R32863(#N32869)
-       movb @bytes+screen_buffer_1_msb+5,h                 ; LD H,117          ; Point #REGhl at the sixth row of pixels of the switch
+       movb @bytes+scrn_buffer_1_msb+5,h ; LD H,117        ; Point #REGhl at the sixth row of pixels of the switch
                                                            ; tile in the screen buffer at #R28672 scrn_buffer_1
        cb   a,*hl                      ; CP (HL)           ; Has the switch already been flipped?
        jeq  !                          ; RET NZ            ; Return (with the zero flag reset) if so
@@ -2737,6 +2749,9 @@ chkswitch:                             ; 37403
        ab   one,h                      ; INC H             ; 
        movb @bytes+6,*hl               ; LD (HL),6         ; }
        sb   a,a                        ; XOR A             ; Set the zero flag: Willy has flipped the switch
+       mov  hl,r1
+       andi r1,>f8ff
+       bl   @add_tile_update
 ;      socb a,a                        ; OR A              ; This instruction is redundant
        .ret_eq                         ; RET               ;
 

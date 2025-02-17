@@ -1,4 +1,4 @@
-screen_buffer_1_msb:
+scrn_buffer_1_msb:
        equ  scrn_buffer_1//256
 attr_buffer_2_msb:
        equ  attr_buffer_2//256

@@ -903,25 +903,41 @@ ti_delay_1:
        .endproc
 *// ti_delay
 
+
 *********************************************************************
 *
-* Add crumble tile to the list of updated tiles
+* Add tile to the list of updated tiles
 *
-add_crumble_update:
-       li   r0,crumble_updates
+init_tile_updates:
+       li   r0,tiles_updates
+       li   r2,tile_updates_size/2
+!      clr  *r0+
+       dec  r2
+       jne  -!
+       rt
+*// init_crumble_updates
+
+*********************************************************************
+*
+* Add tile to the list of updated tiles
+*
+* r1: Screen buffer address of tile to add
+*
+add_tile_update:
+       li   r0,tiles_updates
 add_crumble_update_0:
-       mov  *r0,r1                     ; Address
+       mov  *r0,r2                     ; Address
        jeq  add_crumble_update_3
-       c    *r0,@crumble_addr
+       c    *r0,r1
        jne  add_crumble_update_1
 add_crumble_update_3:
-       mov  @crumble_addr,*r0+
-       li   r1,2                       ; Counter
-       mov  r1,*r0
+       mov  r1,*r0+
+       li   r2,2                       ; Counter
+       mov  r2,*r0
        jmp  add_crumble_update_2
 add_crumble_update_1:
        ai   r0,4
-       ci   r0,crumble_updates+crumble_updates_size
+       ci   r0,tiles_updates+tile_updates_size
        jne  add_crumble_update_0
 add_crumble_update_2:
        rt
@@ -967,10 +983,10 @@ sprite_y:
        byte >c3,>cb,>d3,>db,>e3,>eb,>f3,>fb,>c4,>cc,>d4,>dc,>e4,>ec,>f4,>fc
        byte >c5,>cd,>d5,>dd,>e5,>ed,>f5,>fd,>c6,>ce,>d6,>de,>e6,>ee,>f6,>fe
 
-crumble_updates_size:
+tile_updates_size:
        equ  12
-crumble_updates:
-       bss  crumble_updates_size
+tiles_updates:
+       bss  tile_updates_size
 
 light_beam_attr_addrs:
        bss  80
