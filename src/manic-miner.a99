@@ -297,7 +297,6 @@ _34623:
        li   bc,4096                    ; LD BC,4096        ; #R24576 scrn_buffer_2
        .ldir2                          ; LDIR              ; }
 
-       .call @draw_portal              ; CALL 36805      ; Draw the portal, or move to the next cavern if Willy has
        .call @move_hguardians          ; CALL 36111        ; Move the horizontal guardians in the current cavern
 
        movb @demo,a                    ; LD A,(33882)      ; Pick up the game mode indicator from #R33882
@@ -328,7 +327,7 @@ _34623:
        movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+8                 ; CP 8              ; Are we in #R53248(Wacky Amoebatrons) or beyond?
        jl   !                          ; CALL NC,36593     ; If so, move and draw the vertical guardians
-       .call @draw_vguardians               ;
+       .call @draw_vguardians          ;
 !
        movb @cavern,a                  ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+7                 ; CP 7              ; Are we in #R52224(Miner Willy meets the Kong Beast)?
@@ -347,8 +346,7 @@ _34623:
 !
 * This entry point is used by the routine at #R36469.
 _34719:
-;      .call @draw_portal                ; CALL 36805      ; Draw the portal, or move to the next cavern if Willy has
-       nop                                                        ; entered it
+      .call @draw_portal                ; CALL 36805      ; Draw the portal, or move to the next cavern if Willy has
 * This entry point is used by the routine at #R36101.
 _34722:
 ;      li   hl,scrn_buffer_2           ; LD HL,24576       ; {Copy the contents of the screen buffer at #R24576 scrn_buffer_2 to
@@ -432,11 +430,18 @@ upload_score:
        li   r1,zx_screen+4218
        li   r2,6
        bl   @upload_patterns
-;*      Upload high score
-;upload_hiscore:
-;       li   r1,zx_screen+4203
-;       li   r2,6
-;       bl   @upload_patterns
+*      Upload portal
+       movb @portal,r0
+       andi r0,128*256                 ; Is it flashing?
+       jeq  after_screen_update
+       movb @portal_location_2,r1
+       swpb r1
+       movb @portal_location_2+1,r1
+       li   r2,2
+       bl   @upload_characters         ; TODO: Only need the colors
+       ai   r1,30
+       li   r2,2
+       bl   @upload_characters
 after_screen_update:
 
 ;* Now check whether SHIFT and SPACE are being pressed.
@@ -1852,7 +1857,7 @@ _36388:
                                                            ; #R32884
 ;      socb a,a                        ; OR A              ; Set the zero flag if all the items have been collected
        movb @bytes+7,a                 ; LD A,7            ; Assume we will draw Eugene with white INK
-       jne  _36447                     ; JR NZ,36447       ; Jump if there are items remaining to be collected
+       jne  draw_sprite_attributes     ; JR NZ,36447       ; Jump if there are items remaining to be collected
        movb @clock,a                   ; LD A,(32957)      ; Pick up the value of the game clock at #R32957
 ;      srl  a,1                        ; RRCA              ; {Move bits 2-4 into bits 0-2 and clear the other bits;
        srl  a,2                        ; RRCA              ; this value (which decreases by one on each pass through
@@ -1861,7 +1866,7 @@ _36388:
 * This entry point is used by the routines at #R36469 (to set the attributes
 * for a Skylab), #R36593 (to set the attributes for a vertical guardian) and
 * #R37173 (to set the attributes for the Kong Beast).
-_36447:
+draw_sprite_attributes:
        movb a,*hl                      ; LD (HL),A         ; Save the INK colour in the attribute buffer temporarily
        movb @background,a              ; LD A,(32800)      ; Pick up the attribute byte of the background tile for
                                                            ; the current cavern from #R32800
@@ -1955,7 +1960,7 @@ _36527:
        socb @3(iy),a                   ; OR (IY+3)         ; 
        movb a,@l                       ; LD L,A            ; }
        movb *iy,a                      ; LD A,(IY+0)       ; Pick up the Skylab's attribute byte
-       .call @_36447                   ; CALL 36447        ; Set the attribute bytes for the Skylab
+       .call @draw_sprite_attributes   ; CALL 36447        ; Set the attribute bytes for the Skylab
 * The current guardian definition has been dealt with. Time for the next one.
        li   de,7                       ; LD DE,7           ; {Point #REGiy at the first byte of the next vertical
        a    de,iy                      ; ADD IY,DE         ; guardian definition}
@@ -2032,7 +2037,7 @@ _36639:
        socb @3(iy),a                   ; OR (IY+3)         ; 
        movb a,@l                       ; LD L,A            ; }
        movb *iy,a                      ; LD A,(IY+0)       ; Pick up the guardian's attribute byte
-       .call @_36447                   ; CALL 36447        ; Set the attribute bytes for the guardian
+       .call @draw_sprite_attributes   ; CALL 36447        ; Set the attribute bytes for the guardian
 * The current guardian definition has been dealt with. Time for the next one.
 ;      li   de,7                       ; LD DE,7           ; {Point #REGiy at the first byte of the next vertical
        ai   iy,7                       ; ADD IY,DE         ; guardian definition}
@@ -2163,11 +2168,12 @@ _36831:
        movb a,*hl+                     ; LD (HL),A         ;
 ;      inc  hl                         ; INC HL            ;
        movb a,*hl                      ; LD (HL),A         ; }
-       li   de,portal_sprites                 ; LD DE,32912       ; Point #REGde at the graphic data for the portal at
+       li   de,portal_sprites          ; LD DE,32912       ; Point #REGde at the graphic data for the portal at
                                                            ; #R32912
-       movb @portal_location_2+1,h            ; LD HL,(32946)     ; Pick up the address of the portal's location in the
-       movb @portal_location_2,@l                                 ; screen buffer at #R24576 scrn_buffer_2 from #R32946
+       movb @portal_location_2+1,h     ; LD HL,(32946)     ; Pick up the address of the portal's location in the
+       movb @portal_location_2,@l                          ; screen buffer at #R24576 scrn_buffer_2 from #R32946
        sb   @c,@c                      ; LD C,0            ; #REGc=0: overwrite mode
+       jmp  draw_sprite_1
 * This routine continues into the one at #R36852.
 
 * Draw a sprite
@@ -2191,6 +2197,7 @@ _36831:
 draw_sprite:                           ; 36852
        bl   @ti_draw_sprite
        .ret_eq
+draw_sprite_1:
        movb @bytes+16,b                ; LD B,16           ; There are 16 rows of pixels to draw
 _36854:
 *      Left byte
@@ -2277,7 +2284,7 @@ next_cavern:                           ; 36904
 
 * Willy has made it through #R64512(The Final Barrier) without cheating.
        sb   @c,@c                      ; LD C,0            ; {Draw Willy at (2,19) on the ground above the portal
-       li   de,willyr_sprites_3                 ; LD DE,33376       ;
+       li   de,willyr_sprites_3        ; LD DE,33376       ;
        li   hl,zx_screen+83            ; LD HL,16467       ; 
        .call @draw_sprite              ; CALL 36852        ; }
        seto @caverns_0_6_bank_select
@@ -2315,7 +2322,7 @@ next_cavern:                           ; 36904
        movb @bytes+50,d                ; LD D,50           ; effect}
        sb   a,a                        ; XOR A             ; #REGa=0 (black border)
 _36989:
-;       ; OUT (254),A                   ; OUT (254),A       ; {Produce the celebratory sound effect: Willy has escaped
+;      OUT (254),A                     ; OUT (254),A       ; {Produce the celebratory sound effect: Willy has escaped
        li   r0,24*256                  ; XOR 24            ; from the mine
        xor  r0,a                       ;
        movb a,@e                       ; LD E,A            ;
@@ -2348,7 +2355,8 @@ _37014:
        movb a,*hl                      ; LD (HL),A         ; 
        .fill                           ; LDIR              ; }
 
-       bl   @upload_zx_screen
+       bl   @upload_top_part
+       bl   @upload_middle_part
 
 ;      li   bc,4                       ; LD BC,4           ; {Pause for about 0.004s
 ;_37029:
@@ -2613,7 +2621,7 @@ _37277:
        socb @bytes+15,a                ; OR 15             ; 
        movb a,@l                       ; LD L,A            ; }
        movb @bytes+6,a                 ; LD A,6            ; The Kong Beast is drawn with yellow INK
-       b    @_36447                    ; JP 36447          ; Set the attribute bytes for the Kong Beast
+       b    @draw_sprite_attributes                    ; JP 36447          ; Set the attribute bytes for the Kong Beast
 * The Kong Beast has fallen into the portal.
 _37363:
        movb @bytes+2,a                 ; LD A,2            ; {Set the Kong Beast's status at #R32987 to 2: he is dead
