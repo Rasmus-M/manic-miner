@@ -897,10 +897,10 @@ boot_loop:                             ; 35210
        movb @bytes+4,@c                ; LD C,4            ; 
        li   de,zx_screen+210           ; LD DE,16594       ; 
        .call @pmess                    ; CALL 37562        ; }
-       li   bc,0                       ; LD BC,0           ; {Prepare the delay counters for the following loop; the
-       movb @bytes+6,d                 ; LD D,6            ; counter in #REGc will also determine the INK colours to
-                                                           ; use for the "Game Over" message}
        bl   @upload_top_part
+       li   bc,0                       ; LD BC,0           ; {Prepare the delay counters for the following loop; the
+       movb @bytes+3,d                 ; LD D,6            ; counter in #REGc will also determine the INK colours to
+                                                           ; use for the "Game Over" message}
 * The following loop makes the "Game Over" message glisten for about 1.57s.
 flash_game_over_loop:                  ; 35313
        sb   one,b                      ; DJNZ 35313        ; Delay for about a millisecond
@@ -3016,6 +3016,15 @@ playtune:                              ; 37596
        bl   @mute_sound
        .ret_eq                         ;
 !
+       li   r0,JOY_FI
+       bl   @ti_check_key
+       jne  !
+       li   r0,KEY_EN
+       bl   @ti_check_key
+       jeq  !!
+!      bl   @mute_sound
+      .ret
+!
        movb a,@c                       ; LD C,A            ; Copy the first byte of data for this note (which
                                                            ; determines the duration) to #REGc
        sb   b,b                        ; LD B,0            ; Initialise #REGb, which will be used as a delay counter
@@ -3060,13 +3069,14 @@ _37624:
        jne  _37624                     ;
        sb   one,@c                     ; DEC C             ;
        jne  _37624                     ; JR NZ,37624       ; }
+!
 
 ;      .call @checkenter               ; CALL 37687        ; Check whether ENTER or the fire button is being pressed
 ;      jeq  !                          ; RET NZ            ; Return (with the zero flag reset) if it is
 ;      .ret                            ;
 ;!
 
-!      li   r0,JOY_FI
+       li   r0,JOY_FI
        bl   @ti_check_key
        jne  !
        li   r0,KEY_EN
@@ -3074,8 +3084,8 @@ _37624:
        jeq  !!
 !      bl   @mute_sound
       .ret
-
-!      movb @1(iy),a                   ; LD A,(IY+1)       ; Pick up the second byte of data for this note
+!
+       movb @1(iy),a                   ; LD A,(IY+1)       ; Pick up the second byte of data for this note
        .call @pianokey                 ; CALL 37675        ; Calculate the attribute file address for the
                                                            ; corresponding piano key
        movb @bytes+56,*hl              ; LD (HL),56        ; Set the attribute byte for the piano key back to #b56

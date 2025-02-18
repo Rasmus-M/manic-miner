@@ -738,9 +738,9 @@ gametune:                              ; 34188
 * Used by the routine at #R34252.
 messintro:                             ; 40192
        text '.  .  .  .  .  .  .  .  .  .  . MANIC MINER . . '
-       text >7f,' BUG-BYTE LTD. 1983 . . BY MATTHEW SMITH . . . '
-       text 'Q TO P = LEFT & RIGHT . . BOTTOM ROW = JUMP . . '
-       text 'A TO G = PAUSE . . H TO L = TUNE ON/OFF . . . '
-       text 'GUIDE MINER WILLY THROUGH 20 LETHAL CAVERNS'
-       text ' .  .  .  .  .  .  .  .'
+       text >7f,' BUG-BYTE LTD. 1983 . . BY MATTHEW SMITH . . '
+       text 'TI VERSION BY RASMUS MOUSTGAARD . . '
+       text 'S & D = LEFT & RIGHT . . ENTER = JUMP . . '
+       text 'P = PAUSE . . M = TUNE ON/OFF . . '
+       text 'GUIDE MINER WILLY THROUGH 20 LETHAL CAVERNS .  .  '
 

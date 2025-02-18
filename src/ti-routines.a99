@@ -642,7 +642,6 @@ sprite_attr_table_addr:
        data 0
 *// ti_draw_sprite
 
-
 *********************************************************************
 *
 * Close hardware sprite table
@@ -663,9 +662,9 @@ close_sprite_attr_table:
 reset_sprite_attr_table:
        .proc
        li   r0,sprite_attr_table
-       bl   @vwad
-       li   r0,>d000
-       movb r0,@vdpwd
+       li   r1,>d000
+       li   r2,32
+       bl   @vsmw
        clr  @sprite_attr_table_addr
        .endproc
 *// reset_sprite_attr_table
