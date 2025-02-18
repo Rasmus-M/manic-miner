@@ -819,6 +819,44 @@ vmbr_1:
 
 *********************************************************************
 *
+* Play note in channel 1
+*
+* r1 MSB: Frequency
+*
+play_note_ch_1:
+       li   r0,>9400                   ; Attenuation 4
+       movb r0,@sound                  ; Write attenuation
+       movb r1,r0                      ; abcdefgh
+       andi r0,>0700                   ; 00000fgh
+       sla  r0,1                       ; 0000fgh0
+       ori  r0,>8000                   ; 1000fgh0
+       movb r0,@sound                  ; Write 1st byte of note
+       movb r1,r0                      ; abcdefgh
+       srl  r0,3                       ; 000abcde
+       movb r0,@sound                  ; Write 2nd byte of note
+       rt
+
+*********************************************************************
+*
+* Play note in channel 2
+*
+* r1 MSB: Frequency
+*
+play_note_ch_2:
+       li   r0,>b400                   ; Attenuation 4
+       movb r0,@sound                  ; Write attenuation
+       movb r1,r0                      ; abcdefgh
+       andi r0,>0700                   ; 00000fgh
+       sla  r0,1                       ; 0000fgh0
+       ori  r0,>a000                   ; 1001fgh0
+       movb r0,@sound                  ; Write 1st byte of note
+       movb r1,r0                      ; abcdefgh
+       srl  r0,3                       ; 000abcde
+       movb r0,@sound                  ; Write 2nd byte of note
+       rt
+
+*********************************************************************
+*
 * Mute sound
 *
 mute_sound:

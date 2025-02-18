@@ -33,6 +33,7 @@ start:                                 ; 34252
        movb a,@lives                   ; LD (33879),A      ; }
        li   hl,musicflags              ; LD HL,33884       ; {Initialise the keypress flag in bit 0 at #R33884
        socb @bits+0,*hl                ; SET 0,(HL)        ; }
+       bl   @reset_sprite_attr_table
 * Next, prepare the screen.
 ;       li   hl,zx_screen               ; LD HL,16384       ; {Clear the entire display file
 ;       li   de,zx_screen+1             ; LD DE,16385       ;
@@ -158,6 +159,7 @@ start_game:                            ; 34436
 * #R36904.
 new_cavern:                            ; 34449
        bl   @ti_display_off
+       bl   @mute_sound
        clr  af
        movb @cavern,a                   ; LD A,(33799)      ; Pick up the number of the current cavern from #R33799
        cb   a,@bytes+7
@@ -456,7 +458,9 @@ upload_score:
        bl   @upload_attributes
 after_screen_update:
 
-;* Now check whether SHIFT and SPACE are being pressed.
+       bl   @ti_check_quit
+
+* Now check whether SHIFT and SPACE are being pressed.
 ;       li   bc,65278                  ; LD BC,65278       ; {Read keys SHIFT-Z-X-C-V
 ;       IN A,(C)                       ; IN A,(C)          ; }
 ;       movb a,@e                      ; LD E,A            ; Save the result in #REGe
@@ -467,7 +471,7 @@ after_screen_update:
 ;       jne  !                         ; JP Z,34252        ; If so, quit the game
 ;       b    @start                    ;
 ;!
-;* Now read the keys A, S, D, F and G (which pause the game).
+* Now read the keys A, S, D, F and G (which pause the game).
 ;       movb @bytes+253,b              ; LD B,253          ; {Read keys A-S-D-F-G
 ;       ; IN A,(C)                     ; IN A,(C)          ; }
 ;       andi a,31*256                  ; AND 31            ; {Are any of these keys being pressed?
@@ -491,7 +495,11 @@ _34827:
 check_dead:
        movb @vdpsta,r0                 ; Check hardware sprite coincidence flag
        andi r0,>2000
+       .ifeq can_die,1
        jne  !
+       .else
+       jmp  !!
+       .endif
        movb @airborne,a                ; LD A,(32875)      ; Pick up the airborne status indicator from #R32875
        cb   a,@b255                    ; CP 255            ; Has Willy landed after falling from too great a height,
                                                            ; or collided with a nasty or a guardian?
@@ -499,32 +507,32 @@ check_dead:
 !      b    @willy_dead                ;
 !
 
-;* Now read the keys H, J, K, L and ENTER (which toggle the in-game music).
+* Now read the keys H, J, K, L and ENTER (which toggle the in-game music).
 ;       movb @bytes+191,b              ; LD B,191          ; Prepare #REGb for reading keys H-J-K-L-ENTER
-;       li   hl,musicflags             ; LD HL,33884       ; Point #REGhl at the music flags at #R33884
-;       ; IN A,(C)                     ; IN A,(C)          ; Read keys H-J-K-L-ENTER
-;       andi a,31*256                  ; AND 31            ; {Are any of these keys being pressed?
-;       cb   a,@bytes+31               ; CP 31             ; }
-;       jeq  _34868                    ; JR Z,34868        ; Jump if not
-;       movb *hl,r0                    ; BIT 0,(HL)        ; Were any of these keys being pressed the last time we
-;       andi r0,1*256                  ;
-;                                                           ; checked?
-;       jne  _34870                    ; JR NZ,34870       ; Jump if so
-;       movb *hl,a                     ; LD A,(HL)         ; {Set bit 0 (the keypress flag) and flip bit 1 (the
-;       li   r0,3*256                  ; XOR 3             ; in-game music flag) at #R33884
-;       xor  r0,a                      ;
-;       movb a,*hl                     ; LD (HL),A         ; }
-;       jmp  _34870                    ; JR 34870          ;
-;_34868:
-;       szcb @bits+0,*hl               ; RES 0,(HL)        ; Reset bit 0 (the keypress flag) at #R33884
-;_34870:
-;       movb *hl,r0                    ; BIT 1,(HL)        ; Has the in-game music been switched off?
-;       andi r0,2*256                  ;
-;       jne  nonote4                   ; JR NZ,34911       ; Jump if so
-
+       li   hl,musicflags              ; LD HL,33884       ; Point #REGhl at the music flags at #R33884
+;      IN A,(C)                        ; IN A,(C)          ; Read keys H-J-K-L-ENTER
+;      andi a,31*256                   ; AND 31            ; {Are any of these keys being pressed?
+;      cb   a,@bytes+31                ; CP 31             ; }
+       li   r0,KEY_M
+       bl   @ti_check_key
+       jeq  _34868                     ; JR Z,34868        ; Jump if not
+       bl   @mute_sound
+       movb *hl,r0                     ; BIT 0,(HL)        ; Were any of these keys being pressed the last time we
+       andi r0,1*256                   ;
+                                                            ; checked?
+       jne  _34870                     ; JR NZ,34870       ; Jump if so
+       movb *hl,a                      ; LD A,(HL)         ; {Set bit 0 (the keypress flag) and flip bit 1 (the
+       li   r0,3*256                   ; XOR 3             ; in-game music flag) at #R33884
+       xor  r0,a                       ;
+       movb a,*hl                      ; LD (HL),A         ; }
+       jmp  _34870                     ; JR 34870          ;
+_34868:
+       szcb @bits+0,*hl                ; RES 0,(HL)        ; Reset bit 0 (the keypress flag) at #R33884
+_34870:
+       movb *hl,r0                     ; BIT 1,(HL)        ; Has the in-game music been switched off?
+       andi r0,2*256                   ;
+       jne  nonote4                    ; JR NZ,34911       ; Jump if so
 * The next section of code plays a note of the in-game music.
-* .
-* #AUDIO(in-game-tune.wav)(#INCLUDE(InGameTune))
        movb @noteindex,a               ; LD A,(33883)      ; {Increment the in-game music note index at #R33883
        ab   one,a                      ; INC A             ;
        movb a,@noteindex               ; LD (33883),A      ; }
@@ -535,16 +543,8 @@ check_dead:
        li   hl,gametune                ; LD HL,34188       ;
        a    de,hl                      ; ADD HL,DE         ; }
 
-       li   r0,>9800
-       movb r0,@sound
-       movb *hl,r0
-       andi r0,>0700
-       sla  r0,1
-       ori  r0,>8000
-       movb r0,@sound
-       movb *hl,r0
-       srl  r0,3
-       movb r0,@sound
+       movb *hl,r1
+       bl   @play_note_ch_1
 
 ;       movb @border,a                  ; LD A,(32883)      ; Pick up the border colour for the current cavern from
 ;                                                           ; #R32883
@@ -689,31 +689,37 @@ willy_dead:                            ; 35071
        jeq  !                          ; JP NZ,36904       ; If so, move to the next cavern
        b    @next_cavern               ;
 !
-       bl   @mute_sound
        bl   @reset_sprite_attr_table
 * The following loop fills the top two thirds of the attribute file with a
 * single value (#b71, #b70, #b69, #b68, #b67, #b66, #b65 or #b64) and makes a
 * sound effect.
 *
+       sb   a,a
+       bl   @ti_set_border_color
        movb @bytes+71,a                ; LD A,71           ; #REGa=#b71 (INK 7: PAPER 0: BRIGHT 1)
 dead_loop:                             ; 35080
-       li   hl,zx_attrs                ; LD HL,22528       ; {Fill the top two thirds of the attribute file with the
-       li   de,zx_attrs+1              ; LD DE,22529       ; value in #REGa
-       li   bc,511                     ; LD BC,511         ; 
-       movb a,*hl                      ; LD (HL),A         ; 
-       .ldir                           ; LDIR              ; }
+;      li   hl,zx_attrs                ; LD HL,22528       ; {Fill the top two thirds of the attribute file with the
+;      li   de,zx_attrs+1              ; LD DE,22529       ; value in #REGa
+;      li   bc,511                     ; LD BC,511         ;
+;      movb a,*hl                      ; LD (HL),A         ;
+;      .ldir                           ; LDIR              ; }
+       li   de,zx_attrs
+       li   bc,512
+       bl   @fill
 
        bl   @upload_top_middle_attributes
 
        movb a,@e                       ; LD E,A            ; Save the attribute byte (#b64-#b71) in #REGe for later
                                                            ; retrieval
 
-;      inv  a                          ; CPL               ; {#REGd=63-8*(#REGe #S/AND/ 7); this value determines the
-;      andi a,7*256                    ; AND 7             ; pitch of the short note that will be played
-;      sla  a,1                        ; RLCA              ;
-;      sla  a,1                        ; RLCA              ;
-;      sla  a,1                        ; RLCA              ;
-;      socb @bytes+7,a                 ; OR 7              ;
+       inv  a                          ; CPL               ; {#REGd=63-8*(#REGe #S/AND/ 7); this value determines the
+       andi a,7*256                    ; AND 7             ; pitch of the short note that will be played
+       sla  a,1                        ; RLCA              ;
+       sla  a,1                        ; RLCA              ;
+       sla  a,1                        ; RLCA              ;
+       socb @bytes+7,a                 ; OR 7              ;
+       movb a,r1
+       bl   @play_note_ch_2
 ;      movb a,d                        ; LD D,A            ; }
 ;      movb @e,@c                      ; LD C,E            ; {#REGc=8+32*(#REGe #S/AND/ 7); this value determines the
 ;      ; RRC C                         ; RRC C             ; duration of the short note that will be played
@@ -735,8 +741,10 @@ dead_loop:                             ; 35080
        movb @e,a                       ; LD A,E            ; Restore the attribute byte (originally #b71) to #REGa
        sb   one,a                      ; DEC A             ; Decrement it (effectively decrementing the INK colour)
        cb   a,@bytes+63                ; CP 63             ; Have we used attribute value #b64 (INK 0) yet?
-       jne  dead_loop                    ; JR NZ,35080       ; If not, jump back to update the INK colour in the top
+       jne  dead_loop                  ; JR NZ,35080       ; If not, jump back to update the INK colour in the top
                                                            ; two thirds of the screen and make another sound effect
+       bl   @mute_sound
+
 * Finally, check whether any lives remain.
        li   hl,lives                   ; LD HL,33879       ; {Pick up the number of lives remaining from #R33879
        movb *hl,a                      ; LD A,(HL)         ; }
@@ -777,11 +785,15 @@ new_highscore:                         ; 35160
        .ldir                           ; LDIR              ; }
 * Now prepare the screen for the game over sequence.
 boot_sequence:                         ; 35171
-       li   hl,zx_screen               ; LD HL,16384       ; {Clear the top two-thirds of the display file
-       li   de,zx_screen+1             ; LD DE,16385       ; 
-       li   bc,4095                    ; LD BC,4095        ; 
-       sb   *hl,*hl                    ; LD (HL),0         ; 
-       .ldir                           ; LDIR              ; }
+;      li   hl,zx_screen               ; LD HL,16384       ; {Clear the top two-thirds of the display file
+;      li   de,zx_screen+1             ; LD DE,16385       ;
+;      li   bc,4095                    ; LD BC,4095        ;
+;      sb   *hl,*hl                    ; LD (HL),0         ;
+;      .ldir                           ; LDIR              ; }
+       li   de,zx_screen
+       li   bc,4096
+       bl   @clear
+
        sb   a,a                        ; XOR A             ; {Initialise the game status buffer variable at #R32988;
        movb a,@eughgt                  ; LD (32988),A      ; this variable will determine the distance of the boot
                                                            ; from the top of the screen}
@@ -794,6 +806,8 @@ boot_sequence:                         ; 35171
        sb   @c,@c                      ; LD C,0            ; 
        .call @draw_sprite              ; CALL 36852        ; }
 
+       sb   a,a
+       bl   @ti_set_border_color
        bl   @upload_zx_screen
 
 * The following loop draws the boot's descent onto the plinth that supports
@@ -831,8 +845,10 @@ boot_loop:                             ; 35210
        li   r2,2
        bl   @upload_characters
 
-;      movb @eughgt,a                  ; LD A,(32988)      ; Pick up the distance variable from #R32988
-;      inv  a                          ; CPL               ; #REGa=#b255-#REGa
+       movb @eughgt,a                  ; LD A,(32988)      ; Pick up the distance variable from #R32988
+       inv  a                          ; CPL               ; #REGa=#b255-#REGa
+       movb  a,r1
+       bl   @play_note_ch_2
 ;      movb a,@e                       ; LD E,A            ; Store this value (#b63-#b255) in #REGe; it determines
 ;                                                          ; the (rising) pitch of the sound effect that will be made
 ;      sb   a,a                        ; XOR A             ; #REGa=0 (black border)
@@ -870,6 +886,8 @@ boot_loop:                             ; 35210
        cb   a,@bytes+196               ; CP 196            ; Has the boot met the plinth yet?
        jne  boot_loop                  ; JR NZ,35210       ; Jump back if not
 
+       bl   @mute_sound
+
 * Now print the "Game Over" message, just to drive the point home.
        li   ix,messg                   ; LD IX,33871       ; {Print "Game" (see #R33871) at (6,10)
        movb @bytes+4,@c                ; LD C,4            ; 
@@ -883,7 +901,6 @@ boot_loop:                             ; 35210
        movb @bytes+6,d                 ; LD D,6            ; counter in #REGc will also determine the INK colours to
                                                            ; use for the "Game Over" message}
        bl   @upload_top_part
-
 * The following loop makes the "Game Over" message glisten for about 1.57s.
 flash_game_over_loop:                  ; 35313
        sb   one,b                      ; DJNZ 35313        ; Delay for about a millisecond
@@ -927,8 +944,8 @@ flash_game_over_loop:                  ; 35313
 
        sb   one,@c                     ; DEC C             ; Decrement the counter in #REGc
        jne  flash_game_over_loop       ; JR NZ,35313       ; Jump back unless it's zero
-;      sb   one,d                      ; DEC D             ; Decrement the counter in #REGd (initially 6)
-;      jne  tm91                       ; JR NZ,35313       ; Jump back unless it's zero
+       sb   one,d                      ; DEC D             ; Decrement the counter in #REGd (initially 6)
+       jne  flash_game_over_loop       ; JR NZ,35313       ; Jump back unless it's zero
 
        b    @start                     ; JP 34252          ; Display the title screen and play the theme tune
 
@@ -1054,9 +1071,10 @@ _35485:
        seto @title_screen_bank_select
        li   hl,titlescr1               ; LD HL,40960       ; {Copy the graphic data from #R40960 to the top half of
        li   de,scrn_buffer_1           ; LD DE,28672       ; the screen buffer at #R28672 scrn_buffer_1
-       li   bc,2048                    ; LD BC,2048        ; 
-       .ldir                           ; LDIR              ; }
-       .ret                            ; RET               ; 
+       li   bc,2048                    ; LD BC,2048        ;
+;       .ldir                           ; LDIR              ; }
+       bl   @copy
+       .ret                            ; RET               ;
 
 * Move Willy (1)
 * 
@@ -1094,21 +1112,25 @@ move_willy:                            ; 35515
        ab   one,a                      ; INC A             ;
        movb a,@jumping                 ; LD (32878),A      ; }
 
-;      sb   @bytes+8,a                 ; SUB 8             ; #REGa=J-8, where J (1-18) is the new value of the
+       sb   @bytes+8,a                 ; SUB 8             ; #REGa=J-8, where J (1-18) is the new value of the
 ;                                                          ; jumping animation counter
 ;      jgt  _35563                     ; JP P,35563        ; Jump if J>=8
 ;      jeq  _35563
 ;      neg a                           ; NEG               ; #REGa=8-J (1<=J<=7, 1<=#REGa<=7)
 ;_35563:
-;      ab   one,a                      ; INC A             ; #REGa=1+ABS(J-8)
+       abs  a
+       ab   one,a                      ; INC A             ; #REGa=1+ABS(J-8)
 ;      sla  a,1                        ; RLCA              ; {#REGd=8*(1+ABS(J-8)); this value determines the pitch
 ;      sla  a,1                        ; RLCA              ; of the jumping sound effect (rising as Willy rises,
 ;      sla  a,1                        ; RLCA              ; falling as Willy falls)
+       sla  a,3
 ;      movb a,d                        ; LD D,A            ; }
 ;      movb @bytes+32,@c               ; LD C,32           ; This value determines the duration of the jumping sound
 ;                                                          ; effect
 ;      movb @border,a                  ; LD A,(32883)      ; Pick up the border colour for the current cavern from
 ;                                                          ; #R32883
+       mov  a,r1
+       bl   @play_note_ch_2
 ;_35573:
 ;      OUT (254),A                   ; OUT (254),A         ; {Make a jumping sound effect
 ;      li   r0,24*256                  ; XOR 24            ;
@@ -1124,6 +1146,7 @@ move_willy:                            ; 35515
                                                            ; #R32878
        cb   a,@bytes+18                ; CP 18             ; Has Willy reached the end of the jump?
        jne  !                          ; JP Z,35734        ; Jump if so
+       bl   @mute_sound
        b    @_35734                    ;                   
 !
        cb   a,@bytes+16                ; CP 16             ; Is the jumping animation counter now 16?
@@ -1190,12 +1213,12 @@ _35600:
        dec  hl                         ; DEC HL            ; Point #REGhl at the left-hand cell below Willy's sprite
        cb   a,r0
        jeq  !                          ; JP NZ,35805       ; Jump if the right-hand cell below Willy's sprite is not
-       b    @move_willy2                ;
+       b    @move_willy_2              ;
 !
                                                            ; empty
        cb   a,*hl                      ; CP (HL)           ; Is the left-hand cell below Willy's sprite empty?
        jeq  !                          ; JP NZ,35805       ; Jump if not
-       b    @move_willy2                ;
+       b    @move_willy_2              ;
 !
 _35665:
        movb @airborne,a                ; LD A,(32875)      ; Pick up the airborne status indicator from #R32875
@@ -1214,10 +1237,13 @@ _35665:
        ab   one,a                      ; INC A             ; {Increment the airborne status indicator at #R32875
        movb a,@airborne                ; LD (32875),A      ; }
 
-;       sla  a,1                        ; RLCA              ; {The value of #REGd determines the pitch of the falling
-;       sla  a,1                        ; RLCA              ; sound effect
-;       sla  a,1                        ; RLCA              ;
-;       sla  a,1                        ; RLCA              ;
+;      sla  a,1                        ; RLCA              ; {The value of #REGd determines the pitch of the falling
+;      sla  a,1                        ; RLCA              ; sound effect
+;      sla  a,1                        ; RLCA              ;
+;      sla  a,1                        ; RLCA              ;
+       sla  a,4
+       movb a,r1
+       bl   @play_note_ch_2
 ;       movb a,d                        ; LD D,A            ; }
 ;       movb @bytes+32,@c               ; LD C,32           ; This value determines the duration of the falling sound
 ;                                                           ; effect
@@ -1345,8 +1371,10 @@ _35777:
 * joystick, and moves Willy left or right if necessary.
 * 
 * HL Attribute buffer address of the left-hand cell below Willy's sprite
-move_willy2:                            ; 35805
+move_willy_2:                          ; 35805
        movb @airborne,a                ; LD A,(32875)      ; Pick up the airborne status indicator from #R32875
+       jeq  !
+       bl   @mute_sound
        cb   a,@bytes+12                ; CP 12             ; Has Willy just landed after falling from too great a
                                                            ; height?
        jl   !                          ; JP NC,36102       ; If so, kill him
@@ -1414,13 +1442,19 @@ _35835:
 
        li   r0,JOY_LT
        bl   @ti_check_key
-       jeq  !
-       li   a,>2a00
+       jne  !
+       li   r0,KEY_S
+       bl   @ti_check_key
+       jeq  !!
+!      li   a,>2a00
        szcb a,@e
 !      li   r0,JOY_RT
        bl   @ti_check_key
-       jeq  !
-       li   a,>1500
+       jne  !
+       li   r0,KEY_D
+       bl   @ti_check_key
+       jeq  !!
+!      li   a,>1500
        szcb a,@e
 !
 
@@ -1475,6 +1509,9 @@ _35912:
 ;       jeq  _35971                     ; JR Z,35971        ; Jump if not
 
        li   r0,JOY_FI
+       bl   @ti_check_key
+       jne  _35963
+       li   r0,KEY_EN
        bl   @ti_check_key
        jeq  _35971
 
@@ -2384,9 +2421,12 @@ next_cavern:                           ; 36904
 
 * Now play a celebratory sound effect.
        li   bc,0                       ; LD BC,0           ; {Prepare #REGc and #REGd for the celebratory sound
-       movb @bytes+50,d                ; LD D,50           ; effect}
+       movb @bytes+20,d                ; LD D,50           ; effect}
        sb   a,a                        ; XOR A             ; #REGa=0 (black border)
+       bl   @ti_set_border_color
 _36989:
+       movb a,r1
+       bl   @play_note_ch_2
 ;      OUT (254),A                     ; OUT (254),A       ; {Produce the celebratory sound effect: Willy has escaped
        li   r0,24*256                  ; XOR 24            ; from the mine
        xor  r0,a                       ;
@@ -2404,6 +2444,7 @@ _37000:
        jne  _36989                     ; JR NZ,36989       ;
        sb   one,d                      ; DEC D             ;
        jne  _36989                     ; JR NZ,36989       ; }
+       bl   @mute_sound
 
 _37008:
        sb   a,a                        ; XOR A             ; #REGa=#b0 (the next cavern will be #R45056(Central
@@ -2441,27 +2482,31 @@ _37014:
 !
 * The following loop increases the score and decreases the air supply until it
 * runs out, while playing a sound effect.
-_37044:
-       .call @dec_air                   ; CALL 35388        ; Decrease the air remaining in the current cavern
+dec_air_loop:
+       .call @dec_air                  ; CALL 35388        ; Decrease the air remaining in the current cavern
        jne  !                          ; JP Z,34449        ; Move to the next cavern if the air supply is now gone
        b    @new_cavern                ;
 !
        li   hl,scorbuf+5               ; LD HL,33838       ; {Add 1 to the score
        .call @incscore_1               ; CALL 37118        ; }
+       movb @clock,a
+       andi a,>1f00
+       jne  !
        li   ix,scorbuf                 ; LD IX,33833       ; {Print the new score at (19,26)
        movb @bytes+6,@c                ; LD C,6            ; 
        li   de,zx_screen+4218          ; LD DE,20602       ; 
        .call @pmess                    ; CALL 37562        ; }
-
-       li   r1,zx_screen+4218
+       li   r1,zx_screen+4218          ; Upload score
        li   r2,6
        bl   @upload_patterns
-
-;       movb @bytes+4,@c                ; LD C,4            ; This value determines the duration of the sound effect
-;       movb @air,a                     ; LD A,(32956)      ; Pick up the remaining air supply (S) from #R32956
-;       inv  a                          ; CPL               ; {#REGd=2*(63-S); this value determines the pitch of the
-;       andi a,63*256                   ; AND 63            ; sound effect (which decreases with the amount of air
-;       sla  a,1                        ; RLC A             ; remaining)
+!
+       movb @bytes+4,@c                ; LD C,4            ; This value determines the duration of the sound effect
+       movb @air,a                     ; LD A,(32956)      ; Pick up the remaining air supply (S) from #R32956
+       inv  a                          ; CPL               ; {#REGd=2*(63-S); this value determines the pitch of the
+       andi a,63*256                   ; AND 63            ; sound effect (which decreases with the amount of air
+       sla  a,1                        ; RLC A             ; remaining)
+       movb a,r1
+       bl   @play_note_ch_2
 ;       movb a,d                        ; LD D,A            ; }
 ;_37079:
 ;       sb   a,a                        ; LD A,0            ; {Produce a short note
@@ -2479,7 +2524,7 @@ _37044:
 ;       sb   one,@c                     ; DEC C             ;
 ;       jne  _37079                     ; JR NZ,37079       ; }
 
-       jmp  _37044                     ; JR 37044          ; Jump back to decrease the air supply again
+       jmp  dec_air_loop                ; JR 37044          ; Jump back to decrease the air supply again
 
 * Add to the score
 * 
@@ -2654,8 +2699,9 @@ _37277:
        ab   @bytes+4,a                 ; ADD A,4           ; {Add 4 to the Kong Beast's pixel y-coordinate at #R32988
        movb a,@eughgt                  ; LD (32988),A      ; (moving him downwards)}
 
-;      movb a,@c                       ; LD C,A            ; Copy the pixel y-coordinate to #REGc; this value
-;                                                          ; determines the pitch of the sound effect
+       movb a,r1                       ; LD C,A            ; Copy the pixel y-coordinate to #REGc; this value
+       bl   @play_note_ch_2                                ; determines the pitch of the sound effect
+
 ;      movb @bytes+16,d                ; LD D,16           ; This value determines the duration of the sound effect
 ;      movb @border,a                  ; LD A,(32883)      ; Pick up the border colour for the current cavern from
 ;                                                          ; #R32883
@@ -2987,29 +3033,12 @@ playtune:                              ; 37596
                                                            ; corresponding piano key
        movb @bytes+40,*hl              ; LD (HL),40        ; Set the attribute byte for the piano key to #b40 (INK 0:
                                                            ; PAPER 5: BRIGHT 0)
-       bl   @upload_zx_screen
+       bl   @upload_middle_part
 
-       li   r0,>9400
-       movb r0,@sound
-       movb d,r0
-       andi r0,>0700
-       sla  r0,1
-       ori  r0,>8000
-       movb r0,@sound
-       movb d,r0
-       srl  r0,3
-       movb r0,@sound
-
-       li   r0,>b400
-       movb r0,@sound
-       movb @e,r0
-       andi r0,>0700
-       sla  r0,1
-       ori  r0,>a000
-       movb r0,@sound
-       movb @e,r0
-       srl  r0,3
-       movb r0,@sound
+       movb d,r1
+       bl   @play_note_ch_1
+       movb @e,r1
+       bl   @play_note_ch_2
 
        sb   @bytes+25,@c
        jeq  !
