@@ -540,7 +540,8 @@ upload_sprite_patterns_2:
        dec  r1
        jne  upload_sprite_patterns_2
 *
-       li   r0,portal_sprites
+       seto @caverns_0_6_bank_select
+       li   r0,boot
        bl   @upload_sprite_pattern
        .endproc
 *// upload_sprite_patterns

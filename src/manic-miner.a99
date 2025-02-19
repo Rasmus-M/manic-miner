@@ -288,7 +288,7 @@ skip_draw_lives:
        cb   a,@bytes+7                 ; CP 7              ; Has 6031769 been keyed in yet?
        jne  copy_buffer_1_to_2         ; JR NZ,34623       ; Jump if not
        seto @caverns_0_6_bank_select
-       li   de,boot                    ; LD DE,47840       ; Point #REGde at the graphic data for the boot (at
+       li   de,extra_sprite+(17*32)    ; LD DE,47840       ; Point #REGde at the graphic data for the boot (at
                                                            ; #R47840)
        sb   @c,@c                      ; LD C,0            ; #REGc=0 (overwrite mode)
        .call @draw_sprite              ; CALL 36852        ; Draw the boot at the bottom of the screen next to the
@@ -601,18 +601,34 @@ nonote4:                               ; 34911
 
 ;* Here we check the teleport keys.
 nodem1:                                 ; 34948
-;       li   bc,cavern15+1022           ; LD BC,61438       ; {Read keys 6-7-8-9-0
+;       li   bc,61438                   ; LD BC,61438       ; {Read keys 6-7-8-9-0
 ;       ; IN A,(C)                      ; IN A,(C)          ; }
 ;       movb a,r0                       ; BIT 4,A           ; Is '6' (the activator key) being pressed?
 ;       andi r0,16*256                  ;
 ;       jeq  !                          ; JP NZ,34984       ; Jump if not
 ;       b    @ckcheat                   ;
 ;!
-;       movb @cheat,a                   ; LD A,(33885)      ; Pick up the 6031769 key counter from #R33885
-;       cb   a,@bytes+7                 ; CP 7              ; Has 6031769 been keyed in yet?
-;       jeq  !                          ; JP NZ,34984       ; Jump if not
-;       b    @ckcheat                   ;
-;!
+       movb @cheat,a                   ; LD A,(33885)      ; Pick up the 6031769 key counter from #R33885
+       cb   a,@bytes+7                 ; CP 7              ; Has 6031769 been keyed in yet?
+       jne  !!                         ; JP NZ,34984       ; Jump if not
+       li   r0,KEY_X
+       bl   @ti_check_key
+       jeq  !
+       movb @cavern,a
+       cb   @bytes+19,a
+       jeq  !
+       ab   one,a
+       movb a,@cavern
+       b    @new_cavern
+!      li   r0,KEY_Z
+       bl   @ti_check_key
+       jeq  !
+       movb @cavern,a
+       jeq  !
+       sb   one,a
+       movb a,@cavern
+       b    @new_cavern
+!
 ;       movb @bytes+247,b               ; LD B,247          ; {Read keys 1-2-3-4-5
 ;       ; IN A,(C)                      ; IN A,(C)          ; }
 ;       inv  a                          ; CPL               ; {Keep only bits 0-4 and flip them
@@ -635,7 +651,7 @@ nodem1:                                 ; 34948
 ;       sb   d,d                        ; LD D,0            ;
 ;       li   ix,cheatdt                 ; LD IX,33888       ;
 ;       a    de,ix                      ; ADD IX,DE         ; }
-;       li   bc,cavern17+1022           ; LD BC,63486       ; {Read keys 1-2-3-4-5
+;       li   bc,63486                   ; LD BC,63486       ; {Read keys 1-2-3-4-5
 ;       ; IN A,(C)                      ; IN A,(C)          ; }
 ;       andi a,31*256                   ; AND 31            ; Keep only bits 0-4
 ;       cb   a,*ix                      ; CP (IX+0)         ; Does this match the first byte of the entry in the
@@ -677,7 +693,15 @@ nodem1:                                 ; 34948
 ;       ab   one,a                      ; INC A             ; key in the sequence is being pressed)
 ;       movb a,@cheat                   ; LD (33885),A      ; }
 
-       bl   @close_sprite_attr_table
+       li   r0,KEY_C
+       bl   @ti_check_key
+       jeq  !
+       li   r0,KEY_CT
+       bl   @ti_check_key
+       jeq  !
+       movb @bytes+7,@cheat
+
+!      bl   @close_sprite_attr_table
 
        b    @loop                      ; JP 34574          ; Jump back to the start of the main loop
 
