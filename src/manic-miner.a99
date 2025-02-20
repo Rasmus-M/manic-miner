@@ -253,6 +253,7 @@ before_loop:
        bl   @init_tile_updates
        li   r0,light_beam_attr_addrs
        clr  *r0
+       clr  @loops
 loop:                                  ; 34574
        bl   @init_sprite_attr_table
        movb @lives,a                   ; LD A,(33879)      ; Pick up the number of lives remaining from #R33879
@@ -493,8 +494,12 @@ _34827:
 
 * Here we check whether Willy has had a fatal accident.
 check_dead:
-       movb @vdpsta,r0                 ; Check hardware sprite coincidence flag
-       andi r0,>2000
+       bl   @ti_vsync
+       mov  @loops,r0
+       ci   r0,4
+       jlt  !!
+       movb @vdp_status,r1             ; Check hardware sprite coincidence flag
+       andi r1,>2000
        .ifeq can_die,1
        jne  !
        .else
@@ -703,6 +708,7 @@ nodem1:                                 ; 34948
 
 !      bl   @close_sprite_attr_table
 
+       inc  @loops
        b    @loop                      ; JP 34574          ; Jump back to the start of the main loop
 
 * The air in the cavern has run out, or Willy has had a fatal accident, or it's

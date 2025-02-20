@@ -664,7 +664,7 @@ reset_sprite_attr_table:
        .proc
        li   r0,sprite_attr_table
        li   r1,>d000
-       li   r2,32
+       li   r2,128
        bl   @vsmw
        clr  @sprite_attr_table_addr
        .endproc
@@ -994,7 +994,7 @@ ti_vsync_1:
        clr  r12
        tb   2                          ; Test CRU bit for VDP interrupt
        jeq  ti_vsync_1
-;       bl   @module_player
+       socb @vdpsta,@vdp_status
        .endproc
 *// ti_vsync
 

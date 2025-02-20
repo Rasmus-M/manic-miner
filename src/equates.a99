@@ -50,8 +50,10 @@ b254:
        equ  b255+1
 vdp_status:
        equ  b254+1
-screen_update_flag:
+loops:
        equ  vdp_status+2
+screen_update_flag:
+       equ  loops+2
 tile_updates_ptr:
        equ  screen_update_flag+2
 light_beam_attr_addrs_ptr:
