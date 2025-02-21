@@ -12,6 +12,7 @@ ti_setup_environment:
        bl   @init_bits
        bl   @copy_to_pad
        bl   @graphics_mode
+       seto @double_buffer_flag
        .endproc
 *// ti_setup_environment
 
@@ -36,13 +37,13 @@ init_bits_1:
 * Copy routines to pad
 *
 copy_to_pad:
-;       li   r0,draw_display_buffer_start
-;       li   r1,draw_display_buffer_pad
-;       li   r2,draw_display_buffer_end-draw_display_buffer_start
-;copy_to_pad_1:
-;       mov  *r0+,*r1+
-;       dect r2
-;       jne  copy_to_pad_1
+       li   r0,copy
+       li   r1,copy_pad
+       li   r2,copy_end-copy
+copy_to_pad_1:
+       mov  *r0+,*r1+
+       dect r2
+       jne  copy_to_pad_1
        rt
 *// copy_to_pad
 
@@ -79,14 +80,6 @@ graphics_mode_1:
        li   r0,name_table
        bl   @vwad
        bl   @ti_init_name_table
-       li   r0,name_table_2
-       bl   @vwad
-       bl   @ti_init_name_table
-*      Sprite patterns
-;       li   r0,sprite_pattern_table
-;       li   r1,SPR0
-;       li   r2,32
-;       bl   @vmbw
        lwpi wrksp
        rt
 *      VDP registers
@@ -573,7 +566,9 @@ upload_sprite_pattern_2:
 * Prepare for drawing hardware sprites
 *
 init_sprite_attr_table:
-       li   r0,sprite_attr_table       ; Prepare for drawing hardware sprites
+       mov  @double_buffer_flag,r0
+       andi r0,>80
+       ai   r0,sprite_attr_table
        mov  r0,@sprite_attr_table_addr
        movb @vdpsta,r0
        rt
@@ -653,6 +648,12 @@ close_sprite_attr_table:
        bl   @vwad
        li   r0,>d000                    ; Write sprite attribute table terminator
        movb r0,@vdpwd
+       bl   @ti_vsync
+       mov  @double_buffer_flag,r0
+       andi r0,1
+       ori  r0,>0500+(sprite_attr_table/>80)
+       bl   @vwtr
+       inv  @double_buffer_flag
        .endproc
 *// close_sprite_attr_table
 
@@ -664,7 +665,7 @@ reset_sprite_attr_table:
        .proc
        li   r0,sprite_attr_table
        li   r1,>d000
-       li   r2,128
+       li   r2,256
        bl   @vsmw
        clr  @sprite_attr_table_addr
        .endproc
@@ -1065,6 +1066,8 @@ copy_1:
        dec  bc
        jne  copy_1
        rt
+copy_end:
+       equ  $
 *// copy
 
 *********************************************************************

@@ -54,12 +54,16 @@ loops:
        equ  vdp_status+2
 screen_update_flag:
        equ  loops+2
-tile_updates_ptr:
+double_buffer_flag:
        equ  screen_update_flag+2
+tile_updates_ptr:
+       equ  double_buffer_flag+2
 light_beam_attr_addrs_ptr:
        equ  tile_updates_ptr+2
-pad_max:
+copy_pad:
        equ  light_beam_attr_addrs_ptr+2
+pad_max:
+       equ  copy_pad+16
 kscan_device:
        equ  >8374
 kscan_key:
@@ -120,6 +124,8 @@ color_table:                           ; Color table
 name_table:                            ; Name table 1
        equ  >3800
 sprite_attr_table:                     ; Sprite attribute table
+       equ  >3b00
+sprite_attr_table_2:                   ; Sprite attribute table
        equ  >3b00
 name_table_2:                          ; Name table 2
        equ  >3c00
